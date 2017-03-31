@@ -241,17 +241,15 @@ echo
 
 if true; then
 
-	ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$UNISTR_TAR" "$UNISTR_DIR" "$READLN_TAR" "$READLN_DIR"
-			"$PCRE_TAR" "$PCRE_DIR" "$PCRE2_TAR" "$PCRE2_DIR" "$ZLIB_TAR" "$ZLIB_DIR"  "$BZ2_TAR" "$BZ2_DIR"
-			"$IDN2_TAR" "$IDN2_DIR" "$ICONV_TAR" "$ICONV_DIR" "$CURL_TAR" "$CURL_DIR" "$GIT_TAR" "$GIT_DIR")
+	ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$OPENSSH_TAR" "$OPENSSH_DIR" "$ZLIB_TAR" "$ZLIB_DIR")
 
 	for artifact in "${ARTIFACTS[@]}"; do
 		rm -rf "$artifact"
 	done
 
-	# ./build-git.sh 2>&1 | tee build-git.log
-	if [[ -e build-git.log ]]; then
-		rm build-git.log
+	# ./build-ssh.sh 2>&1 | tee build-ssh.log
+	if [[ -e build-ssh.log ]]; then
+		rm build-ssh.log
 	fi
 fi
 
