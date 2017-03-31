@@ -4,10 +4,12 @@
 INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 
-#OPENSSL_TAR=openssl-1.0.2k.tar.gz
-#OPENSSL_DIR=openssl-1.0.2k
-OPENSSL_TAR=openssl-1.1.0e.tar.gz
-OPENSSL_DIR=openssl-1.1.0e
+# OpenSSH can only use OpenSSL 1.0.2
+# https://groups.google.com/forum/#!topic/opensshunixdev/AlgfQvPIlQE
+OPENSSL_TAR=openssl-1.0.2k.tar.gz
+OPENSSL_DIR=openssl-1.0.2k
+#OPENSSL_TAR=openssl-1.1.0e.tar.gz
+#OPENSSL_DIR=openssl-1.1.0e
 
 ZLIB_TAR=zlib-1.2.11.tar.gz
 ZLIB_DIR=zlib-1.2.11
@@ -79,8 +81,13 @@ else
 fi
 
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
-# The Autoconf programs misdetect Solaris as x86 even though its x64
+# The Autoconf programs misdetect Solaris as x86 even though its x64. OpenBSD has
+# getconf, but it does not have LONG_BIT.
 IS_64BIT=$(getconf LONG_BIT 2>&1 | grep -i -c 64)
+if [[ "$IS_64BIT" -eq "0" ]]; then
+	IS_64BIT=$(file /bin/ls 2>&1 | grep -i -c '64-bit')
+fi
+
 if [[ "$IS_SOLARIS" -eq "1" ]]; then
 	SH_KBITS=64
 	SH_MARCH=-m64
@@ -135,7 +142,7 @@ cd "$ZLIB_DIR"
 SH_LDLIBS=("-ldl -lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH -DNDEBUG" CXXFLAGS="$SH_MARCH -DNDEBUG" \
 	LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
 	./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -234,7 +241,7 @@ cd "$UNISTR_DIR"
 SH_LDLIBS=("-ldl -lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH -DNDEBUG" CXXFLAGS="$SH_MARCH -DNDEBUG" \
 	LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
 	./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -276,7 +283,7 @@ cd "$READLN_DIR"
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH -DNDEBUG" CXXFLAGS="$SH_MARCH -DNDEBUG" \
 	LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
 	./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -318,7 +325,7 @@ cd "$ICONV_DIR"
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH -DNDEBUG" CXXFLAGS="$SH_MARCH -DNDEBUG" \
 	LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
 	./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -380,7 +387,7 @@ fi
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH -DNDEBUG" CXXFLAGS="$SH_MARCH -DNDEBUG" \
 	LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
 	./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -472,7 +479,7 @@ cd "$PCRE_DIR"
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lz" "-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH -DNDEBUG" CXXFLAGS="$SH_MARCH -DNDEBUG" \
 	LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
 	./configure --enable-shared --enable-pcregrep-libz --enable-pcregrep-libbz2 \
 	--prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
@@ -515,7 +522,7 @@ cd "$PCRE2_DIR"
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lz" "-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH -DNDEBUG" CXXFLAGS="$SH_MARCH -DNDEBUG" \
 	LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
 	./configure --enable-shared --enable-pcre2-8 --enable-pcre2-16 --enable-pcre2-32 \
 	--prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
@@ -558,7 +565,7 @@ cd "$CURL_DIR"
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lidn2" "-lssl" "-lcrypto" "-lz" "-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH -DNDEBUG" CXXFLAGS="$SH_MARCH -DNDEBUG" \
 	LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
 	./configure --enable-shared --enable-ipv6 --with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
 	--with-libidn2="$INSTALL_PREFIX" --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
@@ -642,7 +649,7 @@ fi
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lssl" "-lcrypto" "-lz" "-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+CPPFLAGS="-I$INSTALL_PREFIX/include" CFLAGS="$SH_MARCH -DNDEBUG" CXXFLAGS="$SH_MARCH -DNDEBUG" \
 	LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
 	./configure --enable-pthreads --with-lib="$INSTALL_LIBDIR" --with-openssl="$INSTALL_PREFIX" \
 	--with-curl="$INSTALL_PREFIX" --with-libpcre="$INSTALL_PREFIX" --with-zlib="$INSTALL_PREFIX" \
