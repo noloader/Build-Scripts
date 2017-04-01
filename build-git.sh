@@ -88,7 +88,7 @@ IS_NETBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c netbsd)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
 if [[ ("$IS_FREEBSD" -eq "1" || "$IS_OPENBSD" -eq "1" || "$IS_NETBSD" -eq "1" || "$IS_DRAGONFLY" -eq "1" || "$IS_SOLARIS" -eq "1") ]]; then
-    if [[ !(-z `which gmake 2>/dev/null | grep -v gmake`) ]]; then
+    if [[ !(-z `which gmake 2>/dev/null | grep -v 'no gmake'`) ]]; then
         MAKE=gmake
     else
         MAKE=make
@@ -177,7 +177,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(install)
-if [[ ! (-z SUDO_PASSWWORD) ]]; then
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
@@ -239,7 +239,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(install PREFIX="$INSTALL_PREFIX" LIBDIR="$INSTALL_LIBDIR")
-if [[ ! (-z SUDO_PASSWWORD) ]]; then
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
@@ -286,7 +286,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(install)
-if [[ ! (-z SUDO_PASSWWORD) ]]; then
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
@@ -333,7 +333,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(install)
-if [[ ! (-z SUDO_PASSWWORD) ]]; then
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
@@ -380,7 +380,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(install)
-if [[ ! (-z SUDO_PASSWWORD) ]]; then
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
@@ -447,7 +447,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(install)
-if [[ ! (-z SUDO_PASSWWORD) ]]; then
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
@@ -503,7 +503,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(install_sw)
-if [[ ! (-z SUDO_PASSWWORD) ]]; then
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
@@ -551,7 +551,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(install)
-if [[ ! (-z SUDO_PASSWWORD) ]]; then
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
@@ -599,7 +599,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(install)
-if [[ ! (-z SUDO_PASSWWORD) ]]; then
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
@@ -647,7 +647,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(install)
-if [[ ! (-z SUDO_PASSWWORD) ]]; then
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
@@ -759,7 +759,7 @@ if [[ ! -z `which asciidoc 2>/dev/null | grep -v 'no asciidoc'` ]]; then
     fi
 fi
 
-if [[ ! (-z SUDO_PASSWWORD) ]]; then
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
