@@ -43,16 +43,28 @@ GIT_DIR=git-2.12.2
 
 ###############################################################################
 
-# Autotools on Solaris has an implied requirement for GNU gear
-# Things fall apart without it.
+# Autotools on Solaris has an implied requirement for GNU gear. Things fall apart without it.
+# Also see https://blogs.oracle.com/partnertech/entry/preparing_for_the_upcoming_removal.
 if [[ -d "/usr/gnu/bin" ]]; then
 	if [[ ! ("$PATH" == *"/usr/gnu/bin"*) ]]; then
+		echo
 		echo "Adding /usr/gnu/bin to PATH for Solaris"
 		PATH="/usr/gnu/bin:$PATH"
 	fi
+elif [[ -d "/usr/ucb/bin" ]]; then
+	if [[ ! ("$PATH" == *"/usr/ucb/bin"*) ]]; then
+	echo
+		echo "Adding /usr/ucb/bin to PATH for Solaris"
+		PATH="/usr/ucb/bin:$PATH"
+	fi
 fi
 
-# I don't like doing this, but...
+###############################################################################
+
+echo
+echo "If you enter a sudo password, then it will be used for installation."
+echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
+echo "To avoid sudo and the password, just press ENTER and they won't be used."
 read -s -p "Please enter password for sudo: " SUDO_PASSWWORD
 echo
 
@@ -159,7 +171,12 @@ if [[ "$?" -ne "0" ]]; then
 	[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-echo "$SUDO_PASSWWORD" | sudo -S make install
+MAKE_FLAGS=(install)
+if [[ ! (-z SUDO_PASSWWORD) ]]; then
+	echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+	"$MAKE" "${MAKE_FLAGS[@]}"
+fi
 
 cd ..
 
@@ -216,7 +233,12 @@ if [[ "$?" -ne "0" ]]; then
 	[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-echo "$SUDO_PASSWWORD" | sudo -S make install PREFIX="$INSTALL_PREFIX" LIBDIR="$INSTALL_LIBDIR"
+MAKE_FLAGS=(install PREFIX="$INSTALL_PREFIX" LIBDIR="$INSTALL_LIBDIR")
+if [[ ! (-z SUDO_PASSWWORD) ]]; then
+	echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+	"$MAKE" "${MAKE_FLAGS[@]}"
+fi
 
 cd ..
 
@@ -258,7 +280,12 @@ if [[ "$?" -ne "0" ]]; then
 	[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-echo "$SUDO_PASSWWORD" | sudo -S make install
+MAKE_FLAGS=(install)
+if [[ ! (-z SUDO_PASSWWORD) ]]; then
+	echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+	"$MAKE" "${MAKE_FLAGS[@]}"
+fi
 
 cd ..
 
@@ -300,7 +327,12 @@ if [[ "$?" -ne "0" ]]; then
 	[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-echo "$SUDO_PASSWWORD" | sudo -S make install
+MAKE_FLAGS=(install)
+if [[ ! (-z SUDO_PASSWWORD) ]]; then
+	echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+	"$MAKE" "${MAKE_FLAGS[@]}"
+fi
 
 cd ..
 
@@ -342,7 +374,12 @@ if [[ "$?" -ne "0" ]]; then
 	[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-echo "$SUDO_PASSWWORD" | sudo -S make install
+MAKE_FLAGS=(install)
+if [[ ! (-z SUDO_PASSWWORD) ]]; then
+	echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+	"$MAKE" "${MAKE_FLAGS[@]}"
+fi
 
 cd ..
 
@@ -404,7 +441,12 @@ if [[ "$?" -ne "0" ]]; then
 	[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-echo "$SUDO_PASSWWORD" | sudo -S make install
+MAKE_FLAGS=(install)
+if [[ ! (-z SUDO_PASSWWORD) ]]; then
+	echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+	"$MAKE" "${MAKE_FLAGS[@]}"
+fi
 
 cd ..
 
@@ -455,7 +497,12 @@ if [[ "$?" -ne "0" ]]; then
 	[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-echo "$SUDO_PASSWWORD" | sudo -S make install_sw
+MAKE_FLAGS=(install_sw)
+if [[ ! (-z SUDO_PASSWWORD) ]]; then
+	echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+	"$MAKE" "${MAKE_FLAGS[@]}"
+fi
 
 cd ..
 
@@ -498,7 +545,12 @@ if [[ "$?" -ne "0" ]]; then
 	[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-echo "$SUDO_PASSWWORD" | sudo -S make install
+MAKE_FLAGS=(install)
+if [[ ! (-z SUDO_PASSWWORD) ]]; then
+	echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+	"$MAKE" "${MAKE_FLAGS[@]}"
+fi
 
 cd ..
 
@@ -541,7 +593,12 @@ if [[ "$?" -ne "0" ]]; then
 	[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-echo "$SUDO_PASSWWORD" | sudo -S make install
+MAKE_FLAGS=(install)
+if [[ ! (-z SUDO_PASSWWORD) ]]; then
+	echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+	"$MAKE" "${MAKE_FLAGS[@]}"
+fi
 
 cd ..
 
@@ -584,7 +641,12 @@ if [[ "$?" -ne "0" ]]; then
 	[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-echo "$SUDO_PASSWWORD" | sudo -S make install
+MAKE_FLAGS=(install)
+if [[ ! (-z SUDO_PASSWWORD) ]]; then
+	echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+	"$MAKE" "${MAKE_FLAGS[@]}"
+fi
 
 cd ..
 
@@ -627,6 +689,8 @@ if [[ "$IS_SOLARIS" -eq "1" ]]; then
 	do 
 		cp "$file" "$file.orig"
 		sed 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"
+		cp "$file" "$file.orig"
+		sed 's|/usr/ucb/install|install|g' "$file.orig" > "$file"
 		rm "$file.orig"
 	done
 	for file in $(find `pwd` -iname 'config*')
@@ -634,7 +698,7 @@ if [[ "$IS_SOLARIS" -eq "1" ]]; then
 		cp "$file" "$file.orig"
 		sed 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"
 		cp "$file" "$file.orig"
-		sed 's|/usr/ucb/install|/usr/gnu/bin/install|g' "$file.orig" > "$file"
+		sed 's|/usr/ucb/install|install|g' "$file.orig" > "$file"
 		rm "$file.orig"
 	done
 fi
@@ -690,7 +754,11 @@ if [[ ! -z `which asciidoc 2>/dev/null | grep -v 'no asciidoc'` ]]; then
 	fi
 fi
 
-echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+if [[ ! (-z SUDO_PASSWWORD) ]]; then
+	echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+	"$MAKE" "${MAKE_FLAGS[@]}"
+fi
 
 cd ..
 
@@ -700,7 +768,8 @@ echo
 echo "********** Cleanup **********"
 echo
 
-if true; then
+# Set to false to retain artifacts
+if false; then
 
 	ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$UNISTR_TAR" "$UNISTR_DIR" "$READLN_TAR" "$READLN_DIR"
 			"$PCRE_TAR" "$PCRE_DIR" "$PCRE2_TAR" "$PCRE2_DIR" "$ZLIB_TAR" "$ZLIB_DIR"  "$BZ2_TAR" "$BZ2_DIR"
