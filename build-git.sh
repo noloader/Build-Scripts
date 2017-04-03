@@ -691,7 +691,7 @@ rm -rf "$GIT_DIR" &>/dev/null
 tar -xzf "$GIT_TAR"
 cd "$GIT_DIR"
 
-make configure
+"$MAKE" configure
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to make configure Git"
