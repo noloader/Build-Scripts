@@ -4,8 +4,7 @@
 INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 
-# OpenSSH can only use OpenSSL 1.0.2
-# https://groups.google.com/forum/#!topic/opensshunixdev/AlgfQvPIlQE
+# OpenSSH can only use OpenSSL 1.0.2 at the moment
 OPENSSL_TAR=openssl-1.0.2k.tar.gz
 OPENSSL_DIR=openssl-1.0.2k
 #OPENSSL_TAR=openssl-1.1.0e.tar.gz
@@ -39,6 +38,13 @@ elif [[ -d "/usr/ucb/bin" ]]; then
         echo "Adding /usr/ucb/bin to PATH for Solaris"
         PATH="/usr/ucb/bin:$PATH"
     fi
+fi
+
+###############################################################################
+
+if [[ -z `which autoreconf` ]]; then
+    echo "Some packages require autoreconf. Please install autoconf or automake."
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
 ###############################################################################
@@ -108,6 +114,13 @@ else
     SH_MARCH=-m32
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
     INSTALL_LIBDIR_DIR="lib"
+fi
+
+if [[ -z "$CC" ]]; then CC=`which cc`; fi
+
+GCC_46_OR_EARLIER=$("$CC" -v 2>&1 | egrep -i -c 'gcc version ([2-3]\.[0-9]|4\.[0-6])')
+if [[ "$GCC_46_OR_EARLIER" -eq "1" ]]; then
+	SH_MARCH=
 fi
 
 echo
