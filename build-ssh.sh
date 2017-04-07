@@ -118,8 +118,8 @@ fi
 
 if [[ -z "$CC" ]]; then CC=`which cc`; fi
 
-GCC_46_OR_EARLIER=$("$CC" -v 2>&1 | egrep -i -c 'gcc version ([2-3]\.[0-9]|4\.[0-6])')
-if [[ "$GCC_46_OR_EARLIER" -eq "1" ]]; then
+MARCH_ERROR=`$CC $SH_MARCH -x c -c - </dev/null 2>&1 | grep -i -c error`
+if [[ "$MARCH_ERROR" -ne "0" ]]; then
 	SH_MARCH=
 fi
 
