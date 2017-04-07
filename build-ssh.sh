@@ -10,8 +10,8 @@ OPENSSL_DIR=openssl-1.0.2k
 #OPENSSL_TAR=openssl-1.1.0e.tar.gz
 #OPENSSL_DIR=openssl-1.1.0e
 
-SSH_TAR=openssh-7.5p1.tar.gz
-SSH_DIR=openssh-7.5p1
+OPENSSH_TAR=openssh-7.5p1.tar.gz
+OPENSSH_DIR=openssh-7.5p1
 
 ZLIB_TAR=zlib-1.2.11.tar.gz
 ZLIB_DIR=zlib-1.2.11
@@ -118,7 +118,7 @@ fi
 
 if [[ -z "$CC" ]]; then CC=`which cc`; fi
 
-MARCH_ERROR=`$CC $SH_MARCH -x c -c - </dev/null 2>&1 | grep -i -c error`
+MARCH_ERROR=`$CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error`
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
 	SH_MARCH=
 fi
@@ -237,16 +237,16 @@ echo "********** OpenSSH **********"
 echo
 
 # https://savannah.gnu.org/bugs/?func=detailitem&item_id=26786
-wget "http://ftp4.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/$SSH_TAR" --no-check-certificate -O "$SSH_TAR"
+wget "http://ftp4.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/$OPENSSH_TAR" --no-check-certificate -O "$OPENSSH_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download SSH"
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-rm -rf "$SSH_DIR" &>/dev/null
-tar -xzf "$SSH_TAR"
-cd "$SSH_DIR"
+rm -rf "$OPENSSH_DIR" &>/dev/null
+tar -xzf "$OPENSSH_TAR"
+cd "$OPENSSH_DIR"
 
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lz" "-ldl" "-lpthread")

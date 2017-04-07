@@ -147,7 +147,7 @@ fi
 
 if [[ -z "$CC" ]]; then CC=`which cc`; fi
 
-MARCH_ERROR=`$CC $SH_MARCH -x c -c - </dev/null 2>&1 | grep -i -c error`
+MARCH_ERROR=`$CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error`
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
 	SH_MARCH=
 fi
