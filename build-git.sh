@@ -34,11 +34,16 @@ PCRE_DIR=pcre-8.40
 PCRE2_TAR=pcre2-10.23.tar.gz
 PCRE2_DIR=pcre2-10.23
 
-CURL_TAR=curl-7.53.1.tar.gz
-CURL_DIR=curl-7.53.1
+CURL_TAR=curl-7.54.0.tar.gz
+CURL_DIR=curl-7.54.0
 
 GIT_TAR=v2.12.2.tar.gz
 GIT_DIR=git-2.12.2
+
+# Unset to avoid using an existing trust store when configuring cURL.
+# No trust store will be supplied for some OSes, like Solaris.
+# Also see '/usr/bin/curl-config --ca' and '/usr/bin/curl-config --configure'
+USE_TRUST_STORE=1
 
 ###############################################################################
 
@@ -646,10 +651,18 @@ cd "$CURL_DIR"
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lidn2" "-lssl" "-lcrypto" "-lz" "-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+if [[ ("$IS_SOLARIS" -ne ")" && "$USE_TRUST_STORE" -ne "0") ]]; then
+  CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
-    ./configure --enable-shared --enable-ipv6 --with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
+    ./configure --enable-shared --without-ca-bundle --with-ca-path=/etc/openssl/certs --enable-ipv6 \
+	--with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
     --with-libidn2="$INSTALL_PREFIX" --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+else
+  CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    ./configure --enable-shared "${SH_TRUST_STORE[@]}" --enable-ipv6 --with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
+    --with-libidn2="$INSTALL_PREFIX" --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure cURL"
