@@ -5,8 +5,8 @@ INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 
 # OpenSSH can only use OpenSSL 1.0.2 at the moment
-OPENSSL_TAR=openssl-1.0.2k.tar.gz
-OPENSSL_DIR=openssl-1.0.2k
+OPENSSL_TAR=openssl-1.0.2l.tar.gz
+OPENSSL_DIR=openssl-1.0.2l
 #OPENSSL_TAR=openssl-1.1.0e.tar.gz
 #OPENSSL_DIR=openssl-1.1.0e
 
@@ -37,8 +37,8 @@ PCRE2_DIR=pcre2-10.23
 CURL_TAR=curl-7.54.0.tar.gz
 CURL_DIR=curl-7.54.0
 
-GIT_TAR=v2.12.2.tar.gz
-GIT_DIR=git-2.12.2
+GIT_TAR=v2.13.0.tar.gz
+GIT_DIR=git-2.13.0
 
 # Unset to avoid using an existing trust store when configuring cURL.
 # No trust store will be supplied for some OSes, like Solaris.
@@ -660,7 +660,7 @@ if [[ ("$IS_SOLARIS" -ne ")" && "$USE_TRUST_STORE" -ne "0") ]]; then
 else
   CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
-    ./configure --enable-shared "${SH_TRUST_STORE[@]}" --enable-ipv6 --with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
+    ./configure --enable-shared --enable-ipv6 --with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
     --with-libidn2="$INSTALL_PREFIX" --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 fi
 

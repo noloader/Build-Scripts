@@ -5,8 +5,8 @@ INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 
 # OpenSSH can only use OpenSSL 1.0.2 at the moment
-OPENSSL_TAR=openssl-1.0.2k.tar.gz
-OPENSSL_DIR=openssl-1.0.2k
+OPENSSL_TAR=openssl-1.0.2l.tar.gz
+OPENSSL_DIR=openssl-1.0.2l
 #OPENSSL_TAR=openssl-1.1.0e.tar.gz
 #OPENSSL_DIR=openssl-1.1.0e
 
