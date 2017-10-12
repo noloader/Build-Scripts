@@ -10,8 +10,8 @@ OPENSSL_DIR=openssl-1.0.2l
 #OPENSSL_TAR=openssl-1.1.0e.tar.gz
 #OPENSSL_DIR=openssl-1.1.0e
 
-OPENSSH_TAR=openssh-7.5p1.tar.gz
-OPENSSH_DIR=openssh-7.5p1
+OPENSSH_TAR=openssh-7.6p1.tar.gz
+OPENSSH_DIR=openssh-7.6p1
 
 ZLIB_TAR=zlib-1.2.11.tar.gz
 ZLIB_DIR=zlib-1.2.11

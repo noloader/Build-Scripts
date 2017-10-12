@@ -25,20 +25,20 @@ UNISTR_DIR=libunistring-0.9.7
 ICONV_TAR=libiconv-1.15.tar.gz
 ICONV_DIR=libiconv-1.15
 
-IDN2_TAR=libidn2-0.16.tar.gz
-IDN2_DIR=libidn2-0.16
+IDN2_TAR=libidn2-2.0.4.tar.gz
+IDN2_DIR=libidn2-2.0.4
 
-PCRE_TAR=pcre-8.40.tar.gz
-PCRE_DIR=pcre-8.40
+PCRE_TAR=pcre-8.41.tar.gz
+PCRE_DIR=pcre-8.41
 
-PCRE2_TAR=pcre2-10.23.tar.gz
-PCRE2_DIR=pcre2-10.23
+PCRE2_TAR=pcre2-10.30.tar.gz
+PCRE2_DIR=pcre2-10.30
 
-CURL_TAR=curl-7.54.0.tar.gz
-CURL_DIR=curl-7.54.0
+CURL_TAR=curl-7.56.0.tar.gz
+CURL_DIR=curl-7.56.0
 
-GIT_TAR=v2.13.0.tar.gz
-GIT_DIR=git-2.13.0
+GIT_TAR=v2.14.2.tar.gz
+GIT_DIR=git-2.14.2
 
 # Unset to avoid using an existing trust store when configuring cURL.
 # No trust store will be supplied for some OSes, like Solaris.
