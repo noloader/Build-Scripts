@@ -557,7 +557,7 @@ SH_LDLIBS=("-lz" "-ldl" "-lpthread")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
-    ./configure --enable-shared --enable-pcregrep-libz --enable-pcregrep-libbz2 \
+    ./configure --enable-shared --enable-pcregrep-libz --enable-jit --enable-pcregrep-libbz2 \
     --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
