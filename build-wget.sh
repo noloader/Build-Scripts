@@ -339,7 +339,7 @@ echo
 wget "ftp://mirrors.ocf.berkeley.edu/gnu/wget/$WGET_TAR" -O "$WGET_TAR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download SSH"
+    echo "Failed to download Wget"
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
@@ -357,7 +357,7 @@ CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_M
 	--with-libiconv-prefix="$INSTALL_PREFIX" --with-libunistring-prefix="$INSTALL_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure SSH"
+    echo "Failed to configure Wget"
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
@@ -365,7 +365,7 @@ MAKE_FLAGS=(-j 4 all)
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to build SSH"
+    echo "Failed to build Wget"
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
@@ -393,9 +393,9 @@ if true; then
         rm -rf "$artifact"
     done
 
-    # ./build-ssh.sh 2>&1 | tee build-ssh.log
-    if [[ -e build-ssh.log ]]; then
-        rm build-ssh.log
+    # ./build-wget.sh 2>&1 | tee build-wget.log
+    if [[ -e build-wget.log ]]; then
+        rm build-wget.log
     fi
 fi
 
