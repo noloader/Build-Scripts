@@ -25,8 +25,8 @@ UNISTR_DIR=libunistring-0.9.7
 ICONV_TAR=libiconv-1.15.tar.gz
 ICONV_DIR=libiconv-1.15
 
-IDN2_TAR=libidn2-2.0.4.tar.gz
-IDN2_DIR=libidn2-2.0.4
+IDN2_TAR=libidn2-2.0.0.tar.gz
+IDN2_DIR=libidn2-2.0.0
 
 PCRE_TAR=pcre-8.41.tar.gz
 PCRE_DIR=pcre-8.41
