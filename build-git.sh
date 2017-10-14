@@ -25,8 +25,12 @@ UNISTR_DIR=libunistring-0.9.7
 ICONV_TAR=libiconv-1.15.tar.gz
 ICONV_DIR=libiconv-1.15
 
-IDN2_TAR=libidn2-2.0.0.tar.gz
-IDN2_DIR=libidn2-2.0.0
+# IDN2 causes too many problems on OS X and Solaris
+# IDN2_TAR=libidn2-2.0.0.tar.gz
+# IDN2_DIR=libidn2-2.0.0
+
+IDN_TAR=libidn-1.33.tar.gz
+IDN_DIR=libidn-1.33
 
 PCRE_TAR=pcre-8.41.tar.gz
 PCRE_DIR=pcre-8.41
@@ -40,6 +44,7 @@ CURL_DIR=curl-7.56.0
 GIT_TAR=v2.14.2.tar.gz
 GIT_DIR=git-2.14.2
 
+# Sets the number of make jobs
 MAKE_JOBS=4
 
 # Unset to avoid using an existing trust store when configuring cURL.
@@ -152,7 +157,8 @@ else
     INSTALL_LIBDIR_DIR="lib"
 fi
 
-if [[ -z "$CC" ]]; then CC=`which cc`; fi
+if [[ -z "$CC" ]]; then CC=`which cc 2>/dev/null`; fi
+if [[ -z "$CC" ]]; then CC=c99; fi
 
 MARCH_ERROR=`$CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error`
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
@@ -416,22 +422,22 @@ cd ..
 ###############################################################################
 
 echo
-echo "********** IDN2 **********"
+echo "********** IDN **********"
 echo
 
 # https://savannah.gnu.org/bugs/?func=detailitem&item_id=26786
-wget "https://alpha.gnu.org/gnu/libidn/$IDN2_TAR" --no-check-certificate -O "$IDN2_TAR"
+wget "https://ftp.gnu.org/gnu/libidn/$IDN_TAR" --no-check-certificate -O "$IDN_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download IDN"
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-rm -rf "$IDN2_DIR" &>/dev/null
-tar -xzf "$IDN2_TAR"
-cd "$IDN2_DIR"
+rm -rf "$IDN_DIR" &>/dev/null
+tar -xzf "$IDN_TAR"
+cd "$IDN_DIR"
 
-if [[ "$IS_SOLARIS" -eq "1" ]]; then
+if [[ ("$IS_SOLARIS" -eq "1" && -f src/idn2.c) ]]; then
     cp src/idn2.c src/idn2.c.orig
     sed '/^#include "error.h"/d' src/idn2.c.orig > src/idn2.c
     cp src/idn2.c src/idn2.c.orig
@@ -459,19 +465,17 @@ SH_LDLIBS=("-ldl" "-lpthread")
 if [[ "$IS_DARWIN" -ne "0" ]]; then
 	sed -i "" 's|$AR cru|$AR $ARFLAGS|g' configure
 	sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure
-	sed -i "" 's|$AR cru|$AR $ARFLAGS|g' aclocal.m4
-	sed -i "" 's|$AR cr|$AR $ARFLAGS|g' aclocal.m4
-	sed -i "" 's|$AR cru|$AR $ARFLAGS|g' m4/libtool.m4
-	sed -i "" 's|$AR cr|$AR $ARFLAGS|g' m4/libtool.m4
-	sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' m4/libtool.m4
-fi
+	#sed -i "" 's|$AR cru|$AR $ARFLAGS|g' aclocal.m4
+	#sed -i "" 's|$AR cr|$AR $ARFLAGS|g' aclocal.m4
+	#sed -i "" 's|$AR cru|$AR $ARFLAGS|g' m4/libtool.m4
+	#sed -i "" 's|$AR cr|$AR $ARFLAGS|g' m4/libtool.m4
+	#sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' m4/libtool.m4
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
 	AR="/usr/bin/libtool" ARFLAGS="-static -o " \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
-if [[ "$IS_DARWIN" -ne "0" ]]; then
 	for mfile in $(find "$PWD" -iname 'Makefile'); do
 		echo "Fixing makefile $mfile"
 		sed -i "" 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile"
@@ -484,6 +488,13 @@ if [[ "$IS_DARWIN" -ne "0" ]]; then
 	#	sed -i "" 's|$AR cru |$AR $ARFLAGS |g' "$sfile"
 	#	sed -i "" 's|$AR cr |$AR $ARFLAGS |g' "$sfile"
 	#done
+
+else
+
+CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+
 fi
 
 if [[ "$?" -ne "0" ]]; then
@@ -882,7 +893,7 @@ if true; then
 
     ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$UNISTR_TAR" "$UNISTR_DIR" "$READLN_TAR" "$READLN_DIR"
             "$PCRE_TAR" "$PCRE_DIR" "$PCRE2_TAR" "$PCRE2_DIR" "$ZLIB_TAR" "$ZLIB_DIR"  "$BZ2_TAR" "$BZ2_DIR"
-            "$IDN2_TAR" "$IDN2_DIR" "$ICONV_TAR" "$ICONV_DIR" "$CURL_TAR" "$CURL_DIR" "$GIT_TAR" "$GIT_DIR")
+            "$IDN_TAR" "$IDN_DIR" "$ICONV_TAR" "$ICONV_DIR" "$CURL_TAR" "$CURL_DIR" "$GIT_TAR" "$GIT_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
