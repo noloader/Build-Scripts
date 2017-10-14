@@ -40,6 +40,8 @@ CURL_DIR=curl-7.56.0
 GIT_TAR=v2.14.2.tar.gz
 GIT_DIR=git-2.14.2
 
+MAKE_JOBS=4
+
 # Unset to avoid using an existing trust store when configuring cURL.
 # No trust store will be supplied for some OSes, like Solaris.
 # Also see '/usr/bin/curl-config --ca' and '/usr/bin/curl-config --configure'
@@ -164,6 +166,8 @@ echo "Using libdir $INSTALL_LIBDIR"
 
 ###############################################################################
 
+if false; then
+
 echo
 echo "********** zLib **********"
 echo
@@ -191,7 +195,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
@@ -253,7 +257,7 @@ cp Makefile-libbz2_so Makefile-libbz2_so.orig
 sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH -Wl,-rpath,$INSTALL_LIBDIR -L$INSTALL_LIBDIR|g" Makefile-libbz2_so.orig > Makefile-libbz2_so
 rm Makefile-libbz2_so.orig
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
@@ -300,7 +304,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
@@ -347,7 +351,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
@@ -394,7 +398,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
@@ -412,6 +416,8 @@ fi
 cd ..
 
 ###############################################################################
+
+fi
 
 echo
 echo "********** IDN2 **********"
@@ -452,16 +458,44 @@ fi
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
+# Darwin is mostly fucked up at the moment. Also see
+# http://lists.gnu.org/archive/html/help-libidn/2017-10/msg00002.html
+if [[ "$IS_DARWIN" -ne "0" ]]; then
+	sed -i "" 's|$AR cru|$AR $ARFLAGS|g' configure
+	sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure
+	sed -i "" 's|$AR cru|$AR $ARFLAGS|g' aclocal.m4
+	sed -i "" 's|$AR cr|$AR $ARFLAGS|g' aclocal.m4
+	sed -i "" 's|$AR cru|$AR $ARFLAGS|g' m4/libtool.m4
+	sed -i "" 's|$AR cr|$AR $ARFLAGS|g' m4/libtool.m4
+	sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' m4/libtool.m4
+fi
+
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+	AR="/usr/bin/libtool" ARFLAGS="-static -o " \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+
+if [[ "$IS_DARWIN" -ne "0" ]]; then
+	for mfile in $(find "$PWD" -iname 'Makefile'); do
+		echo "Fixing makefile $mfile"
+		sed -i "" 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile"
+		sed -i "" 's|ARFLAGS = cru|ARFLAGS = -static -o |g' "$mfile"
+		sed -i "" 's|ARFLAGS = cr|ARFLAGS = -static -o |g' "$mfile"
+	done
+
+	#for sfile in $(find "$PWD" -iname '*.sh'); do
+	#	echo "Fixing script $sfile"
+	#	sed -i "" 's|$AR cru |$AR $ARFLAGS |g' "$sfile"
+	#	sed -i "" 's|$AR cr |$AR $ARFLAGS |g' "$sfile"
+	#done
+fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN"
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
@@ -514,10 +548,10 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4 depend)
+MAKE_FLAGS=(-j "$MAKE_JOBS" depend)
 "$MAKE" "${MAKE_FLAGS[@]}"
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
@@ -565,7 +599,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4 all)
+MAKE_FLAGS=(-j "$MAKE_JOBS" all)
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
@@ -613,7 +647,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4 all)
+MAKE_FLAGS=(-j "$MAKE_JOBS" all)
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
@@ -651,7 +685,7 @@ cd "$CURL_DIR"
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lidn2" "-lssl" "-lcrypto" "-lz" "-ldl" "-lpthread")
 
-if [[ ("$IS_SOLARIS" -ne ")" && "$USE_TRUST_STORE" -ne "0") ]]; then
+if [[ ("$IS_SOLARIS" -ne "0" && "$USE_TRUST_STORE" -ne "0") ]]; then
   CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
     ./configure --enable-shared --without-ca-bundle --with-ca-path=/etc/openssl/certs --enable-ipv6 \
@@ -669,7 +703,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
@@ -762,7 +796,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 # See INSTALL for the formats and the requirements
-MAKE_FLAGS=(-j 4 all)
+MAKE_FLAGS=(-j "$MAKE_JOBS" all)
 if [[ ! -z `which asciidoc 2>/dev/null | grep -v 'no asciidoc'` ]]; then
     if [[ ! -z `which makeinfo 2>/dev/null | grep -v 'no makeinfo'` ]]; then
         MAKE_FLAGS+=("man")
