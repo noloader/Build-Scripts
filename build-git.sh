@@ -106,8 +106,8 @@ fi
 GLOBALSIGN_ROOT="$HOME/.cacert/globalsign-root-r1.pem"
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
 IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
-DIGITRUST_ROOT="Wrote $HOME/.cacert/digitrust-root-ca.pem"
-DIGICERT_ROOT="Wrote $HOME/.cacert/digicert-root-ca.pem"
+DIGITRUST_ROOT="$HOME/.cacert/digitrust-root-ca.pem"
+DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
 
 ###############################################################################
 
@@ -190,7 +190,6 @@ echo
 echo "********** libdir **********"
 echo
 echo "Using libdir $INSTALL_LIBDIR"
-echo "IS_SOLARIS: $IS_SOLARIS"
 
 ###############################################################################
 
@@ -755,7 +754,7 @@ echo
 echo "********** Git **********"
 echo
 
-wget --ca-certificate="$DIGICERT_ROOT" --no-check-certificate "https://github.com/git/git/archive/$GIT_TAR" -O "$GIT_TAR"
+wget --ca-certificate="$DIGICERT_ROOT" "https://github.com/git/git/archive/$GIT_TAR" -O "$GIT_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download Git"
@@ -774,7 +773,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 # "Instruct Git to use pthread library?", http://stackoverflow.com/q/43080417/
-for file in $(find `pwd` -iname 'Makefile*')
+for file in $(find "$PWD" -iname 'Makefile*')
 do 
     cp "$file" "$file.orig"
     sed 's|-lrt|-lrt -lpthread|g' "$file.orig" > "$file"
@@ -783,7 +782,7 @@ done
 
 # Various Solaris 11 workarounds
 if [[ "$IS_SOLARIS" -eq "1" ]]; then
-    for file in $(find `pwd` -iname 'Makefile*')
+    for file in $(find "$PWD" -iname 'Makefile*')
     do 
         cp "$file" "$file.orig"
         sed 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"
@@ -791,7 +790,7 @@ if [[ "$IS_SOLARIS" -eq "1" ]]; then
         sed 's|/usr/ucb/install|install|g' "$file.orig" > "$file"
         rm "$file.orig"
     done
-    for file in $(find `pwd` -iname 'config*')
+    for file in $(find "$PWD" -iname 'config*')
     do 
         cp "$file" "$file.orig"
         sed 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"

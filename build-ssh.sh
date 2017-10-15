@@ -47,6 +47,19 @@ if [[ -z `which autoreconf` ]]; then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
+if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
+    echo "Wget requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+fi
+
+if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
+    echo "Wget requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+fi
+
+LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
+IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
+
 ###############################################################################
 
 echo
@@ -181,7 +194,7 @@ echo "********** OpenSSL **********"
 echo
 
 # wget on Ubuntu 16 cannot validate against Let's Encrypt certificate
-wget "https://www.openssl.org/source/$OPENSSL_TAR" --no-check-certificate -O "$OPENSSL_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://www.openssl.org/source/$OPENSSL_TAR" -O "$OPENSSL_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download OpenSSL"
@@ -236,8 +249,7 @@ echo
 echo "********** OpenSSH **********"
 echo
 
-# https://savannah.gnu.org/bugs/?func=detailitem&item_id=26786
-wget "http://ftp4.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/$OPENSSH_TAR" --no-check-certificate -O "$OPENSSH_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "http://ftp4.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/$OPENSSH_TAR" --no-check-certificate -O "$OPENSSH_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download SSH"
