@@ -80,13 +80,13 @@ IS_NETBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c netbsd)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
 if [[ ("$IS_FREEBSD" -eq "1" || "$IS_OPENBSD" -eq "1" || "$IS_NETBSD" -eq "1" || "$IS_DRAGONFLY" -eq "1" || "$IS_SOLARIS" -eq "1") ]]; then
-    if [[ !(-z `which gmake 2>/dev/null | grep -v 'no gmake'`) ]]; then
-        MAKE=gmake
+    if [[ ! (-z $(which gmake 2>/dev/null | grep -v 'no gmake') ) ]]; then
+        MAKE="gmake"
     else
-        MAKE=make
+        MAKE="make"
     fi
 else
-    MAKE=make
+    MAKE="make"
 fi
 
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
@@ -98,37 +98,37 @@ if [[ "$IS_64BIT" -eq "0" ]]; then
 fi
 
 if [[ "$IS_SOLARIS" -eq "1" ]]; then
-    SH_KBITS=64
-    SH_MARCH=-m64
+    SH_KBITS="64"
+    SH_MARCH="-m64"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
     INSTALL_LIBDIR_DIR="lib64"
 elif [[ "$IS_64BIT" -eq "1" ]]; then
     if [[ (-d /usr/lib) && (-d /usr/lib32) ]]; then
-        SH_KBITS=64
-        SH_MARCH=-m64
+        SH_KBITS="64"
+        SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
         INSTALL_LIBDIR_DIR="lib"
     elif [[ (-d /usr/lib) && (-d /usr/lib64) ]]; then
-        SH_KBITS=64
-        SH_MARCH=-m64
+        SH_KBITS="64"
+        SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
         INSTALL_LIBDIR_DIR="lib64"
     else
-        SH_KBITS=64
-        SH_MARCH=-m64
+        SH_KBITS="64"
+        SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
         INSTALL_LIBDIR_DIR="lib"
     fi
 else
-    SH_KBITS=32
-    SH_MARCH=-m32
+    SH_KBITS="32"
+    SH_MARCH="-m32"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
     INSTALL_LIBDIR_DIR="lib"
 fi
 
-if [[ -z "$CC" ]]; then CC=`which cc`; fi
+if [[ -z "$CC" ]]; then CC=$(which cc); fi
 
-MARCH_ERROR=`$CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error`
+MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
 	SH_MARCH=
 fi
@@ -159,7 +159,7 @@ SH_LDLIBS=("-ldl -lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -205,7 +205,7 @@ SH_LDLIBS=("-ldl -lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -251,7 +251,7 @@ SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --with-xml2 --without-x --without-sound --without-xpm \
     --without-jpeg --without-tiff --without-gif --without-png --without-rsvg \
