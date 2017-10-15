@@ -549,7 +549,6 @@ echo
 echo "********** OpenSSL **********"
 echo
 
-# wget on Ubuntu 16 cannot validate against Let's Encrypt certificate
 wget --ca-certificate="$IDENTRUST_ROOT" "https://www.openssl.org/source/$OPENSSL_TAR" -O "$OPENSSL_TAR"
 
 if [[ "$?" -ne "0" ]]; then
