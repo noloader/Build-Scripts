@@ -16,6 +16,12 @@ OPENSSH_DIR=openssh-7.6p1
 ZLIB_TAR=zlib-1.2.11.tar.gz
 ZLIB_DIR=zlib-1.2.11
 
+# Avoid shellcheck.net warning
+CURR_DIR="$PWD"
+
+# Sets the number of make jobs
+MAKE_JOBS=4
+
 ###############################################################################
 
 # Autotools on Solaris has an implied requirement for GNU gear. Things fall apart without it.
@@ -44,17 +50,17 @@ fi
 
 if [[ -z $(which autoreconf) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
     echo "Wget requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
     echo "Wget requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
@@ -152,7 +158,7 @@ wget "http://www.zlib.net/$ZLIB_TAR" -O "$ZLIB_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$ZLIB_DIR" &>/dev/null
@@ -163,20 +169,20 @@ SH_LDLIBS=("-ldl -lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -186,7 +192,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -199,7 +205,7 @@ wget --ca-certificate="$IDENTRUST_ROOT" "https://www.openssl.org/source/$OPENSSL
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download OpenSSL"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$OPENSSL_DIR" &>/dev/null
@@ -207,7 +213,7 @@ tar -xzf "$OPENSSL_TAR"
 cd "$OPENSSL_DIR"
 
 # OpenSSL and enable-ec_nistp_64_gcc_128 option
-IS_X86_64=$(uname -m 2>&1 | egrep -i -c "(amd64|x86_64)")
+IS_X86_64=$(uname -m 2>&1 | grep -E -i -c "(amd64|x86_64)")
 if [[ "$SH_KBITS" -eq "32" ]]; then IS_X86_64=0; fi
 
 CONFIG=./config
@@ -221,18 +227,18 @@ KERNEL_BITS="$SH_KBITS" "$CONFIG" "${CONFIG_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure OpenSSL"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4 depend)
+MAKE_FLAGS=(-j "$MAKE_JOBS" depend)
 "$MAKE" "${MAKE_FLAGS[@]}"
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build OpenSSL"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install_sw)
@@ -242,7 +248,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -254,7 +260,7 @@ wget --ca-certificate="$IDENTRUST_ROOT" "http://ftp4.usa.openbsd.org/pub/OpenBSD
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download SSH"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$OPENSSH_DIR" &>/dev/null
@@ -265,21 +271,21 @@ SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lz" "-ldl" "-lpthread")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --with-openssl-dir="$INSTALL_PREFIX" --with-zlib="$INSTALL_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure SSH"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4 all)
+MAKE_FLAGS=(-j "$MAKE_JOBS" all)
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build SSH"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -289,7 +295,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -312,4 +318,4 @@ if true; then
     fi
 fi
 
-[[ "$0" = "$BASH_SOURCE" ]] && exit 0 || return 0
+[[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0

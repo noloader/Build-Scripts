@@ -13,6 +13,12 @@ NCURSES_DIR=ncurses-6.0
 EMACS_TAR=emacs-24.5.tar.gz
 EMACS_DIR=emacs-24.5
 
+# Avoid shellcheck.net warning
+CURR_DIR="$PWD"
+
+# Sets the number of make jobs
+MAKE_JOBS=4
+
 ###############################################################################
 
 # Autotools on Solaris has an implied requirement for GNU gear. Things fall apart without it.
@@ -41,17 +47,17 @@ fi
 
 #if [[ -z $(which autoreconf) ]]; then
     #echo "Some packages require autoreconf. Please install autoconf or automake."
-    #[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    #[[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 #fi
 
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
     echo "Wget requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
     echo "Wget requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
@@ -155,7 +161,7 @@ wget "http://www.zlib.net/$ZLIB_TAR" -O "$ZLIB_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$ZLIB_DIR" &>/dev/null
@@ -171,15 +177,15 @@ CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_M
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -189,7 +195,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -201,7 +207,7 @@ wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/pub/gnu/ncurses/$NC
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$NCURSES_DIR" &>/dev/null
@@ -217,15 +223,15 @@ CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_M
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4)
+MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -235,7 +241,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -247,7 +253,7 @@ wget --ca-certificate="$IDENTRUST_ROOT" "http://mirrors.syringanetworks.net/gnu/
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download SSH"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$EMACS_DIR" &>/dev/null
@@ -269,15 +275,15 @@ CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_M
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure SSH"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j 4 all)
+MAKE_FLAGS=(-j "$MAKE_JOBS" all)
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build SSH"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -287,7 +293,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -310,4 +316,4 @@ if true; then
     fi
 fi
 
-[[ "$0" = "$BASH_SOURCE" ]] && exit 0 || return 0
+[[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0

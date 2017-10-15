@@ -42,6 +42,9 @@ CURL_DIR=curl-7.56.0
 GIT_TAR=v2.14.2.tar.gz
 GIT_DIR=git-2.14.2
 
+# Avoid shellcheck.net warning
+CURR_DIR="$PWD"
+
 # Sets the number of make jobs
 MAKE_JOBS=4
 
@@ -78,27 +81,27 @@ fi
 
 if [[ -z $(which autoreconf) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ -z $(which msgfmt) ]]; then
     echo "Git requires msgfmt. Please install gettext."
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ ! -f "$HOME/.cacert/globalsign-root-r1.pem" ]]; then
     echo "Wget requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
     echo "Wget requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
     echo "Wget requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 GLOBALSIGN_ROOT="$HOME/.cacert/globalsign-root-r1.pem"
@@ -199,7 +202,7 @@ wget "http://www.zlib.net/$ZLIB_TAR" -O "$ZLIB_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$ZLIB_DIR" &>/dev/null
@@ -210,12 +213,12 @@ SH_LDLIBS=("-ldl -lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
@@ -223,7 +226,7 @@ MAKE_FLAGS=(-j "$MAKE_JOBS")
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build zLib"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -233,7 +236,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -245,7 +248,7 @@ wget "http://www.bzip.org/1.0.6/$BZ2_TAR" -O "$BZ2_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download Bzip"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$BZ2_DIR" &>/dev/null
@@ -285,7 +288,7 @@ MAKE_FLAGS=(-j "$MAKE_JOBS")
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build Bzip"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install PREFIX="$INSTALL_PREFIX" LIBDIR="$INSTALL_LIBDIR")
@@ -295,7 +298,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -307,7 +310,7 @@ wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/libunistring/$U
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download IDN"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$UNISTR_DIR" &>/dev/null
@@ -318,12 +321,12 @@ SH_LDLIBS=("-ldl -lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
@@ -331,7 +334,7 @@ MAKE_FLAGS=(-j "$MAKE_JOBS")
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build IDN"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -341,7 +344,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -353,7 +356,7 @@ wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/readline/$READL
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download Readline"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$READLN_DIR" &>/dev/null
@@ -364,12 +367,12 @@ SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Readline"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
@@ -377,7 +380,7 @@ MAKE_FLAGS=(-j "$MAKE_JOBS")
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build Readline"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -387,7 +390,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -399,7 +402,7 @@ wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/pub/gnu/libiconv/$I
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download iConvert"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$ICONV_DIR" &>/dev/null
@@ -410,12 +413,12 @@ SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure iConvert"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
@@ -423,7 +426,7 @@ MAKE_FLAGS=(-j "$MAKE_JOBS")
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build iConvert"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -433,7 +436,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -445,7 +448,7 @@ wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/libidn/$IDN_TAR
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download IDN"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$IDN_DIR" &>/dev/null
@@ -494,7 +497,7 @@ if [[ "$IS_DARWIN" -ne "0" ]]; then
 	#sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' m4/libtool.m4
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 	AR="/usr/bin/libtool" ARFLAGS="-static -o " \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -514,14 +517,14 @@ CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_M
 else
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
@@ -529,7 +532,7 @@ MAKE_FLAGS=(-j "$MAKE_JOBS")
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build IDN"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -539,7 +542,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -551,7 +554,7 @@ wget --ca-certificate="$IDENTRUST_ROOT" "https://www.openssl.org/source/$OPENSSL
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download OpenSSL"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$OPENSSL_DIR" &>/dev/null
@@ -559,7 +562,7 @@ tar -xzf "$OPENSSL_TAR"
 cd "$OPENSSL_DIR"
 
 # OpenSSL and enable-ec_nistp_64_gcc_128 option
-IS_X86_64=$(uname -m 2>&1 | egrep -i -c "(amd64|x86_64)")
+IS_X86_64=$(uname -m 2>&1 | grep -E -i -c "(amd64|x86_64)")
 if [[ "$SH_KBITS" -eq "32" ]]; then IS_X86_64=0; fi
 
 CONFIG=./config
@@ -573,7 +576,7 @@ KERNEL_BITS="$SH_KBITS" "$CONFIG" "${CONFIG_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure OpenSSL"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS" depend)
@@ -584,7 +587,7 @@ MAKE_FLAGS=(-j "$MAKE_JOBS")
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build OpenSSL"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install_sw)
@@ -594,7 +597,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -606,7 +609,7 @@ wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.pcre.org/pub/pcre/$PCRE_TAR
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download PCRE"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$PCRE_DIR" &>/dev/null
@@ -617,13 +620,13 @@ SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lz" "-ldl" "-lpthread")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --enable-pcregrep-libz --enable-jit --enable-pcregrep-libbz2 \
     --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure PCRE"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS" all)
@@ -631,7 +634,7 @@ MAKE_FLAGS=(-j "$MAKE_JOBS" all)
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build PCRE"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -641,7 +644,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -653,7 +656,7 @@ wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.pcre.org/pub/pcre/$PCRE2_TA
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download PCRE2"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$PCRE2_DIR" &>/dev/null
@@ -664,13 +667,13 @@ SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lz" "-ldl" "-lpthread")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --enable-pcre2-8 --enable-pcre2-16 --enable-pcre2-32 \
     --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure PCRE2"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS" all)
@@ -678,7 +681,7 @@ MAKE_FLAGS=(-j "$MAKE_JOBS" all)
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build PCRE2"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -688,7 +691,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -700,7 +703,7 @@ wget --ca-certificate="$GLOBALSIGN_ROOT" "https://curl.haxx.se/download/$CURL_TA
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download cURL"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$CURL_DIR" &>/dev/null
@@ -712,20 +715,20 @@ SH_LDLIBS=("-lidn2" "-lssl" "-lcrypto" "-lz" "-ldl" "-lpthread")
 
 if [[ ("$IS_SOLARIS" -ne "0" && "$USE_TRUST_STORE" -ne "0") ]]; then
   CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --without-ca-bundle --with-ca-path=/etc/openssl/certs --enable-ipv6 \
 	--with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
     --with-libidn2="$INSTALL_PREFIX" --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 else
   CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --enable-ipv6 --with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
     --with-libidn2="$INSTALL_PREFIX" --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure cURL"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
@@ -733,7 +736,7 @@ MAKE_FLAGS=(-j "$MAKE_JOBS")
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to build cURL"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(install)
@@ -743,7 +746,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -755,7 +758,7 @@ wget --ca-certificate="$DIGICERT_ROOT" "https://github.com/git/git/archive/$GIT_
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download Git"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 rm -rf "$GIT_DIR" &>/dev/null
@@ -766,7 +769,7 @@ cd "$GIT_DIR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to make configure Git"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 # "Instruct Git to use pthread library?", http://stackoverflow.com/q/43080417/
@@ -809,14 +812,14 @@ SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lssl" "-lcrypto" "-lz" "-ldl" "-lpthread")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[@]}" LIBS="${SH_LDLIBS[@]}" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-pthreads --with-lib="$INSTALL_LIBDIR" --with-openssl="$INSTALL_PREFIX" \
     --with-curl="$INSTALL_PREFIX" --with-libpcre="$INSTALL_PREFIX" --with-zlib="$INSTALL_PREFIX" \
     --with-iconv="$INSTALL_PREFIX" --with-perl="$SH_PERL" --prefix="$INSTALL_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Git"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 # See INSTALL for the formats and the requirements
@@ -834,7 +837,7 @@ fi
 
 if [[ "$?" -eq "1" ]]; then
     echo "Failed to build Git"
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 # See INSTALL for the formats and the requirements
@@ -854,7 +857,7 @@ else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
-cd ..
+cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -881,4 +884,4 @@ if true; then
     fi
 fi
 
-[[ "$0" = "$BASH_SOURCE" ]] && exit 0 || return 0
+[[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
