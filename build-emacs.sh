@@ -7,8 +7,8 @@ INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 ZLIB_TAR=zlib-1.2.11.tar.gz
 ZLIB_DIR=zlib-1.2.11
 
-NCURSES_TAR=ncurses-5.9.tar.gz
-NCURSES_DIR=ncurses-5.9
+NCURSES_TAR=ncurses-6.0.tar.gz
+NCURSES_DIR=ncurses-6.0
 
 EMACS_TAR=emacs-24.5.tar.gz
 EMACS_DIR=emacs-24.5
@@ -39,10 +39,23 @@ fi
 
 ###############################################################################
 
-#if [[ -z `which autoreconf` ]]; then
+#if [[ -z $(which autoreconf) ]]; then
     #echo "Some packages require autoreconf. Please install autoconf or automake."
     #[[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 #fi
+
+if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
+    echo "Wget requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+fi
+
+if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
+    echo "Wget requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+fi
+
+LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
+IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
 
 ###############################################################################
 
@@ -177,7 +190,7 @@ echo
 echo "********** ncurses **********"
 echo
 
-wget "https://ftp.gnu.org/pub/gnu/ncurses/$NCURSES_TAR" --no-check-certificate -O "$NCURSES_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/pub/gnu/ncurses/$NCURSES_TAR" -O "$NCURSES_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download zLib"
@@ -223,8 +236,7 @@ echo
 echo "********** Emacs **********"
 echo
 
-# https://savannah.gnu.org/bugs/?func=detailitem&item_id=26786
-wget "http://mirrors.syringanetworks.net/gnu/emacs/$EMACS_TAR" --no-check-certificate -O "$EMACS_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "http://mirrors.syringanetworks.net/gnu/emacs/$EMACS_TAR" -O "$EMACS_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download SSH"

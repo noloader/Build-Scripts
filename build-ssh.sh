@@ -42,7 +42,7 @@ fi
 
 ###############################################################################
 
-if [[ -z `which autoreconf` ]]; then
+if [[ -z $(which autoreconf) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
