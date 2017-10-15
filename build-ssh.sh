@@ -249,7 +249,7 @@ echo
 echo "********** OpenSSH **********"
 echo
 
-wget --ca-certificate="$IDENTRUST_ROOT" "http://ftp4.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/$OPENSSH_TAR" --no-check-certificate -O "$OPENSSH_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "http://ftp4.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/$OPENSSH_TAR" -O "$OPENSSH_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download SSH"
