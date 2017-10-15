@@ -25,10 +25,8 @@ UNISTR_DIR=libunistring-0.9.7
 ICONV_TAR=libiconv-1.15.tar.gz
 ICONV_DIR=libiconv-1.15
 
-# IDN2 causes too many problems on OS X and Solaris
-# IDN2_TAR=libidn2-2.0.0.tar.gz
-# IDN2_DIR=libidn2-2.0.0
-
+# Use libidn-1.33 for Solaris and OS X... IDN2 causes too
+#   many problems and no answers on the mailing list.
 IDN_TAR=libidn-1.33.tar.gz
 IDN_DIR=libidn-1.33
 
@@ -115,7 +113,7 @@ echo
 echo "If you enter a sudo password, then it will be used for installation."
 echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
 echo "To avoid sudo and the password, just press ENTER and they won't be used."
-read -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
 echo
 
 ###############################################################################
@@ -172,8 +170,8 @@ elif [[ "$IS_64BIT" -eq "1" ]]; then
         INSTALL_LIBDIR_DIR="lib"
     fi
 else
-    SH_KBITS=32
-    SH_MARCH=-m32
+    SH_KBITS="32"
+    SH_MARCH="-m32"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
     INSTALL_LIBDIR_DIR="lib"
 fi

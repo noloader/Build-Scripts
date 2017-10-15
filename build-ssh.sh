@@ -66,7 +66,7 @@ echo
 echo "If you enter a sudo password, then it will be used for installation."
 echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
 echo "To avoid sudo and the password, just press ENTER and they won't be used."
-read -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
 echo
 
 ###############################################################################
