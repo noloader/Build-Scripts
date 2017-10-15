@@ -297,9 +297,9 @@ if true; then
         rm -rf "$artifact"
     done
 
-    # ./build-ssh.sh 2>&1 | tee build-ssh.log
-    if [[ -e build-ssh.log ]]; then
-        rm build-ssh.log
+    # ./build-emacs.sh 2>&1 | tee build-emacs.log
+    if [[ -e build-emacs.log ]]; then
+        rm build-emacs.log
     fi
 fi
 
