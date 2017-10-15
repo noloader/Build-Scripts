@@ -78,15 +78,36 @@ fi
 
 ###############################################################################
 
-if [[ -z `which autoreconf` ]]; then
+if [[ -z $(which autoreconf) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
 
-if [[ -z `which msgfmt` ]]; then
+if [[ -z $(which msgfmt) ]]; then
     echo "Git requires msgfmt. Please install gettext."
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
+
+if [[ ! -f "$HOME/.cacert/globalsign-root-r1.pem" ]]; then
+    echo "Wget requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+fi
+
+if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
+    echo "Wget requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+fi
+
+if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
+    echo "Wget requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
+fi
+
+GLOBALSIGN_ROOT="$HOME/.cacert/globalsign-root-r1.pem"
+LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
+IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
+DIGITRUST_ROOT="Wrote $HOME/.cacert/digitrust-root-ca.pem"
+DIGICERT_ROOT="Wrote $HOME/.cacert/digicert-root-ca.pem"
 
 ###############################################################################
 
@@ -111,7 +132,7 @@ IS_NETBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c netbsd)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
 if [[ ("$IS_FREEBSD" -eq "1" || "$IS_OPENBSD" -eq "1" || "$IS_NETBSD" -eq "1" || "$IS_DRAGONFLY" -eq "1" || "$IS_SOLARIS" -eq "1") ]]; then
-    if [[ !(-z `which gmake 2>/dev/null | grep -v 'no gmake'`) ]]; then
+    if [[ ! (-z $(which gmake 2>/dev/null | grep -v 'no gmake') ) ]]; then
         MAKE=gmake
     else
         MAKE=make
@@ -157,10 +178,10 @@ else
     INSTALL_LIBDIR_DIR="lib"
 fi
 
-if [[ -z "$CC" ]]; then CC=`which cc 2>/dev/null`; fi
+if [[ -z "$CC" ]]; then CC=$(which cc 2>/dev/null); fi
 if [[ -z "$CC" ]]; then CC=c99; fi
 
-MARCH_ERROR=`$CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error`
+MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
 	SH_MARCH=
 fi
@@ -169,6 +190,7 @@ echo
 echo "********** libdir **********"
 echo
 echo "Using libdir $INSTALL_LIBDIR"
+echo "IS_SOLARIS: $IS_SOLARIS"
 
 ###############################################################################
 
@@ -284,8 +306,7 @@ echo
 echo "********** Unistring **********"
 echo
 
-# https://savannah.gnu.org/bugs/?func=detailitem&item_id=26786
-wget "https://ftp.gnu.org/gnu/libunistring/$UNISTR_TAR" --no-check-certificate -O "$UNISTR_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/libunistring/$UNISTR_TAR" -O "$UNISTR_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download IDN"
@@ -331,8 +352,7 @@ echo
 echo "********** Readline **********"
 echo
 
-# https://savannah.gnu.org/bugs/?func=detailitem&item_id=26786
-wget "https://ftp.gnu.org/gnu/readline/$READLN_TAR" --no-check-certificate -O "$READLN_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/readline/$READLN_TAR" -O "$READLN_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download Readline"
@@ -378,8 +398,7 @@ echo
 echo "********** iConvert **********"
 echo
 
-# https://savannah.gnu.org/bugs/?func=detailitem&item_id=26786
-wget "https://ftp.gnu.org/pub/gnu/libiconv/$ICONV_TAR" --no-check-certificate -O "$ICONV_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/pub/gnu/libiconv/$ICONV_TAR" -O "$ICONV_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download iConvert"
@@ -425,8 +444,7 @@ echo
 echo "********** IDN **********"
 echo
 
-# https://savannah.gnu.org/bugs/?func=detailitem&item_id=26786
-wget "https://ftp.gnu.org/gnu/libidn/$IDN_TAR" --no-check-certificate -O "$IDN_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/libidn/$IDN_TAR" -O "$IDN_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download IDN"
@@ -437,7 +455,13 @@ rm -rf "$IDN_DIR" &>/dev/null
 tar -xzf "$IDN_TAR"
 cd "$IDN_DIR"
 
-if [[ ("$IS_SOLARIS" -eq "1" && -f src/idn2.c) ]]; then
+echo "**********"
+echo "IS_SOLARIS: $IS_SOLARIS"
+ls "src/idn2.c"
+echo "**********"
+
+if [[ "$IS_SOLARIS" -eq "1" ]]; then
+  if [[ (-f src/idn2.c) ]]; then
     cp src/idn2.c src/idn2.c.orig
     sed '/^#include "error.h"/d' src/idn2.c.orig > src/idn2.c
     cp src/idn2.c src/idn2.c.orig
@@ -455,6 +479,7 @@ if [[ ("$IS_SOLARIS" -eq "1" && -f src/idn2.c) ]]; then
     echo "  exit(status);" >> src/idn2.c
     echo "}" >> src/idn2.c
     echo "" >> src/idn2.c
+  fi
 fi
 
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
@@ -526,7 +551,7 @@ echo "********** OpenSSL **********"
 echo
 
 # wget on Ubuntu 16 cannot validate against Let's Encrypt certificate
-wget "https://www.openssl.org/source/$OPENSSL_TAR" --no-check-certificate -O "$OPENSSL_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://www.openssl.org/source/$OPENSSL_TAR" -O "$OPENSSL_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download OpenSSL"
@@ -581,8 +606,7 @@ echo
 echo "********** PCRE **********"
 echo
 
-# https://savannah.gnu.org/bugs/?func=detailitem&item_id=26786
-wget "https://ftp.pcre.org/pub/pcre/$PCRE_TAR" --no-check-certificate -O "$PCRE_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.pcre.org/pub/pcre/$PCRE_TAR" -O "$PCRE_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download PCRE"
@@ -629,8 +653,7 @@ echo
 echo "********** PCRE2 **********"
 echo
 
-# https://savannah.gnu.org/bugs/?func=detailitem&item_id=26786
-wget "https://ftp.pcre.org/pub/pcre/$PCRE2_TAR" --no-check-certificate -O "$PCRE2_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.pcre.org/pub/pcre/$PCRE2_TAR" -O "$PCRE2_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download PCRE2"
@@ -677,8 +700,7 @@ echo
 echo "********** cURL **********"
 echo
 
-# https://savannah.gnu.org/bugs/?func=detailitem&item_id=26786
-wget "https://curl.haxx.se/download/$CURL_TAR" --no-check-certificate -O "$CURL_TAR"
+wget --ca-certificate="$GLOBALSIGN_ROOT" "https://curl.haxx.se/download/$CURL_TAR" -O "$CURL_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download cURL"
@@ -733,8 +755,7 @@ echo
 echo "********** Git **********"
 echo
 
-# wget on Ubuntu 16 cannot validate against DigiCert certificate
-wget "https://github.com/git/git/archive/$GIT_TAR" --no-check-certificate -O "$GIT_TAR"
+wget --ca-certificate="$DIGICERT_ROOT" --no-check-certificate "https://github.com/git/git/archive/$GIT_TAR" -O "$GIT_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download Git"
@@ -841,49 +862,6 @@ cd ..
 
 ###############################################################################
 
-if true; then
-
-	echo
-	echo "********** Update CA-Certs **********"
-	echo
-
-	CURR_DIR="$PWD"
-	cd "$HOME"
-
-	mkdir -p "$HOME/.cacert"
-	cd "$HOME/.cacert/"
-
-echo "-----BEGIN CERTIFICATE-----
-MIIDdTCCAl2gAwIBAgILBAAAAAABFUtaw5QwDQYJKoZIhvcNAQEFBQAwVzELMAkG
-A1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNVBAsTB1Jv
-b3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw05ODA5MDExMjAw
-MDBaFw0yODAxMjgxMjAwMDBaMFcxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9i
-YWxTaWduIG52LXNhMRAwDgYDVQQLEwdSb290IENBMRswGQYDVQQDExJHbG9iYWxT
-aWduIFJvb3QgQ0EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDaDuaZ
-jc6j40+Kfvvxi4Mla+pIH/EqsLmVEQS98GPR4mdmzxzdzxtIK+6NiY6arymAZavp
-xy0Sy6scTHAHoT0KMM0VjU/43dSMUBUc71DuxC73/OlS8pF94G3VNTCOXkNz8kHp
-1Wrjsok6Vjk4bwY8iGlbKk3Fp1S4bInMm/k8yuX9ifUSPJJ4ltbcdG6TRGHRjcdG
-snUOhugZitVtbNV4FpWi6cgKOOvyJBNPc1STE4U6G7weNLWLBYy5d4ux2x8gkasJ
-U26Qzns3dLlwR5EiUWMWea6xrkEmCMgZK9FGqkjWZCrXgzT/LCrBbBlDSgeF59N8
-9iFo7+ryUp9/k5DPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8E
-BTADAQH/MB0GA1UdDgQWBBRge2YaRQ2XyolQL30EzTSo//z9SzANBgkqhkiG9w0B
-AQUFAAOCAQEA1nPnfE920I2/7LqivjTFKDK1fPxsnCwrvQmeU79rXqoRSLblCKOz
-yj1hTdNGCbM+w6DjY1Ub8rrvrTnhQ7k4o+YviiY776BQVvnGCv04zcQLcFGUl5gE
-38NflNUVyRRBnMRddWQVDf9VMOyGj/8N7yy5Y0b2qvzfvGn9LhJIZJrglfCm7ymP
-AbEVtQwdpf5pLGkkeB6zpxxxYu7KyJesF12KwvhHhm4qxFYxldBniYUr+WymXUad
-DKqC5JlR3XC321Y9YeRq4VzW9v493kHMB65jUr9TU/Qr6cf9tveCX4XSQRjbgbME
-HMUfpIBvFSDJ3gyICh3WZlXi/EjJKSZp4A==
------END CERTIFICATE-----" > globalsign-root-r1.pem
-
-	wget --ca-certificate=globalsign-root-r1.pem https://curl.haxx.se/ca/cacert.pem -O cacert.pem
-	git config --global http.sslCAInfo "$HOME/.cacert/cacert.pem"
-
-	cd "$CURR_DIR"
-
-fi
-
-###############################################################################
-
 echo
 echo "********** Cleanup **********"
 echo
@@ -891,9 +869,11 @@ echo
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$UNISTR_TAR" "$UNISTR_DIR" "$READLN_TAR" "$READLN_DIR"
-            "$PCRE_TAR" "$PCRE_DIR" "$PCRE2_TAR" "$PCRE2_DIR" "$ZLIB_TAR" "$ZLIB_DIR"  "$BZ2_TAR" "$BZ2_DIR"
-            "$IDN_TAR" "$IDN_DIR" "$ICONV_TAR" "$ICONV_DIR" "$CURL_TAR" "$CURL_DIR" "$GIT_TAR" "$GIT_DIR")
+    ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$UNISTR_TAR" "$UNISTR_DIR"
+			"$READLN_TAR" "$READLN_DIR" "$PCRE_TAR" "$PCRE_DIR"
+			"$PCRE2_TAR" "$PCRE2_DIR" "$ZLIB_TAR" "$ZLIB_DIR" "$BZ2_TAR" "$BZ2_DIR"
+			"$IDN_TAR" "$IDN_DIR" "$ICONV_TAR" "$ICONV_DIR" "$CURL_TAR" "$CURL_DIR"
+			"$GIT_TAR" "$GIT_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
