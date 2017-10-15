@@ -63,7 +63,7 @@ echo
 echo "If you enter a sudo password, then it will be used for installation."
 echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
 echo "To avoid sudo and the password, just press ENTER and they won't be used."
-read -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
 echo
 
 ###############################################################################
@@ -126,11 +126,18 @@ else
     INSTALL_LIBDIR_DIR="lib"
 fi
 
-if [[ -z "$CC" ]]; then CC=$(which cc); fi
+if [[ -z "$CC" ]]; then CC=$(which cc 2>/dev/null); fi
+if [[ -z "$CC" ]]; then CC=gcc; fi
 
 MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
 	SH_MARCH=
+fi
+
+# Solaris fixup.... Ncurses 6.0 does not build and the patches don't apply
+if [[ "$IS_SOLARIS" -ne "0" ]]; then
+  NCURSES_TAR=ncurses-5.9.tar.gz
+  NCURSES_DIR=ncurses-5.9
 fi
 
 echo
