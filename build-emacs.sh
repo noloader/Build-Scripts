@@ -48,7 +48,7 @@ fi
 
 ###############################################################################
 
-#if [[ ! $(command -v autoreconf 2>/dev/null) ]]; then
+#if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
     #echo "Some packages require autoreconf. Please install autoconf or automake."
     #[[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 #fi
@@ -132,9 +132,11 @@ else
     INSTALL_LIBDIR_DIR="lib"
 fi
 
-if [[ (-z "$CC" && $(command -v cc 2>/dev/null) ) ]]; then CC=cc; fi
-if [[ -z "$CC" ]]; then CC=gcc; fi
-if [[ -z "$CXX" ]]; then CXX=g++; fi
+if [[ (-z "$CC" && $(command -v cc 2>/dev/null) ) ]]; then CC=$(command -v cc); fi
+if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC); fi
+
+# Emacs uses signals, and it needs _XOPEN_SOURCE for Newlib
+IS_NEWLIB=$(echo '#include <stdlib.h>' | "$CC" -x c -dM -E - | grep -i -c "__NEWLIB__")
 
 MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
@@ -254,10 +256,10 @@ echo
 echo "********** Emacs **********"
 echo
 
-wget --ca-certificate="$IDENTRUST_ROOT" "http://mirrors.syringanetworks.net/gnu/emacs/$EMACS_TAR" -O "$EMACS_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/emacs/$EMACS_TAR" -O "$EMACS_TAR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download SSH"
+    echo "Failed to download Emacs"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -265,10 +267,19 @@ rm -rf "$EMACS_DIR" &>/dev/null
 tar -xzf "$EMACS_TAR"
 cd "$EMACS_DIR"
 
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+SH_CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG -pthread"
+SH_CFLAGS="$SH_MARCH"
+SH_CXXFLAGS="$SH_MARCH"
+SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR" "-pthread")
 SH_LDLIBS=("-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+# http://pubs.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_02.html
+# But Cygwin or Newlib headers are mostly fucked up at the moment.
+if [[ "$IS_NEWLIB" -ne "0" ]]; then
+	SH_CPPFLAGS="$SH_CPPFLAGS -D_XOPEN_SOURCE=600"
+fi
+
+CPPFLAGS="$SH_CPPFLAGS" CFLAGS="$SH_CFLAGS" CXXFLAGS="$SH_CXXFLAGS" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --with-xml2 --without-x --without-sound --without-xpm \
