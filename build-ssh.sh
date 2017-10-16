@@ -129,8 +129,8 @@ elif [[ "$IS_64BIT" -eq "1" ]]; then
         INSTALL_LIBDIR_DIR="lib"
     fi
 else
-    SH_KBITS=32
-    SH_MARCH=-m32
+    SH_KBITS="32"
+    SH_MARCH="-m32"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
     INSTALL_LIBDIR_DIR="lib"
 fi
@@ -138,7 +138,7 @@ fi
 if [[ (-z "$CC" && $(command -v cc 2>/dev/null) ) ]]; then CC=$(command -v cc); fi
 if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC); fi
 
-MARCH_ERROR=`$CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error`
+MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
 	SH_MARCH=
 fi
