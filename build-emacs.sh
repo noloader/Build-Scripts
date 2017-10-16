@@ -85,14 +85,11 @@ IS_FREEBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c freebsd)
 IS_NETBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c netbsd)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
-if [[ ("$IS_FREEBSD" -eq "1" || "$IS_OPENBSD" -eq "1" || "$IS_NETBSD" -eq "1" || "$IS_DRAGONFLY" -eq "1" || "$IS_SOLARIS" -eq "1") ]]; then
-    if [[ $(command -v gmake 2>/dev/null) ]]; then
-        MAKE="gmake"
-    else
-        MAKE="make"
-    fi
+# The BSDs and Solaris should have GMake installed if its needed
+if [[ $(command -v gmake 2>/dev/null) ]]; then
+	MAKE="gmake"
 else
-    MAKE="make"
+	MAKE="make"
 fi
 
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
@@ -188,9 +185,8 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
-"$MAKE" "${MAKE_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
     echo "Failed to build zLib"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
@@ -229,15 +225,14 @@ CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_M
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure zLib"
+    echo "Failed to configure ncurses"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
-"$MAKE" "${MAKE_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to build zLib"
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build ncurses"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -281,15 +276,14 @@ CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_M
     --without-compress-install
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure SSH"
+    echo "Failed to configure emacs"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS" all)
-"$MAKE" "${MAKE_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to build SSH"
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build emacs"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 

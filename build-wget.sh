@@ -93,14 +93,11 @@ IS_FREEBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c freebsd)
 IS_NETBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c netbsd)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
-if [[ ("$IS_FREEBSD" -eq "1" || "$IS_OPENBSD" -eq "1" || "$IS_NETBSD" -eq "1" || "$IS_DRAGONFLY" -eq "1" || "$IS_SOLARIS" -eq "1") ]]; then
-    if [[ $(command -v gmake 2>/dev/null) ]]; then
-        MAKE="gmake"
-    else
-        MAKE="make"
-    fi
+# The BSDs and Solaris should have GMake installed if its needed
+if [[ $(command -v gmake 2>/dev/null) ]]; then
+	MAKE="gmake"
 else
-    MAKE="make"
+	MAKE="make"
 fi
 
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
@@ -190,9 +187,8 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
-"$MAKE" "${MAKE_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
     echo "Failed to build zLib"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
@@ -215,7 +211,7 @@ echo
 wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/libunistring/$UNISTR_TAR" -O "$UNISTR_TAR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download IDN"
+    echo "Failed to download Unistring"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -231,15 +227,14 @@ CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_M
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure IDN"
+    echo "Failed to configure Unistring"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
-"$MAKE" "${MAKE_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to build IDN"
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build Unistring"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -282,10 +277,9 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
-"$MAKE" "${MAKE_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to build iConvert"
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build iConv"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -334,17 +328,15 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(depend)
-"$MAKE" "${MAKE_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
     echo "Failed to build OpenSSL dependencies"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
-"$MAKE" "${MAKE_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
     echo "Failed to build OpenSSL"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
@@ -390,9 +382,8 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS" all)
-"$MAKE" "${MAKE_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
     echo "Failed to build Wget"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
