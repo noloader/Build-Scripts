@@ -165,6 +165,12 @@ rm -rf "$ZLIB_DIR" &>/dev/null
 tar -xzf "$ZLIB_TAR"
 cd "$ZLIB_DIR"
 
+if [[ "$IS_CYGWIN" -ne "0" ]]; then
+	if [[ -f "gzguts.h" ]]; then
+		sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
+	fi
+fi
+
 SH_LDLIBS=("-ldl -lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
@@ -230,7 +236,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS" depend)
+MAKE_FLAGS=(depend)
 "$MAKE" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
