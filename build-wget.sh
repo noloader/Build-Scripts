@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Written and placed in public domain by Jeffrey Walton
+# This script builds Wget and its dependencies from sources.
+
 # See fixup for INSTALL_LIBDIR below
 INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
