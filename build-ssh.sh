@@ -48,7 +48,7 @@ fi
 
 ###############################################################################
 
-if [[ -z $(which autoreconf) ]]; then
+if [[ ! $(command -v autoreconf 2>/dev/null) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
@@ -89,7 +89,7 @@ IS_NETBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c netbsd)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
 if [[ ("$IS_FREEBSD" -eq "1" || "$IS_OPENBSD" -eq "1" || "$IS_NETBSD" -eq "1" || "$IS_DRAGONFLY" -eq "1" || "$IS_SOLARIS" -eq "1") ]]; then
-    if [[ ! (-z $(which gmake 2>/dev/null | grep -v 'no gmake') ) ]]; then
+    if [[ ! $(command -v gmake 2>/dev/null) ]]; then
         MAKE="gmake"
     else
         MAKE="make"
@@ -135,8 +135,9 @@ else
     INSTALL_LIBDIR_DIR="lib"
 fi
 
-if [[ -z "$CC" ]]; then CC=$(which cc 2>/dev/null); fi
+if [[ (-z "$CC" && $(command -v cc 2>/dev/null) ) ]]; then CC=cc; fi
 if [[ -z "$CC" ]]; then CC=gcc; fi
+if [[ -z "$CXX" ]]; then CXX=g++; fi
 
 MARCH_ERROR=`$CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error`
 if [[ "$MARCH_ERROR" -ne "0" ]]; then

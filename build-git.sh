@@ -16,6 +16,9 @@ ZLIB_DIR=zlib-1.2.11
 BZ2_TAR=bzip2-1.0.6.tar.gz
 BZ2_DIR=bzip2-1.0.6
 
+TERMCAP_TAR=termcap-1.3.1.tar.gz
+TERMCAP_DIR=termcap-1.3.1
+
 READLN_TAR=readline-7.0.tar.gz
 READLN_DIR=readline-7.0
 
@@ -79,12 +82,12 @@ fi
 
 ###############################################################################
 
-if [[ -z $(which autoreconf) ]]; then
+if [[ ! $(command -v autoreconf 2>/dev/null) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-if [[ -z $(which msgfmt) ]]; then
+if [[ ! $(command -v msgfmt 2>/dev/null) ]]; then
     echo "Git requires msgfmt. Please install gettext."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
@@ -179,8 +182,9 @@ else
     INSTALL_LIBDIR_DIR="lib"
 fi
 
-if [[ -z "$CC" ]]; then CC=$(which cc 2>/dev/null); fi
+if [[ (-z "$CC" && $(command -v cc 2>/dev/null) ) ]]; then CC=cc; fi
 if [[ -z "$CC" ]]; then CC=gcc; fi
+if [[ -z "$CXX" ]]; then CXX=g++; fi
 
 MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
@@ -297,7 +301,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install PREFIX="$INSTALL_PREFIX" LIBDIR="$INSTALL_LIBDIR")
+MAKE_FLAGS=(install "PREFIX=$INSTALL_PREFIX" "LIBDIR=$INSTALL_LIBDIR")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -351,6 +355,58 @@ else
 fi
 
 cd "$CURR_DIR"
+
+###############################################################################
+
+if [[ "$IS_CYGWIN" -eq "1" ]]; then
+
+echo
+echo "********** Termcap **********"
+echo
+
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/termcap/$TERMCAP_TAR" -O "$TERMCAP_TAR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to download Termcap"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+rm -rf "$TERMCAP_DIR" &>/dev/null
+tar -xzf "$TERMCAP_TAR"
+cd "$TERMCAP_DIR"
+
+sed -i -e '42i#include <unistd.h>' tparam.c
+
+SH_LDLIBS=("-ldl" "-lpthread")
+SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+
+CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    ./configure --enable-shared --enable-install-termcap --prefix="$INSTALL_PREFIX"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure Termcap"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(-j "$MAKE_JOBS")
+"$MAKE" "${MAKE_FLAGS[@]}"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to build Termcap"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(install)
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
+    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+    "$MAKE" "${MAKE_FLAGS[@]}"
+fi
+
+cd "$CURR_DIR"
+
+fi
 
 ###############################################################################
 
@@ -461,11 +517,6 @@ rm -rf "$IDN_DIR" &>/dev/null
 tar -xzf "$IDN_TAR"
 cd "$IDN_DIR"
 
-echo "**********"
-echo "IS_SOLARIS: $IS_SOLARIS"
-ls "src/idn2.c"
-echo "**********"
-
 if [[ "$IS_SOLARIS" -eq "1" ]]; then
   if [[ (-f src/idn2.c) ]]; then
     cp src/idn2.c src/idn2.c.orig
@@ -474,17 +525,19 @@ if [[ "$IS_SOLARIS" -eq "1" ]]; then
     sed '43istatic void error (int status, int errnum, const char *format, ...);' src/idn2.c.orig > src/idn2.c
     rm src/idn2.c.orig
 
-    echo "" >> src/idn2.c
-    echo "static void" >> src/idn2.c
-    echo "error (int status, int errnum, const char *format, ...)" >> src/idn2.c
-    echo "{" >> src/idn2.c
-    echo "  va_list args;" >> src/idn2.c
-    echo "  va_start(args, format);" >> src/idn2.c
-    echo "  vfprintf(stderr, format, args);" >> src/idn2.c
-    echo "  va_end(args);" >> src/idn2.c
-    echo "  exit(status);" >> src/idn2.c
-    echo "}" >> src/idn2.c
-    echo "" >> src/idn2.c
+	{
+	  echo ""
+	  echo "static void"
+	  echo "error (int status, int errnum, const char *format, ...)"
+	  echo "{"
+	  echo "  va_list args;"
+	  echo "  va_start(args, format);"
+	  echo "  vfprintf(stderr, format, args);"
+	  echo "  va_end(args);"
+	  echo "  exit(status);"
+	  echo "}"
+	  echo ""
+	} >> src/idn2.c
   fi
 fi
 
@@ -835,11 +888,11 @@ fi
 
 # See INSTALL for the formats and the requirements
 MAKE_FLAGS=(-j "$MAKE_JOBS" all)
-if [[ ! -z `which asciidoc 2>/dev/null | grep -v 'no asciidoc'` ]]; then
-    if [[ ! -z `which makeinfo 2>/dev/null | grep -v 'no makeinfo'` ]]; then
+if [[ ! $(command -v asciidoc 2>/dev/null) ]]; then
+    if [[ ! $(command -v makeinfo 2>/dev/null) ]]; then
         MAKE_FLAGS+=("man")
     fi
-    if [[ ! -z `which xmlto 2>/dev/null | grep -v 'no xmlto'` ]]; then
+    if [[ ! $(command -v xmlto 2>/dev/null) ]]; then
         MAKE_FLAGS+=("info" "html")
     fi
 fi
@@ -853,11 +906,11 @@ fi
 
 # See INSTALL for the formats and the requirements
 MAKE_FLAGS=(install)
-if [[ ! -z `which asciidoc 2>/dev/null | grep -v 'no asciidoc'` ]]; then
-    if [[ ! -z `which makeinfo 2>/dev/null | grep -v 'no makeinfo'` ]]; then
+if [[ ! $(command -v asciidoc 2>/dev/null) ]]; then
+    if [[ ! $(command -v makeinfo 2>/dev/null) ]]; then
         MAKE_FLAGS+=("install-man")
     fi
-    if [[ ! -z `which xmlto 2>/dev/null | grep -v 'no xmlto'` ]]; then
+    if [[ ! $(command -v xmlto 2>/dev/null) ]]; then
         MAKE_FLAGS+=("install-info" "install-html")
     fi
 fi
@@ -879,8 +932,8 @@ echo
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$UNISTR_TAR" "$UNISTR_DIR"
-			"$READLN_TAR" "$READLN_DIR" "$PCRE_TAR" "$PCRE_DIR"
+    ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$UNISTR_TAR" "$UNISTR_DIR" "$TERMCAP_TAR"
+			"$TERMCAP_DIR" "$READLN_TAR" "$READLN_DIR" "$PCRE_TAR" "$PCRE_DIR"
 			"$PCRE2_TAR" "$PCRE2_DIR" "$ZLIB_TAR" "$ZLIB_DIR" "$BZ2_TAR" "$BZ2_DIR"
 			"$IDN_TAR" "$IDN_DIR" "$ICONV_TAR" "$ICONV_DIR" "$CURL_TAR" "$CURL_DIR"
 			"$GIT_TAR" "$GIT_DIR")
