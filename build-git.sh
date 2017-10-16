@@ -888,11 +888,11 @@ fi
 
 # See INSTALL for the formats and the requirements
 MAKE_FLAGS=(-j "$MAKE_JOBS" all)
-if [[ ! $(command -v asciidoc 2>/dev/null) ]]; then
-    if [[ ! $(command -v makeinfo 2>/dev/null) ]]; then
+if [[ $(command -v asciidoc 2>/dev/null) ]]; then
+    if [[ $(command -v makeinfo 2>/dev/null) ]]; then
         MAKE_FLAGS+=("man")
     fi
-    if [[ ! $(command -v xmlto 2>/dev/null) ]]; then
+    if [[ $(command -v xmlto 2>/dev/null) ]]; then
         MAKE_FLAGS+=("info" "html")
     fi
 fi
@@ -906,11 +906,11 @@ fi
 
 # See INSTALL for the formats and the requirements
 MAKE_FLAGS=(install)
-if [[ ! $(command -v asciidoc 2>/dev/null) ]]; then
-    if [[ ! $(command -v makeinfo 2>/dev/null) ]]; then
+if [[ $(command -v asciidoc 2>/dev/null) ]]; then
+    if [[ $(command -v makeinfo 2>/dev/null) ]]; then
         MAKE_FLAGS+=("install-man")
     fi
-    if [[ ! $(command -v xmlto 2>/dev/null) ]]; then
+    if [[ $(command -v xmlto 2>/dev/null) ]]; then
         MAKE_FLAGS+=("install-info" "install-html")
     fi
 fi

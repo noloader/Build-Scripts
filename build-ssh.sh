@@ -89,7 +89,7 @@ IS_NETBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c netbsd)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
 if [[ ("$IS_FREEBSD" -eq "1" || "$IS_OPENBSD" -eq "1" || "$IS_NETBSD" -eq "1" || "$IS_DRAGONFLY" -eq "1" || "$IS_SOLARIS" -eq "1") ]]; then
-    if [[ ! $(command -v gmake 2>/dev/null) ]]; then
+    if [[ $(command -v gmake 2>/dev/null) ]]; then
         MAKE="gmake"
     else
         MAKE="make"
