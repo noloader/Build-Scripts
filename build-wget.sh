@@ -329,6 +329,11 @@ fi
 MAKE_FLAGS=(-j "$MAKE_JOBS" depend)
 "$MAKE" "${MAKE_FLAGS[@]}"
 
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to build OpenSSL dependencies"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 MAKE_FLAGS=(-j "$MAKE_JOBS")
 "$MAKE" "${MAKE_FLAGS[@]}"
 
