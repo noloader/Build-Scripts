@@ -11,6 +11,10 @@ INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 OPENSSL_TAR=openssl-1.0.2l.tar.gz
 OPENSSL_DIR=openssl-1.0.2l
 
+# https://github.com/kaizawa/tuntap/archive/v1.3.3.tar.gz
+TUNTAP_TAR=v1.3.3.tar.gz
+TUNTAP_DIR=tuntap-1.3.3
+
 OPENVPN_TAR=openvpn-2.4.4.tar.gz
 OPENVPN_DIR=openvpn-2.4.4
 
@@ -69,6 +73,7 @@ if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
 IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
 ADDTRUST_ROOT="$HOME/.cacert/addtrust-root-ca.pem"
 
@@ -150,8 +155,6 @@ echo
 echo "********** libdir **********"
 echo
 echo "Using libdir $INSTALL_LIBDIR"
-
-if false; then
 
 ###############################################################################
 
@@ -263,7 +266,56 @@ fi
 
 cd "$CURR_DIR"
 
+###############################################################################
+
+if [[ "$IS_SOLARIS" -ne "0" ]]; then
+
+echo
+echo "********** Solaris TUN/TAP Driver **********"
+echo
+
+wget --ca-certificate="$DIGICERT_ROOT" "https://github.com/kaizawa/tuntap/archive/$TUNTAP_TAR" -O "$TUNTAP_TAR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to download TUN/TAP driver"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
+
+rm -rf "$TUNTAP_DIR" &>/dev/null
+gzip -d < "$TUNTAP_TAR" | tar xf -
+cd "$TUNTAP_DIR"
+
+SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+SH_LDLIBS=("-lz" "-ldl" "-lpthread")
+
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    LDFLAGS="${SH_LDFLAGS[*]}" \
+    LIBS="${SH_LDLIBS[*]}" \
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure TUN/TAP driver"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(-j "$MAKE_JOBS" all)
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build TUN/TAP driver"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(install)
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
+    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+    "$MAKE" "${MAKE_FLAGS[@]}"
+fi
+
+cd "$CURR_DIR"
+
+fi  # Solaris
 
 ###############################################################################
 
@@ -328,9 +380,9 @@ if true; then
         rm -rf "$artifact"
     done
 
-    # ./build-ssh.sh 2>&1 | tee build-ssh.log
-    if [[ -e build-ssh.log ]]; then
-        rm build-ssh.log
+    # ./build-openvpn.sh 2>&1 | tee build-openvpn.log
+    if [[ -e build-openvpn.log ]]; then
+        rm build-openvpn.log
     fi
 fi
 
