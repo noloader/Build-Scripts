@@ -176,12 +176,13 @@ if [[ "$IS_CYGWIN" -ne "0" ]]; then
     fi
 fi
 
-SH_LDLIBS=("-ldl -lpthread")
+SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure zLib"
@@ -283,9 +284,10 @@ cd "$OPENSSH_DIR"
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lz" "-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --with-openssl-dir="$INSTALL_PREFIX" --with-zlib="$INSTALL_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then

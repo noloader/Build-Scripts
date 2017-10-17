@@ -223,12 +223,14 @@ if [[ "$IS_CYGWIN" -ne "0" ]]; then
     fi
 fi
 
-SH_LDLIBS=("-ldl -lpthread")
+SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure zLib"
@@ -329,12 +331,14 @@ rm -rf "$UNISTR_DIR" &>/dev/null
 gzip -d < "$UNISTR_TAR" | tar xf -
 cd "$UNISTR_DIR"
 
-SH_LDLIBS=("-ldl -lpthread")
+SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN"
@@ -381,9 +385,11 @@ sed -i -e '42i#include <unistd.h>' tparam.c
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --enable-install-termcap --prefix="$INSTALL_PREFIX"
+./configure --enable-install-termcap --prefix="$INSTALL_PREFIX" \
+    --enable-shared
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Termcap"
@@ -428,9 +434,11 @@ cd "$READLN_DIR"
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Readline"
@@ -473,9 +481,11 @@ cd "$ICONV_DIR"
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure iConvert"
@@ -553,10 +563,12 @@ if [[ "$IS_DARWIN" -ne "0" ]]; then
     #sed -i "" 's|$AR cr|$AR $ARFLAGS|g' m4/libtool.m4
     #sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' m4/libtool.m4
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     AR="/usr/bin/libtool" ARFLAGS="-static -o " \
-    ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared
 
     for mfile in $(find "$PWD" -iname 'Makefile'); do
         echo "Fixing makefile $mfile"
@@ -573,9 +585,11 @@ CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_M
 
 else
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared
 
 fi
 
@@ -678,10 +692,11 @@ cd "$PCRE_DIR"
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lz" "-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --enable-pcregrep-libz --enable-jit --enable-pcregrep-libbz2 \
-    --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared --enable-pcregrep-libz --enable-jit --enable-pcregrep-libbz2
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure PCRE"
@@ -724,10 +739,11 @@ cd "$PCRE2_DIR"
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lz" "-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --enable-pcre2-8 --enable-pcre2-16 --enable-pcre2-32 \
-    --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared --enable-pcre2-8 --enable-pcre2-16 --enable-pcre2-32
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure PCRE2"
@@ -771,16 +787,21 @@ SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lidn2" "-lssl" "-lcrypto" "-lz" "-ldl" "-lpthread")
 
 if [[ ("$IS_SOLARIS" -ne "0" && "$USE_TRUST_STORE" -ne "0") ]]; then
-  CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --without-ca-bundle --with-ca-path=/etc/openssl/certs --enable-ipv6 \
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared --without-ca-bundle \
+    --with-ca-path=/etc/openssl/certs --enable-ipv6 \
     --with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
-    --with-libidn2="$INSTALL_PREFIX" --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+    --with-libidn2="$INSTALL_PREFIX"
 else
-  CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --enable-ipv6 --with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
-    --with-libidn2="$INSTALL_PREFIX" --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared --enable-ipv6 --with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
+    --with-libidn2="$INSTALL_PREFIX"
 fi
 
 if [[ "$?" -ne "0" ]]; then
@@ -829,7 +850,7 @@ fi
 
 # "Instruct Git to use pthread library?", http://stackoverflow.com/q/43080417/
 for file in $(find "$PWD" -iname 'Makefile*')
-do 
+do
     cp "$file" "$file.orig"
     sed 's|-lrt|-lrt -lpthread|g' "$file.orig" > "$file"
     rm "$file.orig"
@@ -838,7 +859,7 @@ done
 # Various Solaris 11 workarounds
 if [[ "$IS_SOLARIS" -eq "1" ]]; then
     for file in $(find "$PWD" -iname 'Makefile*')
-    do 
+    do
         cp "$file" "$file.orig"
         sed 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"
         cp "$file" "$file.orig"
@@ -846,7 +867,7 @@ if [[ "$IS_SOLARIS" -eq "1" ]]; then
         rm "$file.orig"
     done
     for file in $(find "$PWD" -iname 'config*')
-    do 
+    do
         cp "$file" "$file.orig"
         sed 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"
         cp "$file" "$file.orig"
@@ -866,11 +887,14 @@ fi
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-lssl" "-lcrypto" "-lz" "-ldl" "-lpthread")
 
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-pthreads --with-lib="$INSTALL_LIBDIR" --with-openssl="$INSTALL_PREFIX" \
-    --with-curl="$INSTALL_PREFIX" --with-libpcre="$INSTALL_PREFIX" --with-zlib="$INSTALL_PREFIX" \
-    --with-iconv="$INSTALL_PREFIX" --with-perl="$SH_PERL" --prefix="$INSTALL_PREFIX"
+./configure --prefix="$INSTALL_PREFIX" --with-lib="$INSTALL_LIBDIR" \
+    --enable-pthreads --with-openssl="$INSTALL_PREFIX" \
+    --with-curl="$INSTALL_PREFIX" --with-libpcre="$INSTALL_PREFIX" \
+    --with-zlib="$INSTALL_PREFIX" --with-iconv="$INSTALL_PREFIX" \
+    --with-perl="$SH_PERL"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Git"
