@@ -1,28 +1,25 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds Wget and its dependencies from sources.
+# This script builds ClamAV and its dependencies from sources.
+# Also see https://bugzilla.clamav.net/show_bug.cgi?id=11929
 
 # See fixup for INSTALL_LIBDIR below
 INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 
+# ClamAV can only use OpenSSL 1.0.2 at the moment
 OPENSSL_TAR=openssl-1.0.2l.tar.gz
 OPENSSL_DIR=openssl-1.0.2l
-#OPENSSL_TAR=openssl-1.1.0e.tar.gz
-#OPENSSL_DIR=openssl-1.1.0e
+
+CLAMAV_TAR=clamav-0.99.2.tar.gz
+CLAMAV_DIR=clamav-0.99.2
+
+PCRE_TAR=pcre-8.41.tar.gz
+PCRE_DIR=pcre-8.41
 
 ZLIB_TAR=zlib-1.2.11.tar.gz
 ZLIB_DIR=zlib-1.2.11
-
-UNISTR_TAR=libunistring-0.9.7.tar.gz
-UNISTR_DIR=libunistring-0.9.7
-
-ICONV_TAR=libiconv-1.15.tar.gz
-ICONV_DIR=libiconv-1.15
-
-WGET_TAR=wget-1.19.1.tar.gz
-WGET_DIR=wget-1.19.1
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -66,18 +63,19 @@ if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "Wget requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
 if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
     echo "Wget requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
+if [[ ! -f "$HOME/.cacert/addtrust-root-ca.pem" ]]; then
+    echo "Wget requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+# ClamAV has a few redirects due to use of a CDN. Just use cacerts.pem
 IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
+CLAMAV_MULTIPLE_ROOTS="$HOME/.cacert/cacert.pem"
 
 ###############################################################################
 
@@ -212,99 +210,10 @@ cd "$CURR_DIR"
 ###############################################################################
 
 echo
-echo "********** Unistring **********"
-echo
-
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/libunistring/$UNISTR_TAR" -O "$UNISTR_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download Unistring"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$UNISTR_DIR" &>/dev/null
-gzip -d < "$UNISTR_TAR" | tar xf -
-cd "$UNISTR_DIR"
-
-SH_LDLIBS=("-ldl -lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure Unistring"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(-j "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to build Unistring"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(install)
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
-
-###############################################################################
-
-echo
-echo "********** iConvert **********"
-echo
-
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/pub/gnu/libiconv/$ICONV_TAR" -O "$ICONV_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download iConvert"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$ICONV_DIR" &>/dev/null
-gzip -d < "$ICONV_TAR" | tar xf -
-cd "$ICONV_DIR"
-
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-SH_LDLIBS=("-ldl" "-lpthread")
-
-CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure iConvert"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(-j "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to build iConv"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(install)
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
-
-###############################################################################
-
-echo
 echo "********** OpenSSL **********"
 echo
 
+# wget on Ubuntu 16 cannot validate against Let's Encrypt certificate
 wget --ca-certificate="$IDENTRUST_ROOT" "https://www.openssl.org/source/$OPENSSL_TAR" -O "$OPENSSL_TAR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -360,38 +269,83 @@ cd "$CURR_DIR"
 ###############################################################################
 
 echo
-echo "********** Wget **********"
+echo "********** PCRE **********"
 echo
 
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/pub/gnu//wget/$WGET_TAR" -O "$WGET_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.pcre.org/pub/pcre/$PCRE_TAR" -O "$PCRE_TAR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download Wget"
+    echo "Failed to download PCRE"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-rm -rf "$WGET_DIR" &>/dev/null
-gzip -d < "$WGET_TAR" | tar xf -
-cd "$WGET_DIR"
+rm -rf "$PCRE_DIR" &>/dev/null
+gzip -d < "$PCRE_TAR" | tar xf -
+cd "$PCRE_DIR"
 
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-SH_LDLIBS=("-lssl" "-lcrypto" "-ldl" "-lpthread")
+SH_LDLIBS=("-lz" "-ldl" "-lpthread")
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-    ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-ssl=openssl --with-libssl-prefix="$INSTALL_PREFIX" \
-    --with-libiconv-prefix="$INSTALL_PREFIX" --with-libunistring-prefix="$INSTALL_PREFIX"
+    ./configure --enable-shared --enable-pcregrep-libz --enable-jit --enable-pcregrep-libbz2 \
+    --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure Wget"
+    echo "Failed to configure PCRE"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS" all)
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build Wget"
+    echo "Failed to build PCRE"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(install)
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
+    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+    "$MAKE" "${MAKE_FLAGS[@]}"
+fi
+
+cd "$CURR_DIR"
+
+###############################################################################
+
+echo
+echo "********** ClamAV **********"
+echo
+
+wget --ca-certificate="$CLAMAV_MULTIPLE_ROOTS" "https://www.clamav.net/downloads/production/$CLAMAV_TAR" -O "$CLAMAV_TAR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to download ClamAV"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+rm -rf "$CLAMAV_DIR" &>/dev/null
+gzip -d < "$CLAMAV_TAR" | tar xf -
+cd "$CLAMAV_DIR"
+
+SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+SH_LDLIBS=("-lz" "-ldl" "-lpthread")
+
+CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --with-openssl-dir="$INSTALL_PREFIX" --with-zlib="$INSTALL_LIBDIR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure ClamAV"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(-j "$MAKE_JOBS" all)
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build ClamAV"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -413,15 +367,16 @@ echo
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$ZLIB_TAR" "$ZLIB_DIR" "OPENSSL_TAR" "OPENSSL_DIR" "UNISTR_TAR" "UNISTR_DIR" "ICONV_TAR" "ICONV_DIR" "$WGET_TAR" "$WGET_DIR")
+    ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$CLAMAV_TAR" "$CLAMAV_DIR"
+               "$PCRE_TAR" "$PCRE_DIR" "$ZLIB_TAR" "$ZLIB_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
 
-    # ./build-wget.sh 2>&1 | tee build-wget.log
-    if [[ -e build-wget.log ]]; then
-        rm build-wget.log
+    # ./build-clamav.sh 2>&1 | tee build-clamav.log
+    if [[ -e build-clamav.log ]]; then
+        rm build-clamav.log
     fi
 fi
 

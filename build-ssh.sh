@@ -51,6 +51,11 @@ fi
 
 ###############################################################################
 
+if [[ -z $(command -v gzip 2>/dev/null) ]]; then
+    echo "Some packages gzip. Please install gzip."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
@@ -93,9 +98,9 @@ IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ $(command -v gmake 2>/dev/null) ]]; then
-	MAKE="gmake"
+    MAKE="gmake"
 else
-	MAKE="make"
+    MAKE="make"
 fi
 
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
@@ -140,7 +145,7 @@ if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC)
 
 MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
-	SH_MARCH=
+    SH_MARCH=
 fi
 
 echo
@@ -162,13 +167,13 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$ZLIB_DIR" &>/dev/null
-tar -xzf "$ZLIB_TAR"
+gzip -d < "$ZLIB_TAR" | tar xf -
 cd "$ZLIB_DIR"
 
 if [[ "$IS_CYGWIN" -ne "0" ]]; then
-	if [[ -f "gzguts.h" ]]; then
-		sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
-	fi
+    if [[ -f "gzguts.h" ]]; then
+        sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
+    fi
 fi
 
 SH_LDLIBS=("-ldl -lpthread")
@@ -214,7 +219,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$OPENSSL_DIR" &>/dev/null
-tar -xzf "$OPENSSL_TAR"
+gzip -d < "$OPENSSL_TAR" | tar xf -
 cd "$OPENSSL_DIR"
 
 # OpenSSL and enable-ec_nistp_64_gcc_128 option
@@ -272,7 +277,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$OPENSSH_DIR" &>/dev/null
-tar -xzf "$OPENSSH_TAR"
+gzip -d < "$OPENSSH_TAR" | tar xf -
 cd "$OPENSSH_DIR"
 
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")

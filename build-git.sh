@@ -32,7 +32,7 @@ ICONV_TAR=libiconv-1.15.tar.gz
 ICONV_DIR=libiconv-1.15
 
 # Use libidn-1.33 for Solaris and OS X... IDN2 causes too
-#   many problems and no answers on the mailing list.
+# many problems and too few answers on the mailing list.
 IDN_TAR=libidn-1.33.tar.gz
 IDN_DIR=libidn-1.33
 
@@ -85,13 +85,18 @@ fi
 
 ###############################################################################
 
+if [[ -z $(command -v gzip 2>/dev/null) ]]; then
+    echo "Git requires gzip. Please install gzip."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ -z $(command -v msgfmt 2>/dev/null) ]]; then
-    echo "Git requires msgfmt. Please install gettext."
+    echo "Git requires msgfmt. Please install msgfmt."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -140,9 +145,9 @@ IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ $(command -v gmake 2>/dev/null) ]]; then
-	MAKE="gmake"
+    MAKE="gmake"
 else
-	MAKE="make"
+    MAKE="make"
 fi
 
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
@@ -187,7 +192,7 @@ if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC)
 
 MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
-	SH_MARCH=
+    SH_MARCH=
 fi
 
 echo
@@ -209,13 +214,13 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$ZLIB_DIR" &>/dev/null
-tar -xzf "$ZLIB_TAR"
+gzip -d < "$ZLIB_TAR" | tar xf -
 cd "$ZLIB_DIR"
 
 if [[ "$IS_CYGWIN" -ne "0" ]]; then
-	if [[ -f "gzguts.h" ]]; then
-		sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
-	fi
+    if [[ -f "gzguts.h" ]]; then
+        sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
+    fi
 fi
 
 SH_LDLIBS=("-ldl -lpthread")
@@ -260,7 +265,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$BZ2_DIR" &>/dev/null
-tar -xzf "$BZ2_TAR"
+gzip -d < "$BZ2_TAR" | tar xf -
 cd "$BZ2_DIR"
 
 # Fix Bzip install paths
@@ -321,7 +326,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$UNISTR_DIR" &>/dev/null
-tar -xzf "$UNISTR_TAR"
+gzip -d < "$UNISTR_TAR" | tar xf -
 cd "$UNISTR_DIR"
 
 SH_LDLIBS=("-ldl -lpthread")
@@ -368,7 +373,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$TERMCAP_DIR" &>/dev/null
-tar -xzf "$TERMCAP_TAR"
+gzip -d < "$TERMCAP_TAR" | tar xf -
 cd "$TERMCAP_DIR"
 
 sed -i -e '42i#include <unistd.h>' tparam.c
@@ -417,7 +422,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$READLN_DIR" &>/dev/null
-tar -xzf "$READLN_TAR"
+gzip -d < "$READLN_TAR" | tar xf -
 cd "$READLN_DIR"
 
 SH_LDLIBS=("-ldl" "-lpthread")
@@ -462,7 +467,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$ICONV_DIR" &>/dev/null
-tar -xzf "$ICONV_TAR"
+gzip -d < "$ICONV_TAR" | tar xf -
 cd "$ICONV_DIR"
 
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
@@ -507,7 +512,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$IDN_DIR" &>/dev/null
-tar -xzf "$IDN_TAR"
+gzip -d < "$IDN_TAR" | tar xf -
 cd "$IDN_DIR"
 
 if [[ "$IS_SOLARIS" -eq "1" ]]; then
@@ -518,19 +523,19 @@ if [[ "$IS_SOLARIS" -eq "1" ]]; then
     sed '43istatic void error (int status, int errnum, const char *format, ...);' src/idn2.c.orig > src/idn2.c
     rm src/idn2.c.orig
 
-	{
-	  echo ""
-	  echo "static void"
-	  echo "error (int status, int errnum, const char *format, ...)"
-	  echo "{"
-	  echo "  va_list args;"
-	  echo "  va_start(args, format);"
-	  echo "  vfprintf(stderr, format, args);"
-	  echo "  va_end(args);"
-	  echo "  exit(status);"
-	  echo "}"
-	  echo ""
-	} >> src/idn2.c
+    {
+      echo ""
+      echo "static void"
+      echo "error (int status, int errnum, const char *format, ...)"
+      echo "{"
+      echo "  va_list args;"
+      echo "  va_start(args, format);"
+      echo "  vfprintf(stderr, format, args);"
+      echo "  va_end(args);"
+      echo "  exit(status);"
+      echo "}"
+      echo ""
+    } >> src/idn2.c
   fi
 fi
 
@@ -540,31 +545,31 @@ SH_LDLIBS=("-ldl" "-lpthread")
 # Darwin is mostly fucked up at the moment. Also see
 # http://lists.gnu.org/archive/html/help-libidn/2017-10/msg00002.html
 if [[ "$IS_DARWIN" -ne "0" ]]; then
-	sed -i "" 's|$AR cru|$AR $ARFLAGS|g' configure
-	sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure
-	#sed -i "" 's|$AR cru|$AR $ARFLAGS|g' aclocal.m4
-	#sed -i "" 's|$AR cr|$AR $ARFLAGS|g' aclocal.m4
-	#sed -i "" 's|$AR cru|$AR $ARFLAGS|g' m4/libtool.m4
-	#sed -i "" 's|$AR cr|$AR $ARFLAGS|g' m4/libtool.m4
-	#sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' m4/libtool.m4
+    sed -i "" 's|$AR cru|$AR $ARFLAGS|g' configure
+    sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure
+    #sed -i "" 's|$AR cru|$AR $ARFLAGS|g' aclocal.m4
+    #sed -i "" 's|$AR cr|$AR $ARFLAGS|g' aclocal.m4
+    #sed -i "" 's|$AR cru|$AR $ARFLAGS|g' m4/libtool.m4
+    #sed -i "" 's|$AR cr|$AR $ARFLAGS|g' m4/libtool.m4
+    #sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' m4/libtool.m4
 
 CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-	AR="/usr/bin/libtool" ARFLAGS="-static -o " \
+    AR="/usr/bin/libtool" ARFLAGS="-static -o " \
     ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
-	for mfile in $(find "$PWD" -iname 'Makefile'); do
-		echo "Fixing makefile $mfile"
-		sed -i "" 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile"
-		sed -i "" 's|ARFLAGS = cru|ARFLAGS = -static -o |g' "$mfile"
-		sed -i "" 's|ARFLAGS = cr|ARFLAGS = -static -o |g' "$mfile"
-	done
+    for mfile in $(find "$PWD" -iname 'Makefile'); do
+        echo "Fixing makefile $mfile"
+        sed -i "" 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile"
+        sed -i "" 's|ARFLAGS = cru|ARFLAGS = -static -o |g' "$mfile"
+        sed -i "" 's|ARFLAGS = cr|ARFLAGS = -static -o |g' "$mfile"
+    done
 
-	#for sfile in $(find "$PWD" -iname '*.sh'); do
-	#	echo "Fixing script $sfile"
-	#	sed -i "" 's|$AR cru |$AR $ARFLAGS |g' "$sfile"
-	#	sed -i "" 's|$AR cr |$AR $ARFLAGS |g' "$sfile"
-	#done
+    #for sfile in $(find "$PWD" -iname '*.sh'); do
+    #    echo "Fixing script $sfile"
+    #    sed -i "" 's|$AR cru |$AR $ARFLAGS |g' "$sfile"
+    #    sed -i "" 's|$AR cr |$AR $ARFLAGS |g' "$sfile"
+    #done
 
 else
 
@@ -609,7 +614,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$OPENSSL_DIR" &>/dev/null
-tar -xzf "$OPENSSL_TAR"
+gzip -d < "$OPENSSL_TAR" | tar xf -
 cd "$OPENSSL_DIR"
 
 # OpenSSL and enable-ec_nistp_64_gcc_128 option
@@ -667,7 +672,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$PCRE_DIR" &>/dev/null
-tar -xzf "$PCRE_TAR"
+gzip -d < "$PCRE_TAR" | tar xf -
 cd "$PCRE_DIR"
 
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
@@ -713,7 +718,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$PCRE2_DIR" &>/dev/null
-tar -xzf "$PCRE2_TAR"
+gzip -d < "$PCRE2_TAR" | tar xf -
 cd "$PCRE2_DIR"
 
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
@@ -759,7 +764,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$CURL_DIR" &>/dev/null
-tar -xzf "$CURL_TAR"
+gzip -d < "$CURL_TAR" | tar xf -
 cd "$CURL_DIR"
 
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
@@ -769,7 +774,7 @@ if [[ ("$IS_SOLARIS" -ne "0" && "$USE_TRUST_STORE" -ne "0") ]]; then
   CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
     ./configure --enable-shared --without-ca-bundle --with-ca-path=/etc/openssl/certs --enable-ipv6 \
-	--with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
+    --with-nghttp2 --with-ssl="$INSTALL_PREFIX" \
     --with-libidn2="$INSTALL_PREFIX" --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 else
   CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
@@ -813,7 +818,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$GIT_DIR" &>/dev/null
-tar -xzf "$GIT_TAR"
+gzip -d < "$GIT_TAR" | tar xf -
 cd "$GIT_DIR"
 
 if ! "$MAKE" configure
@@ -900,8 +905,10 @@ if [[ $(command -v asciidoc 2>/dev/null) ]]; then
     fi
 fi
 
+# Git builds things during install, and they end up root:root.
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+    echo "$SUDO_PASSWWORD" | sudo -S chmod -R 0777 *
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
@@ -918,10 +925,10 @@ echo
 if true; then
 
     ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$UNISTR_TAR" "$UNISTR_DIR" "$TERMCAP_TAR"
-			"$TERMCAP_DIR" "$READLN_TAR" "$READLN_DIR" "$PCRE_TAR" "$PCRE_DIR"
-			"$PCRE2_TAR" "$PCRE2_DIR" "$ZLIB_TAR" "$ZLIB_DIR" "$BZ2_TAR" "$BZ2_DIR"
-			"$IDN_TAR" "$IDN_DIR" "$ICONV_TAR" "$ICONV_DIR" "$CURL_TAR" "$CURL_DIR"
-			"$GIT_TAR" "$GIT_DIR")
+            "$TERMCAP_DIR" "$READLN_TAR" "$READLN_DIR" "$PCRE_TAR" "$PCRE_DIR"
+            "$PCRE2_TAR" "$PCRE2_DIR" "$ZLIB_TAR" "$ZLIB_DIR" "$BZ2_TAR" "$BZ2_DIR"
+            "$IDN_TAR" "$IDN_DIR" "$ICONV_TAR" "$ICONV_DIR" "$CURL_TAR" "$CURL_DIR"
+            "$GIT_TAR" "$GIT_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"

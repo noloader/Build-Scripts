@@ -48,10 +48,15 @@ fi
 
 ###############################################################################
 
-#if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
-    #echo "Some packages require autoreconf. Please install autoconf or automake."
-    #[[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-#fi
+if [[ -z $(command -v gzip 2>/dev/null) ]]; then
+    echo "Some packages gzip. Please install gzip."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
+    echo "Some packages require autoreconf. Please install autoconf or automake."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
 
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
     echo "Wget requires several CA roots. Please run build-cacert.sh."
@@ -90,9 +95,9 @@ IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ $(command -v gmake 2>/dev/null) ]]; then
-	MAKE="gmake"
+    MAKE="gmake"
 else
-	MAKE="make"
+    MAKE="make"
 fi
 
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
@@ -140,7 +145,7 @@ IS_NEWLIB=$(echo '#include <stdlib.h>' | "$CC" -x c -dM -E - | grep -i -c "__NEW
 
 MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
-	SH_MARCH=
+    SH_MARCH=
 fi
 
 # Solaris fixup.... Ncurses 6.0 does not build and the patches don't apply
@@ -168,13 +173,13 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$ZLIB_DIR" &>/dev/null
-tar -xzf "$ZLIB_TAR"
+gzip -d < "$ZLIB_TAR" | tar xf -
 cd "$ZLIB_DIR"
 
 if [[ "$IS_CYGWIN" -ne "0" ]]; then
-	if [[ -f "gzguts.h" ]]; then
-		sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
-	fi
+    if [[ -f "gzguts.h" ]]; then
+        sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
+    fi
 fi
 
 SH_LDLIBS=("-ldl -lpthread")
@@ -219,7 +224,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$NCURSES_DIR" &>/dev/null
-tar -xzf "$NCURSES_TAR"
+gzip -d < "$NCURSES_TAR" | tar xf -
 cd "$NCURSES_DIR"
 
 SH_LDLIBS=("-ldl -lpthread")
@@ -264,7 +269,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$EMACS_DIR" &>/dev/null
-tar -xzf "$EMACS_TAR"
+gzip -d < "$EMACS_TAR" | tar xf -
 cd "$EMACS_DIR"
 
 SH_CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG -pthread"
@@ -276,7 +281,7 @@ SH_LDLIBS=("-ldl" "-lpthread")
 # http://pubs.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_02.html
 # But Cygwin or Newlib headers are mostly fucked up at the moment.
 if [[ "$IS_NEWLIB" -ne "0" ]]; then
-	SH_CPPFLAGS="$SH_CPPFLAGS -D_XOPEN_SOURCE=600"
+    SH_CPPFLAGS="$SH_CPPFLAGS -D_XOPEN_SOURCE=600"
 fi
 
 CPPFLAGS="$SH_CPPFLAGS" CFLAGS="$SH_CFLAGS" CXXFLAGS="$SH_CXXFLAGS" \
