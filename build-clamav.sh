@@ -12,8 +12,8 @@ INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 OPENSSL_TAR=openssl-1.0.2l.tar.gz
 OPENSSL_DIR=openssl-1.0.2l
 
-CLAMAV_TAR=clamav-0.99.2.tar.gz
-CLAMAV_DIR=clamav-0.99.2
+CLAMAV_TAR=clamav-0.99.3-beta1.tar.gz
+CLAMAV_DIR=clamav-0.99.3-beta1
 
 PCRE_TAR=pcre-8.41.tar.gz
 PCRE_DIR=pcre-8.41
