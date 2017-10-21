@@ -148,6 +148,12 @@ if [[ "$MARCH_ERROR" -ne "0" ]]; then
     SH_MARCH=
 fi
 
+SH_PIC="-fPIC"
+PIC_ERROR=$($CC $SH_PIC -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
+if [[ "$PIC_ERROR" -ne "0" ]]; then
+    SH_PIC=
+fi
+
 # Solaris fixup.... Ncurses 6.0 does not build and the patches don't apply
 if [[ "$IS_SOLARIS" -ne "0" ]]; then
   NCURSES_TAR=ncurses-5.9.tar.gz
@@ -231,7 +237,7 @@ cd "$NCURSES_DIR"
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG $SH_PIC" \
     CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"

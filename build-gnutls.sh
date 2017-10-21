@@ -25,14 +25,20 @@ EXPAT_DIR=libexpat-R_2_2_4
 UNBOUND_TAR=unbound-1.6.7.tar.gz
 UNBOUND_DIR=unbound-1.6.7
 
+GUILE_TAR=guile-2.2.2.tar.xz
+GUILE_DIR=guile-2.2.2
+
 TASN1_TAR=libtasn1-4.12.tar.gz
 TASN1_DIR=libtasn1-4.12
 
-P11KIT_TAR=p11-kit-0.23.2.tar.gz
-P11KIT_DIR=p11-kit-0.23.2
+NCURSES_TAR=ncurses-6.0.tar.gz
+NCURSES_DIR=ncurses-6.0
 
-GNUTLS_TAR=gnutls-3.5.9.tar.xz
-GNUTLS_DIR=gnutls-3.5.9
+P11GLUE_TAR=p11-kit-0.23.2.tar.gz
+P11GLUE_DIR=p11-kit-0.23.2
+
+GNUTLS_TAR=gnutls-3.5.15.tar.xz
+GNUTLS_DIR=gnutls-3.5.15
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -76,7 +82,8 @@ if [[ -z $(command -v bzip2 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-if [[ -z $(command -v libtoolize 2>/dev/null) ]]; then
+IS_DARWIN=$(uname -s | grep -i -c darwin)
+if [[ ("$IS_DARWIN" -eq "0") ]] && [[ -z $(command -v libtoolize 2>/dev/null) ]]; then
     echo "Some packages require libtool. Please install libtool or libtool-bin."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
@@ -127,12 +134,26 @@ IS_DRAGONFLY=$(echo -n "$THIS_SYSTEM" | grep -i -c dragonfly)
 IS_FREEBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c freebsd)
 IS_NETBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c netbsd)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
+IS_FEDORA=$(lsb_release -a 2>/dev/null | grep -i -c 'Fedora')
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ $(command -v gmake 2>/dev/null) ]]; then
     MAKE="gmake"
 else
     MAKE="make"
+fi
+
+# Boehm garbage collector. Look in /usr/lib and /usr/lib64
+if [[ "$IS_DEBIAN" -ne "0" ]]; then
+    if [[ -z $(find /usr -maxdepth 2 -name libgc.so 2>/dev/null) ]]; then
+        echo "GnuTLS requires Boehm garbage collector. Please install libgc-dev."
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
+elif [[ "$IS_FEDORA" -ne "0" ]]; then
+    if [[ -z $(find /usr -maxdepth 2 -name libgc.so 2>/dev/null) ]]; then
+        echo "GnuTLS requires Boehm garbage collector. Please install gc-devel."
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
 fi
 
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
@@ -158,7 +179,6 @@ elif [[ "$IS_64BIT" -eq "1" ]]; then
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
     fi
 else
-    SH_KBITS="32"
     SH_MARCH="-m32"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
 fi
@@ -169,6 +189,18 @@ if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC)
 MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
     SH_MARCH=
+fi
+
+SH_PIC="-fPIC"
+PIC_ERROR=$($CC $SH_PIC -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
+if [[ "$PIC_ERROR" -ne "0" ]]; then
+    SH_PIC=
+fi
+
+# Solaris fixup.... Ncurses 6.0 does not build and the patches don't apply
+if [[ "$IS_SOLARIS" -ne "0" ]]; then
+  NCURSES_TAR=ncurses-5.9.tar.gz
+  NCURSES_DIR=ncurses-5.9
 fi
 
 # For the benefit of Nettle and GMP. Make it run fast.
@@ -209,7 +241,8 @@ fi
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG"
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -255,7 +288,8 @@ SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" CXXFLAGS="$SH_MARCH $SH_NATIVE" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -489,6 +523,104 @@ cd "$CURR_DIR"
 ###############################################################################
 
 echo
+echo "********** ncurses **********"
+echo
+
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/pub/gnu/ncurses/$NCURSES_TAR" -O "$NCURSES_TAR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to download zLib"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+rm -rf "$NCURSES_DIR" &>/dev/null
+gzip -d < "$NCURSES_TAR" | tar xf -
+cd "$NCURSES_DIR"
+
+SH_LDLIBS=("-ldl" "-lpthread")
+SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG $SH_PIC" \
+    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure ncurses"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(-j "$MAKE_JOBS")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build ncurses"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(install)
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
+    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+    "$MAKE" "${MAKE_FLAGS[@]}"
+fi
+
+cd "$CURR_DIR"
+
+###############################################################################
+
+echo
+echo "********** Guile **********"
+echo
+
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/guile/$GUILE_TAR" -O "$GUILE_TAR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to download Guile"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+rm -rf "$GUILE_DIR" &>/dev/null
+tar xJf "$GUILE_TAR"
+cd "$GUILE_DIR"
+
+# Rebuild libtool, http://stackoverflow.com/q/35589427/608639
+autoconf
+
+SH_LDLIBS=("-ldl" "-lpthread")
+SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" CXXFLAGS="$SH_MARCH $SH_NATIVE" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --with-libgmp-prefix="$INSTALL_PREFIX" \
+    --with-libunistring-prefix="$INSTALL_PREFIX" \
+    --with-libiconv-prefix="$INSTALL_PREFIX"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure Guile"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(-j "$MAKE_JOBS")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build Guile"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(install)
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
+    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+    "$MAKE" "${MAKE_FLAGS[@]}"
+fi
+
+cd "$CURR_DIR"
+
+###############################################################################
+
+echo
 echo "********** libtasn1 **********"
 echo
 
@@ -538,16 +670,21 @@ echo
 echo "********** p11-glue **********"
 echo
 
-wget --ca-certificate="$IDENTRUST_ROOT" "https://p11-glue.freedesktop.org/releases/$P11KIT_TAR" -O "$P11KIT_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://p11-glue.freedesktop.org/releases/$P11GLUE_TAR" -O "$P11GLUE_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download p11-glue"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-rm -rf "$P11KIT_DIR" &>/dev/null
-gzip -d < "$P11KIT_TAR" | tar xf -
-cd "$P11KIT_DIR"
+rm -rf "$P11GLUE_DIR" &>/dev/null
+gzip -d < "$P11GLUE_TAR" | tar xf -
+cd "$P11GLUE_DIR"
+
+ http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+if [[ "$IS_LINUX" -ne "0" ]]; then
+    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
+fi
 
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
@@ -593,19 +730,23 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$GNUTLS_DIR" &>/dev/null
- tar xJf "$GNUTLS_TAR"
+tar xJf "$GNUTLS_TAR"
 cd "$GNUTLS_DIR"
+
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+if [[ "$IS_LINUX" -ne "0" ]]; then
+    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
+fi
 
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
     CFLAGS="$SH_MARCH $SH_NATIVE" CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --with-libz-prefix="$INSTALL_PREFIX" --with-libiconv-prefix="$INSTALL_PREFIX" \
-    --with-libunbound-prefix="$INSTALL_PREFIX"
+    --with-libunbound="$INSTALL_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure GnuTLS"
@@ -646,7 +787,8 @@ if true; then
 
     ARTIFACTS=("$ZLIB_TAR" "$ZLIB_DIR" "$NETTLE_TAR" "$NETTLE_DIR" "$GMP_TAR" "$GMP_DIR"
                "$EXPAT_TAR" "$EXPAT_DIR" "$UNBOUND_TAR" "$UNBOUND_TAR" "$TASN1_TAR"
-               "$TASN1_DIR" "$P11KIT_TAR" "$P11KIT_DIR" "$GNUTLS_TAR" "$GNUTLS_DIR")
+               "$NCURSES_TAR" "$NCURSES_DIR" "$GUILE_TAR" "$GUILE_TAR"
+               "$TASN1_DIR" "$P11GLUE_TAR" "$P11GLUE_DIR" "$GNUTLS_TAR" "$GNUTLS_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
