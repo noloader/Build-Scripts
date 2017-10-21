@@ -32,8 +32,8 @@ TASN1_TAR=libtasn1-4.12.tar.gz
 TASN1_DIR=libtasn1-4.12
 
 # Ncurses 6.0 fails to compile on Solaris 11 and Ubuntu 17
-NCURSES_TAR=ncurses-5.9.tar.gz
-NCURSES_DIR=ncurses-5.9
+NCURSES_TAR=ncurses-6.0.tar.gz
+NCURSES_DIR=ncurses-6.0
 
 P11GLUE_TAR=p11-kit-0.23.2.tar.gz
 P11GLUE_DIR=p11-kit-0.23.2
@@ -113,15 +113,6 @@ LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
 IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
 DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
 ADDTRUST_ROOT="$HOME/.cacert/addtrust-root-ca.pem"
-
-###############################################################################
-
-echo
-echo "If you enter a sudo password, then it will be used for installation."
-echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
-echo "To avoid sudo and the password, just press ENTER and they won't be used."
-read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
-echo
 
 ###############################################################################
 
@@ -205,6 +196,23 @@ if [[ "$NATIVE_ERROR" -ne "0" ]]; then
     SH_NATIVE=
 fi
 
+# Solaris fixup.... Ncurses 6.0 does not build and the patches don't apply
+if [[ "$IS_SOLARIS" -ne "0" ]]; then
+  NCURSES_TAR=ncurses-5.9.tar.gz
+  NCURSES_DIR=ncurses-5.9
+fi
+
+###############################################################################
+
+echo
+echo "If you enter a sudo password, then it will be used for installation."
+echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
+echo "To avoid sudo and the password, just press ENTER and they won't be used."
+read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+echo
+
+###############################################################################
+
 echo
 echo "********** libdir **********"
 echo
@@ -236,6 +244,7 @@ fi
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
+    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
     CFLAGS="$SH_MARCH $SH_NATIVE" \
     CXXFLAGS="$SH_MARCH $SH_NATIVE" \
@@ -266,23 +275,29 @@ cd "$CURR_DIR"
 ###############################################################################
 
 echo
-echo "********** Nettle **********"
+echo "********** libtasn1 **********"
 echo
 
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/nettle/$NETTLE_TAR" -O "$NETTLE_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/libtasn1/$TASN1_TAR" -O "$TASN1_TAR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download Nettle"
+    echo "Failed to download libtasn1"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-rm -rf "$NETTLE_DIR" &>/dev/null
-gzip -d < "$NETTLE_TAR" | tar xf -
-cd "$NETTLE_DIR"
+rm -rf "$TASN1_DIR" &>/dev/null
+gzip -d < "$TASN1_TAR" | tar xf -
+cd "$TASN1_DIR"
+
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+if [[ "$IS_LINUX" -ne "0" ]]; then
+    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
+fi
 
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
+    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
     CFLAGS="$SH_MARCH $SH_NATIVE" \
     CXXFLAGS="$SH_MARCH $SH_NATIVE" \
@@ -290,21 +305,14 @@ SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure Nettle"
+    echo "Failed to configure libtasn1"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=(-j "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build Nettle"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(check)
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to test Nettle"
+    echo "Failed to build libtasn1"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -337,6 +345,7 @@ cd "$GMP_DIR"
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
+    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
     CFLAGS="$SH_MARCH $SH_NATIVE" \
     CXXFLAGS="$SH_MARCH $SH_NATIVE" \
@@ -374,6 +383,61 @@ cd "$CURR_DIR"
 ###############################################################################
 
 echo
+echo "********** Nettle **********"
+echo
+
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/nettle/$NETTLE_TAR" -O "$NETTLE_TAR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to download Nettle"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+rm -rf "$NETTLE_DIR" &>/dev/null
+gzip -d < "$NETTLE_TAR" | tar xf -
+cd "$NETTLE_DIR"
+
+SH_LDLIBS=("-ldl" "-lpthread")
+SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+
+    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
+    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure Nettle"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(-j "$MAKE_JOBS")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build Nettle"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(check)
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test Nettle"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=(install)
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
+    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+    "$MAKE" "${MAKE_FLAGS[@]}"
+fi
+
+cd "$CURR_DIR"
+
+###############################################################################
+
+echo
 echo "********** iConvert **********"
 echo
 
@@ -388,9 +452,15 @@ rm -rf "$ICONV_DIR" &>/dev/null
 gzip -d < "$ICONV_TAR" | tar xf -
 cd "$ICONV_DIR"
 
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+if [[ "$IS_LINUX" -ne "0" ]]; then
+    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
+fi
+
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
+    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
     CFLAGS="$SH_MARCH $SH_NATIVE" \
     CXXFLAGS="$SH_MARCH $SH_NATIVE" \
@@ -435,6 +505,11 @@ rm -rf "$EXPAT_DIR" &>/dev/null
 gzip -d < "$EXPAT_TAR" | tar xf -
 cd "$EXPAT_DIR/expat"
 
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+if [[ "$IS_LINUX" -ne "0" ]]; then
+    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
+fi
+
 if ! ./buildconf.sh
 then
     echo "Failed to generate libexpat configure"
@@ -444,13 +519,13 @@ fi
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
+    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
     CFLAGS="$SH_MARCH $SH_NATIVE" \
     CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --without-xmlwf
-
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure libexpat"
@@ -490,9 +565,15 @@ rm -rf "$UNBOUND_DIR" &>/dev/null
 gzip -d < "$UNBOUND_TAR" | tar xf -
 cd "$UNBOUND_DIR"
 
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+if [[ "$IS_LINUX" -ne "0" ]]; then
+    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
+fi
+
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
+    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
     CFLAGS="$SH_MARCH $SH_NATIVE" \
     CXXFLAGS="$SH_MARCH $SH_NATIVE" \
@@ -537,9 +618,15 @@ rm -rf "$NCURSES_DIR" &>/dev/null
 gzip -d < "$NCURSES_TAR" | tar xf -
 cd "$NCURSES_DIR"
 
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+if [[ "$IS_LINUX" -ne "0" ]]; then
+    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
+fi
+
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
+    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG $SH_PIC" \
     CFLAGS="$SH_MARCH $SH_NATIVE" \
     CXXFLAGS="$SH_MARCH $SH_NATIVE" \
@@ -587,9 +674,15 @@ cd "$GUILE_DIR"
 # Rebuild libtool, http://stackoverflow.com/q/35589427/608639
 autoconf
 
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+if [[ "$IS_LINUX" -ne "0" ]]; then
+    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
+fi
+
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
+    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
     CFLAGS="$SH_MARCH $SH_NATIVE" \
     CXXFLAGS="$SH_MARCH $SH_NATIVE" \
@@ -608,58 +701,6 @@ MAKE_FLAGS=(-j "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build Guile"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(install)
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
-
-###############################################################################
-
-echo
-echo "********** libtasn1 **********"
-echo
-
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/libtasn1/$TASN1_TAR" -O "$TASN1_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download libtasn1"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$TASN1_DIR" &>/dev/null
-gzip -d < "$TASN1_TAR" | tar xf -
-cd "$TASN1_DIR"
-
- http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
-if [[ "$IS_LINUX" -ne "0" ]]; then
-    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
-fi
-
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure libtasn1"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(-j "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to build libtasn1"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -697,12 +738,12 @@ fi
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
+    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
     CFLAGS="$SH_MARCH $SH_NATIVE" \
     CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-libtasn1="$INSTALL_PREFIX" --with-p11-kit="$INSTALL_PREFIX" --without-tpm
+./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure p11-glue"
@@ -750,6 +791,7 @@ fi
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
+    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
     CFLAGS="$SH_MARCH $SH_NATIVE" \
     CXXFLAGS="$SH_MARCH $SH_NATIVE" \
