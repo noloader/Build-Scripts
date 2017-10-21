@@ -31,8 +31,9 @@ GUILE_DIR=guile-2.2.2
 TASN1_TAR=libtasn1-4.12.tar.gz
 TASN1_DIR=libtasn1-4.12
 
-NCURSES_TAR=ncurses-6.0.tar.gz
-NCURSES_DIR=ncurses-6.0
+# Ncurses 6.0 fails to compile on Solaris 11 and Ubuntu 17
+NCURSES_TAR=ncurses-5.9.tar.gz
+NCURSES_DIR=ncurses-5.9
 
 P11GLUE_TAR=p11-kit-0.23.2.tar.gz
 P11GLUE_DIR=p11-kit-0.23.2
@@ -195,12 +196,6 @@ SH_PIC="-fPIC"
 PIC_ERROR=$($CC $SH_PIC -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$PIC_ERROR" -ne "0" ]]; then
     SH_PIC=
-fi
-
-# Solaris fixup.... Ncurses 6.0 does not build and the patches don't apply
-if [[ "$IS_SOLARIS" -ne "0" ]]; then
-  NCURSES_TAR=ncurses-5.9.tar.gz
-  NCURSES_DIR=ncurses-5.9
 fi
 
 # For the benefit of Nettle and GMP. Make it run fast.
@@ -641,6 +636,11 @@ fi
 rm -rf "$TASN1_DIR" &>/dev/null
 gzip -d < "$TASN1_TAR" | tar xf -
 cd "$TASN1_DIR"
+
+ http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+if [[ "$IS_LINUX" -ne "0" ]]; then
+    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
+fi
 
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
