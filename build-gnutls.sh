@@ -241,8 +241,9 @@ fi
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG"
-    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -342,7 +343,8 @@ SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" CXXFLAGS="$SH_MARCH $SH_NATIVE" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -395,7 +397,8 @@ SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -447,7 +450,8 @@ SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --without-xmlwf
@@ -495,7 +499,8 @@ SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -541,7 +546,8 @@ SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG $SH_PIC" \
-    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -590,7 +596,8 @@ SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" CXXFLAGS="$SH_MARCH $SH_NATIVE" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --with-libgmp-prefix="$INSTALL_PREFIX" \
@@ -639,7 +646,8 @@ SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" CXXFLAGS="$SH_MARCH $SH_NATIVE" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
@@ -690,7 +698,8 @@ SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" CXXFLAGS="$SH_MARCH $SH_NATIVE" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --with-libtasn1="$INSTALL_PREFIX" --with-p11-kit="$INSTALL_PREFIX" --without-tpm
@@ -742,7 +751,8 @@ SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
     CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" CXXFLAGS="$SH_MARCH $SH_NATIVE" \
+    CFLAGS="$SH_MARCH $SH_NATIVE" \
+    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
     LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --with-libz-prefix="$INSTALL_PREFIX" --with-libiconv-prefix="$INSTALL_PREFIX" \
