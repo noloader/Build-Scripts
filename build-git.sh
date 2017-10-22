@@ -123,15 +123,6 @@ DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
 
 ###############################################################################
 
-echo
-echo "If you enter a sudo password, then it will be used for installation."
-echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
-echo "To avoid sudo and the password, just press ENTER and they won't be used."
-read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
-echo
-
-###############################################################################
-
 THIS_SYSTEM=$(uname -s 2>&1)
 IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c darwin)
 IS_LINUX=$(echo -n "$THIS_SYSTEM" | grep -i -c linux)
@@ -195,6 +186,15 @@ if [[ "$MARCH_ERROR" -ne "0" ]]; then
     SH_MARCH=
 fi
 
+###############################################################################
+
+echo
+echo "If you enter a sudo password, then it will be used for installation."
+echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
+echo "To avoid sudo and the password, just press ENTER and they won't be used."
+read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+echo
+
 echo
 echo "********** libdir **********"
 echo
@@ -237,7 +237,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build zLib"
@@ -298,7 +298,7 @@ cp Makefile-libbz2_so Makefile-libbz2_so.orig
 sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH -Wl,-rpath,$INSTALL_LIBDIR -L$INSTALL_LIBDIR|g" Makefile-libbz2_so.orig > Makefile-libbz2_so
 rm Makefile-libbz2_so.orig
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build Bzip"
@@ -345,7 +345,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build IDN"
@@ -396,7 +396,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build Termcap"
@@ -445,7 +445,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build Readline"
@@ -492,7 +492,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build iConv"
@@ -598,7 +598,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build IDN"
@@ -656,7 +656,7 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build OpenSSL"
@@ -703,7 +703,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS" all)
+MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build PCRE"
@@ -750,7 +750,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS" all)
+MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build PCRE2"
@@ -809,7 +809,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build cURL"
@@ -902,7 +902,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 # See INSTALL for the formats and the requirements
-MAKE_FLAGS=(-j "$MAKE_JOBS" all)
+MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
 if [[ $(command -v asciidoc 2>/dev/null) ]]; then
     if [[ $(command -v makeinfo 2>/dev/null) ]]; then
         MAKE_FLAGS+=("man")

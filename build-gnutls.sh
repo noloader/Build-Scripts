@@ -25,6 +25,12 @@ EXPAT_DIR=libexpat-R_2_2_4
 UNBOUND_TAR=unbound-1.6.7.tar.gz
 UNBOUND_DIR=unbound-1.6.7
 
+LIBTOOL_TAR=libtool-2.4.6.tar.gz
+LIBTOOL_DIR=libtool-2.4.6
+
+READLN_TAR=readline-7.0.tar.gz
+READLN_DIR=readline-7.0
+
 GUILE_TAR=guile-2.2.2.tar.xz
 GUILE_DIR=guile-2.2.2
 
@@ -35,8 +41,8 @@ TASN1_DIR=libtasn1-4.12
 NCURSES_TAR=ncurses-6.0.tar.gz
 NCURSES_DIR=ncurses-6.0
 
-P11GLUE_TAR=p11-kit-0.23.2.tar.gz
-P11GLUE_DIR=p11-kit-0.23.2
+P11KIT_TAR=p11-kit-0.23.2.tar.gz
+P11KIT_DIR=p11-kit-0.23.2
 
 GNUTLS_TAR=gnutls-3.5.15.tar.xz
 GNUTLS_DIR=gnutls-3.5.15
@@ -156,10 +162,10 @@ if [[ "$IS_64BIT" -eq "0" ]]; then
     IS_64BIT=$(file /bin/ls 2>&1 | grep -i -c '64-bit')
 fi
 
-if [[ "$IS_SOLARIS" -eq "1" ]]; then
+if [[ "$IS_SOLARIS" -ne "0" ]]; then
     SH_MARCH="-m64"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
-elif [[ "$IS_64BIT" -eq "1" ]]; then
+elif [[ "$IS_64BIT" -ne "0" ]]; then
     if [[ (-d /usr/lib) && (-d /usr/lib32) ]]; then
         SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
@@ -177,6 +183,7 @@ fi
 
 if [[ (-z "$CC" && $(command -v cc 2>/dev/null) ) ]]; then CC=$(command -v cc); fi
 if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC); fi
+IS_CLANG=$("$CXX" --version 2>/dev/null | grep -i -c -E '(llvm|clang)')
 
 MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
@@ -189,7 +196,7 @@ if [[ "$PIC_ERROR" -ne "0" ]]; then
     SH_PIC=
 fi
 
-# For the benefit of Nettle and GMP. Make it run fast.
+# For the benefit of Nettle, GMP and GnuTLS. Make them run fast.
 SH_NATIVE="-march=native"
 NATIVE_ERROR=$($CC $SH_NATIVE -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$NATIVE_ERROR" -ne "0" ]]; then
@@ -198,9 +205,18 @@ fi
 
 # Solaris fixup.... Ncurses 6.0 does not build and the patches don't apply
 if [[ "$IS_SOLARIS" -ne "0" ]]; then
-  NCURSES_TAR=ncurses-5.9.tar.gz
-  NCURSES_DIR=ncurses-5.9
+    NCURSES_TAR=ncurses-5.9.tar.gz
+    NCURSES_DIR=ncurses-5.9
 fi
+
+###############################################################################
+
+OPT_PKGCONFIG=("$INSTALL_LIBDIR/pkgconfig")
+OPT_CPPFLAGS=("-I$INSTALL_PREFIX/include" "-DNDEBUG")
+OPT_CFLAGS=("$SH_MARCH" "$SH_NATIVE")
+OPT_CXXFLAGS=("$SH_MARCH" "$SH_NATIVE")
+OPT_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+OPT_LIBS=("-ldl" "-lpthread")
 
 ###############################################################################
 
@@ -210,13 +226,6 @@ echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
 echo "To avoid sudo and the password, just press ENTER and they won't be used."
 read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
 echo
-
-###############################################################################
-
-echo
-echo "********** libdir **********"
-echo
-echo "Using libdir $INSTALL_LIBDIR"
 
 ###############################################################################
 
@@ -241,14 +250,10 @@ if [[ "$IS_CYGWIN" -ne "0" ]]; then
     fi
 fi
 
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -256,14 +261,14 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build zLib"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -297,11 +302,10 @@ fi
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -309,14 +313,21 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build libtasn1"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("check" "V=1")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test libtasn1"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -345,11 +356,10 @@ cd "$GMP_DIR"
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -357,21 +367,21 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build GMP"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(check)
+MAKE_FLAGS=("check")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to test GMP"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -397,14 +407,18 @@ rm -rf "$NETTLE_DIR" &>/dev/null
 gzip -d < "$NETTLE_TAR" | tar xf -
 cd "$NETTLE_DIR"
 
+if [[ "$IS_DARWIN" -ne "0" ]]; then
+    sed -i "" -e 's|LD_LIBRARY_PATH|DYLD_LIBRARY_PATH|g' examples/Makefile.in
+    sed -i "" -e 's|LD_LIBRARY_PATH|DYLD_LIBRARY_PATH|g' testsuite/Makefile.in
+fi
+
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -412,21 +426,21 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build Nettle"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(check)
+MAKE_FLAGS=("check")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to test Nettle"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -460,11 +474,10 @@ fi
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -472,14 +485,21 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build iConv"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("check" "V=1")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test iConvert"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -519,11 +539,10 @@ fi
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --without-xmlwf
 
@@ -532,14 +551,22 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build libexpat"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+# https://github.com/libexpat/libexpat/issues/160
+# MAKE_FLAGS=("check" "V=1")
+# if ! "$MAKE" "${MAKE_FLAGS[@]}"
+# then
+#    echo "Failed to test libexpat"
+#    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+# fi
+
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -573,11 +600,10 @@ fi
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -585,14 +611,21 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build Unbound"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("check" "V=1")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test Unbound"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -623,14 +656,17 @@ if [[ "$IS_LINUX" -ne "0" ]]; then
     sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
 fi
 
+if [[ "$IS_CLANG" -ne "0" ]]; then
+    sed -i -e 's|--param max-inline-insns-single=1200||g' configure
+fi
+
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG $SH_PIC" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -638,14 +674,136 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build ncurses"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("test")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test ncurses"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("install")
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
+    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+    "$MAKE" "${MAKE_FLAGS[@]}"
+fi
+
+cd "$CURR_DIR"
+
+###############################################################################
+
+echo
+echo "********** libtool and libltdl **********"
+echo
+
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/libtool/$LIBTOOL_TAR" -O "$LIBTOOL_TAR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to download zLib"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+rm -rf "$LIBTOOL_DIR" &>/dev/null
+gzip -d < "$LIBTOOL_TAR" | tar xf -
+cd "$LIBTOOL_DIR"
+
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+if [[ "$IS_LINUX" -ne "0" ]]; then
+    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
+fi
+
+SH_LDLIBS=("-ldl" "-lpthread")
+SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
+./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure libtool and libltdl"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build libtool and libltdl"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+# https://lists.gnu.org/archive/html/bug-libtool/2017-10/msg00009.html
+# MAKE_FLAGS=("check" "V=1")
+# if ! "$MAKE" "${MAKE_FLAGS[@]}"
+# then
+#     echo "Failed to test libtool and libltdl"
+#     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+# fi
+
+MAKE_FLAGS=("install")
+if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
+    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+    "$MAKE" "${MAKE_FLAGS[@]}"
+fi
+
+cd "$CURR_DIR"
+
+###############################################################################
+
+echo
+echo "********** Readline **********"
+echo
+
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/readline/$READLN_TAR" -O "$READLN_TAR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to download Readline"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+rm -rf "$READLN_DIR" &>/dev/null
+gzip -d < "$READLN_TAR" | tar xf -
+cd "$READLN_DIR"
+
+SH_LDLIBS=("-ldl" "-lpthread")
+SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure Readline"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build Readline"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("check" "V=1")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test Readline"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -682,29 +840,36 @@ fi
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --with-libgmp-prefix="$INSTALL_PREFIX" \
     --with-libunistring-prefix="$INSTALL_PREFIX" \
-    --with-libiconv-prefix="$INSTALL_PREFIX"
+    --with-libiconv-prefix="$INSTALL_PREFIX" \
+    --with-readline-prefix="$INSTALL_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Guile"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build Guile"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+# MAKE_FLAGS=("check" "V=1")
+# if ! "$MAKE" "${MAKE_FLAGS[@]}"
+# then
+#     echo "Failed to test Guile"
+#     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+# fi
+
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -716,19 +881,19 @@ cd "$CURR_DIR"
 ###############################################################################
 
 echo
-echo "********** p11-glue **********"
+echo "********** p11-kit **********"
 echo
 
-wget --ca-certificate="$IDENTRUST_ROOT" "https://p11-glue.freedesktop.org/releases/$P11GLUE_TAR" -O "$P11GLUE_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://p11-kit.freedesktop.org/releases/$P11KIT_TAR" -O "$P11KIT_TAR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download p11-glue"
+    echo "Failed to download p11-kit"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-rm -rf "$P11GLUE_DIR" &>/dev/null
-gzip -d < "$P11GLUE_TAR" | tar xf -
-cd "$P11GLUE_DIR"
+rm -rf "$P11KIT_DIR" &>/dev/null
+gzip -d < "$P11KIT_TAR" | tar xf -
+cd "$P11KIT_DIR"
 
  http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
 if [[ "$IS_LINUX" -ne "0" ]]; then
@@ -738,26 +903,32 @@ fi
 SH_LDLIBS=("-ldl" "-lpthread")
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure p11-glue"
+    echo "Failed to configure p11-kit"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build p11-glue"
+    echo "Failed to build p11-kit"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("check" "V=1")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test p11-kit"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -791,35 +962,41 @@ fi
 SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 SH_LDLIBS=("-ldl" "-lpthread")
 
-    PKG_CONFIG_PATH="$INSTALL_LIBDIR/pkgconfig" \
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH $SH_NATIVE" \
-    CXXFLAGS="$SH_MARCH $SH_NATIVE" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-libz-prefix="$INSTALL_PREFIX" --with-libiconv-prefix="$INSTALL_PREFIX" \
-    --with-libunbound="$INSTALL_PREFIX"
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
+./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --with-unbound-root-key-file --enable-seccomp-tests \
+    --disable-openssl-compatibility --disable-ssl2-support --disable-ssl3-support \
+    --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf \
+    --with-p11-kit --with-tpm --with-libregex \
+    --with-libz-prefix="$INSTALL_PREFIX" \
+    --with-libiconv-prefix="$INSTALL_PREFIX" \
+    --with-libintl-prefix="$INSTALL_PREFIX" \
+    --with-libseccomp-prefix="$INSTALL_PREFIX" \
+    --with-libunistring-prefix="$INSTALL_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure GnuTLS"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS" all)
+MAKE_FLAGS=("-j" "$MAKE_JOBS" "all" "V=1")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build GnuTLS"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(check)
+MAKE_FLAGS=("check" "V=1")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to test GnuTLS"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -839,8 +1016,9 @@ if true; then
 
     ARTIFACTS=("$ZLIB_TAR" "$ZLIB_DIR" "$NETTLE_TAR" "$NETTLE_DIR" "$GMP_TAR" "$GMP_DIR"
                "$EXPAT_TAR" "$EXPAT_DIR" "$UNBOUND_TAR" "$UNBOUND_TAR" "$TASN1_TAR"
-               "$NCURSES_TAR" "$NCURSES_DIR" "$GUILE_TAR" "$GUILE_TAR"
-               "$TASN1_DIR" "$P11GLUE_TAR" "$P11GLUE_DIR" "$GNUTLS_TAR" "$GNUTLS_DIR")
+               "$NCURSES_TAR" "$NCURSES_DIR" "$GUILE_TAR" "$GUILE_TAR" "$LIBTOOL_TAR"
+               "$LIBTOOL_TAR" "$READLINE_TAR" "$READLINE_DIR"
+               "$TASN1_DIR" "$P11KIT_TAR" "$P11KIT_DIR" "$GNUTLS_TAR" "$GNUTLS_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"

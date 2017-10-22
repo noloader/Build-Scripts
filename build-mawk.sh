@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds Emacs and its dependencies from sources.
+# This script builds GnuTLS and its dependencies from sources.
 
 # See fixup for INSTALL_LIBDIR below
 INSTALL_PREFIX=/usr/local
@@ -10,11 +10,8 @@ INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 ZLIB_TAR=zlib-1.2.11.tar.gz
 ZLIB_DIR=zlib-1.2.11
 
-NCURSES_TAR=ncurses-6.0.tar.gz
-NCURSES_DIR=ncurses-6.0
-
-EMACS_TAR=emacs-24.5.tar.gz
-EMACS_DIR=emacs-24.5
+MAWK_TAR=mawk.tar.gz
+MAWK_DIR=mawk-1.3.4-20171017
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -53,32 +50,41 @@ if [[ -z $(command -v gzip 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+if [[ -z $(command -v bzip2 2>/dev/null) ]]; then
+    echo "Some packages bzip2. Please install bzip2."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+IS_DARWIN=$(uname -s | grep -i -c darwin)
+if [[ ("$IS_DARWIN" -eq "0") ]] && [[ -z $(command -v libtoolize 2>/dev/null) ]]; then
+    echo "Some packages require libtool. Please install libtool or libtool-bin."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "Wget requires several CA roots. Please run build-cacert.sh."
+    echo "GnuTLS requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
-    echo "Wget requires several CA roots. Please run build-cacert.sh."
+    echo "GnuTLS requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+if [[ ! -f "$HOME/.cacert/digicert-root-ca.pem" ]]; then
+    echo "GnuTLS requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
 IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
-
-###############################################################################
-
-echo
-echo "If you enter a sudo password, then it will be used for installation."
-echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
-echo "To avoid sudo and the password, just press ENTER and they won't be used."
-read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
-echo
+DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
+ADDTRUST_ROOT="$HOME/.cacert/addtrust-root-ca.pem"
 
 ###############################################################################
 
@@ -92,12 +98,26 @@ IS_DRAGONFLY=$(echo -n "$THIS_SYSTEM" | grep -i -c dragonfly)
 IS_FREEBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c freebsd)
 IS_NETBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c netbsd)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
+IS_FEDORA=$(lsb_release -a 2>/dev/null | grep -i -c 'Fedora')
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ $(command -v gmake 2>/dev/null) ]]; then
     MAKE="gmake"
 else
     MAKE="make"
+fi
+
+# Boehm garbage collector. Look in /usr/lib and /usr/lib64
+if [[ "$IS_DEBIAN" -ne "0" ]]; then
+    if [[ -z $(find /usr -maxdepth 2 -name libgc.so 2>/dev/null) ]]; then
+        echo "GnuTLS requires Boehm garbage collector. Please install libgc-dev."
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
+elif [[ "$IS_FEDORA" -ne "0" ]]; then
+    if [[ -z $(find /usr -maxdepth 2 -name libgc.so 2>/dev/null) ]]; then
+        echo "GnuTLS requires Boehm garbage collector. Please install gc-devel."
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
 fi
 
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
@@ -109,39 +129,27 @@ if [[ "$IS_64BIT" -eq "0" ]]; then
 fi
 
 if [[ "$IS_SOLARIS" -ne "0" ]]; then
-    SH_KBITS="64"
     SH_MARCH="-m64"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
-    INSTALL_LIBDIR_DIR="lib64"
 elif [[ "$IS_64BIT" -ne "0" ]]; then
     if [[ (-d /usr/lib) && (-d /usr/lib32) ]]; then
-        SH_KBITS="64"
         SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
-        INSTALL_LIBDIR_DIR="lib"
     elif [[ (-d /usr/lib) && (-d /usr/lib64) ]]; then
-        SH_KBITS="64"
         SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
-        INSTALL_LIBDIR_DIR="lib64"
     else
-        SH_KBITS="64"
         SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
-        INSTALL_LIBDIR_DIR="lib"
     fi
 else
-    SH_KBITS="32"
     SH_MARCH="-m32"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
-    INSTALL_LIBDIR_DIR="lib"
 fi
 
 if [[ (-z "$CC" && $(command -v cc 2>/dev/null) ) ]]; then CC=$(command -v cc); fi
 if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC); fi
-
-# Emacs uses signals, and it needs _XOPEN_SOURCE for Newlib
-IS_NEWLIB=$(echo '#include <stdlib.h>' | "$CC" -x c -dM -E - | grep -i -c "__NEWLIB__")
+IS_CLANG=$("$CXX" --version 2>/dev/null | grep -i -c -E '(llvm|clang)')
 
 MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
@@ -154,16 +162,36 @@ if [[ "$PIC_ERROR" -ne "0" ]]; then
     SH_PIC=
 fi
 
+# For the benefit of Nettle, GMP and GnuTLS. Make them run fast.
+SH_NATIVE="-march=native"
+NATIVE_ERROR=$($CC $SH_NATIVE -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
+if [[ "$NATIVE_ERROR" -ne "0" ]]; then
+    SH_NATIVE=
+fi
+
 # Solaris fixup.... Ncurses 6.0 does not build and the patches don't apply
 if [[ "$IS_SOLARIS" -ne "0" ]]; then
     NCURSES_TAR=ncurses-5.9.tar.gz
     NCURSES_DIR=ncurses-5.9
 fi
 
+###############################################################################
+
+OPT_PKGCONFIG=("$INSTALL_LIBDIR/pkgconfig")
+OPT_CPPFLAGS=("-I$INSTALL_PREFIX/include" "-DNDEBUG")
+OPT_CFLAGS=("$SH_MARCH" "$SH_NATIVE")
+OPT_CXXFLAGS=("$SH_MARCH" "$SH_NATIVE")
+OPT_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+OPT_LIBS=("-ldl" "-lpthread")
+
+###############################################################################
+
 echo
-echo "********** libdir **********"
+echo "If you enter a sudo password, then it will be used for installation."
+echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
+echo "To avoid sudo and the password, just press ENTER and they won't be used."
+read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
 echo
-echo "Using libdir $INSTALL_LIBDIR"
 
 ###############################################################################
 
@@ -188,12 +216,10 @@ if [[ "$IS_CYGWIN" -ne "0" ]]; then
     fi
 fi
 
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -208,7 +234,7 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -220,106 +246,46 @@ cd "$CURR_DIR"
 ###############################################################################
 
 echo
-echo "********** ncurses **********"
+echo "********** mawk **********"
 echo
 
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/pub/gnu/ncurses/$NCURSES_TAR" -O "$NCURSES_TAR"
+http://invisible-island.net/datafiles/release/mawk.tar.gz
+wget --ca-certificate="$IDENTRUST_ROOT" "http://invisible-island.net/datafiles/release/$MAWK_TAR" -O "$MAWK_TAR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download zLib"
+    echo "Failed to download mawk"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-rm -rf "$NCURSES_DIR" &>/dev/null
-gzip -d < "$NCURSES_TAR" | tar xf -
-cd "$NCURSES_DIR"
+rm -rf "$MAWK_DIR" &>/dev/null
+gzip -d < "$MAWK_TAR" | tar xf -
+cd "$MAWK_DIR"
 
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG $SH_PIC" \
-    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure ncurses"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to build ncurses"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(install)
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
-
-###############################################################################
-
-echo
-echo "********** Emacs **********"
-echo
-
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/emacs/$EMACS_TAR" -O "$EMACS_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download Emacs"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$EMACS_DIR" &>/dev/null
-gzip -d < "$EMACS_TAR" | tar xf -
-cd "$EMACS_DIR"
-
-SH_CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG -pthread"
-SH_CFLAGS="$SH_MARCH"
-SH_CXXFLAGS="$SH_MARCH"
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR" "-pthread")
-SH_LDLIBS=("-ldl" "-lpthread")
-
-# http://pubs.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_02.html
-# But Cygwin or Newlib headers are mostly fucked up at the moment.
-if [[ "$IS_NEWLIB" -ne "0" ]]; then
-    SH_CPPFLAGS="$SH_CPPFLAGS -D_XOPEN_SOURCE=600"
-fi
-
-    CPPFLAGS="$SH_CPPFLAGS" \
-    CFLAGS="$SH_CFLAGS" CXXFLAGS="$SH_CXXFLAGS" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-xml2 --without-x --without-sound --without-xpm \
-    --without-jpeg --without-tiff --without-gif --without-png --without-rsvg \
-    --without-imagemagick --without-xft --without-libotf --without-m17n-flt \
-    --without-xaw3d --without-toolkit-scroll-bars --without-gpm --without-dbus \
-    --without-gconf --without-gsettings --without-makeinfo \
-    --without-compress-install
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure emacs"
+    echo "Failed to configure mawk"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("-j" "$MAKE_JOBS" all)
+MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build emacs"
+    echo "Failed to build mawk"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+    echo "$SUDO_PASSWWORD" | sudo -S ln -s "$INSTALL_PREFIX/bin/mawk" "$INSTALL_PREFIX/bin/awk"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
+    ln -s "$INSTALL_PREFIX/bin/mawk" "$INSTALL_PREFIX/bin/awk"
 fi
 
 cd "$CURR_DIR"
@@ -333,7 +299,7 @@ echo
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$ZLIB_TAR" "$ZLIB_DIR" "$NCURSES_TAR" "$NCURSES_DIR" "$EMACS_TAR" "$EMACS_DIR")
+    ARTIFACTS=("$ZLIB_TAR" "$ZLIB_DIR" "$NCURSES_TAR" "$NCURSES_DIR" "$MAWK_TAR" "$MAWK_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
