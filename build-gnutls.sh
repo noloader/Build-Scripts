@@ -299,9 +299,6 @@ if [[ "$IS_LINUX" -ne "0" ]]; then
     sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
 fi
 
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
     CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
@@ -352,9 +349,6 @@ fi
 rm -rf "$GMP_DIR" &>/dev/null
 bzip2 -d < "$GMP_TAR" | tar xf -
 cd "$GMP_DIR"
-
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
@@ -407,13 +401,11 @@ rm -rf "$NETTLE_DIR" &>/dev/null
 gzip -d < "$NETTLE_TAR" | tar xf -
 cd "$NETTLE_DIR"
 
+# This works for all versions of Nettle on all Apple platforms
 if [[ "$IS_DARWIN" -ne "0" ]]; then
     sed -i "" -e 's|LD_LIBRARY_PATH|DYLD_LIBRARY_PATH|g' examples/Makefile.in
     sed -i "" -e 's|LD_LIBRARY_PATH|DYLD_LIBRARY_PATH|g' testsuite/Makefile.in
 fi
-
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
@@ -470,9 +462,6 @@ cd "$ICONV_DIR"
 if [[ "$IS_LINUX" -ne "0" ]]; then
     sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
 fi
-
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-SH_LDLIBS=("-ldl" "-lpthread")
 
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
@@ -536,9 +525,6 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
     CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
@@ -596,9 +582,6 @@ cd "$UNBOUND_DIR"
 if [[ "$IS_LINUX" -ne "0" ]]; then
     sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
 fi
-
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
@@ -660,11 +643,8 @@ if [[ "$IS_CLANG" -ne "0" ]]; then
     sed -i -e 's|--param max-inline-insns-single=1200||g' configure
 fi
 
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
-    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]} $SH_PIC" \
     CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
     LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
@@ -719,9 +699,6 @@ if [[ "$IS_LINUX" -ne "0" ]]; then
     sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
 fi
 
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
     CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
@@ -773,9 +750,6 @@ fi
 rm -rf "$READLN_DIR" &>/dev/null
 gzip -d < "$READLN_TAR" | tar xf -
 cd "$READLN_DIR"
-
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
@@ -837,9 +811,6 @@ if [[ "$IS_LINUX" -ne "0" ]]; then
     sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
 fi
 
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
     CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
@@ -862,6 +833,7 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+# https://lists.gnu.org/archive/html/guile-devel/2017-10/msg00009.html
 # MAKE_FLAGS=("check" "V=1")
 # if ! "$MAKE" "${MAKE_FLAGS[@]}"
 # then
@@ -884,7 +856,7 @@ echo
 echo "********** p11-kit **********"
 echo
 
-wget --ca-certificate="$IDENTRUST_ROOT" "https://p11-kit.freedesktop.org/releases/$P11KIT_TAR" -O "$P11KIT_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://p11-glue.freedesktop.org/releases/$P11KIT_TAR" -O "$P11KIT_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download p11-kit"
@@ -899,9 +871,6 @@ cd "$P11KIT_DIR"
 if [[ "$IS_LINUX" -ne "0" ]]; then
     sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
 fi
-
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
@@ -958,9 +927,6 @@ cd "$GNUTLS_DIR"
 if [[ "$IS_LINUX" -ne "0" ]]; then
     sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
 fi
-
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-SH_LDLIBS=("-ldl" "-lpthread")
 
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \

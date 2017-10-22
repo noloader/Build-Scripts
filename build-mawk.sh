@@ -305,9 +305,9 @@ if true; then
         rm -rf "$artifact"
     done
 
-    # ./build-emacs.sh 2>&1 | tee build-emacs.log
-    if [[ -e build-emacs.log ]]; then
-        rm build-emacs.log
+    # ./build-mawk.sh 2>&1 | tee build-mawk.log
+    if [[ -e build-mawk.log ]]; then
+        rm build-mawk.log
     fi
 fi
 
