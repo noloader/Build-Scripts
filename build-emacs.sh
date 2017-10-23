@@ -87,7 +87,6 @@ THIS_SYSTEM=$(uname -s 2>&1)
 IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c darwin)
 IS_CYGWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c cygwin)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
-IS_FEDORA=$(lsb_release -a 2>/dev/null | grep -i -c 'Fedora')
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ $(command -v gmake 2>/dev/null) ]]; then
@@ -159,6 +158,12 @@ OPT_CXXFLAGS=("$SH_MARCH" "$SH_NATIVE")
 OPT_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 OPT_LIBS=("-ldl" "-lpthread")
 
+# http://pubs.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_02.html
+# But Cygwin or Newlib headers are mostly fucked up at the moment.
+if [[ "$IS_NEWLIB" -ne "0" ]] || [[ "$IS_CYGWIN" -ne "0" ]]; then
+    OPT_CPPFLAGS+=("-D_XOPEN_SOURCE=600")
+fi
+
 if [[ ! -z "$SH_DTAGS" ]]; then
     OPT_LDFLAGS+=("$SH_DTAGS")
 fi
@@ -222,21 +227,10 @@ rm -rf "$EMACS_DIR" &>/dev/null
 gzip -d < "$EMACS_TAR" | tar xf -
 cd "$EMACS_DIR"
 
-SH_CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG -pthread"
-SH_CFLAGS="$SH_MARCH"
-SH_CXXFLAGS="$SH_MARCH"
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR" "-pthread")
-SH_LDLIBS=("-ldl" "-lpthread")
-
-# http://pubs.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_02.html
-# But Cygwin or Newlib headers are mostly fucked up at the moment.
-if [[ "$IS_NEWLIB" -ne "0" ]]; then
-    SH_CPPFLAGS="$SH_CPPFLAGS -D_XOPEN_SOURCE=600"
-fi
-
-    CPPFLAGS="$SH_CPPFLAGS" \
-    CFLAGS="$SH_CFLAGS" CXXFLAGS="$SH_CXXFLAGS" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --with-xml2 --without-x --without-sound --without-xpm \
     --without-jpeg --without-tiff --without-gif --without-png --without-rsvg \
