@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds GnuTLS and its dependencies from sources.
+# This script builds Mawk and its dependencies from sources.
+# It is needed on Debian and Ubuntu, not Fedora, OS X, Solaris or friends
 
 # See fixup for INSTALL_LIBDIR below
 INSTALL_PREFIX=/usr/local
@@ -50,11 +51,6 @@ if [[ -z $(command -v gzip 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-if [[ -z $(command -v bzip2 2>/dev/null) ]]; then
-    echo "Some packages bzip2. Please install bzip2."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
 IS_DARWIN=$(uname -s | grep -i -c darwin)
 if [[ ("$IS_DARWIN" -eq "0") ]] && [[ -z $(command -v libtoolize 2>/dev/null) ]]; then
     echo "Some packages require libtool. Please install libtool or libtool-bin."
@@ -67,57 +63,30 @@ if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
 fi
 
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "GnuTLS requires several CA roots. Please run build-cacert.sh."
+    echo "Mawk requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
-    echo "GnuTLS requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ ! -f "$HOME/.cacert/digicert-root-ca.pem" ]]; then
-    echo "GnuTLS requires several CA roots. Please run build-cacert.sh."
+    echo "Mawk requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
 IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
-DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
-ADDTRUST_ROOT="$HOME/.cacert/addtrust-root-ca.pem"
 
 ###############################################################################
 
 THIS_SYSTEM=$(uname -s 2>&1)
 IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c darwin)
-IS_LINUX=$(echo -n "$THIS_SYSTEM" | grep -i -c linux)
 IS_CYGWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c cygwin)
-IS_MINGW=$(echo -n "$THIS_SYSTEM" | grep -i -c mingw)
-IS_OPENBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c openbsd)
-IS_DRAGONFLY=$(echo -n "$THIS_SYSTEM" | grep -i -c dragonfly)
-IS_FREEBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c freebsd)
-IS_NETBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c netbsd)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
-IS_FEDORA=$(lsb_release -a 2>/dev/null | grep -i -c 'Fedora')
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ $(command -v gmake 2>/dev/null) ]]; then
     MAKE="gmake"
 else
     MAKE="make"
-fi
-
-# Boehm garbage collector. Look in /usr/lib and /usr/lib64
-if [[ "$IS_DEBIAN" -ne "0" ]]; then
-    if [[ -z $(find /usr -maxdepth 2 -name libgc.so 2>/dev/null) ]]; then
-        echo "GnuTLS requires Boehm garbage collector. Please install libgc-dev."
-        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-    fi
-elif [[ "$IS_FEDORA" -ne "0" ]]; then
-    if [[ -z $(find /usr -maxdepth 2 -name libgc.so 2>/dev/null) ]]; then
-        echo "GnuTLS requires Boehm garbage collector. Please install gc-devel."
-        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-    fi
 fi
 
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
@@ -149,7 +118,6 @@ fi
 
 if [[ (-z "$CC" && $(command -v cc 2>/dev/null) ) ]]; then CC=$(command -v cc); fi
 if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC); fi
-IS_CLANG=$("$CXX" --version 2>/dev/null | grep -i -c -E '(llvm|clang)')
 
 MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
@@ -162,17 +130,11 @@ if [[ "$PIC_ERROR" -ne "0" ]]; then
     SH_PIC=
 fi
 
-# For the benefit of Nettle, GMP and GnuTLS. Make them run fast.
+# For the benefit of Mawk. Make it run fast.
 SH_NATIVE="-march=native"
 NATIVE_ERROR=$($CC $SH_NATIVE -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$NATIVE_ERROR" -ne "0" ]]; then
     SH_NATIVE=
-fi
-
-# Solaris fixup.... Ncurses 6.0 does not build and the patches don't apply
-if [[ "$IS_SOLARIS" -ne "0" ]]; then
-    NCURSES_TAR=ncurses-5.9.tar.gz
-    NCURSES_DIR=ncurses-5.9
 fi
 
 ###############################################################################
@@ -249,7 +211,6 @@ echo
 echo "********** mawk **********"
 echo
 
-http://invisible-island.net/datafiles/release/mawk.tar.gz
 wget --ca-certificate="$IDENTRUST_ROOT" "http://invisible-island.net/datafiles/release/$MAWK_TAR" -O "$MAWK_TAR"
 
 if [[ "$?" -ne "0" ]]; then
@@ -279,6 +240,13 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+MAKE_FLAGS=("check")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test mawk"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
@@ -299,7 +267,7 @@ echo
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$ZLIB_TAR" "$ZLIB_DIR" "$NCURSES_TAR" "$NCURSES_DIR" "$MAWK_TAR" "$MAWK_DIR")
+    ARTIFACTS=("$ZLIB_TAR" "$ZLIB_DIR" "$MAWK_TAR" "$MAWK_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
