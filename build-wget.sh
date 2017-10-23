@@ -568,10 +568,10 @@ then
 fi
 
 MAKE_FLAGS=("check")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test Wget"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=("install")
