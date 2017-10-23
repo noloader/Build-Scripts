@@ -8,24 +8,14 @@
 INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 
-# ClamAV can only use OpenSSL 1.0.2 at the moment
-OPENSSL_TAR=openssl-1.0.2l.tar.gz
-OPENSSL_DIR=openssl-1.0.2l
-
 CLAMAV_TAR=clamav-0.99.3-beta1.tar.gz
 CLAMAV_DIR=clamav-0.99.3-beta1
-
-PCRE_TAR=pcre-8.41.tar.gz
-PCRE_DIR=pcre-8.41
-
-ZLIB_TAR=zlib-1.2.11.tar.gz
-ZLIB_DIR=zlib-1.2.11
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
 
-# Sets the number of make jobs
-MAKE_JOBS=4
+# Sets the number of make jobs if not set in environment
+: "${MAKE_JOBS:=4}"
 
 ###############################################################################
 
@@ -58,33 +48,35 @@ if [[ -z $(command -v gzip 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+IS_DARWIN=$(uname -s | grep -i -c darwin)
+if [[ ("$IS_DARWIN" -eq "0") ]] && [[ -z $(command -v libtoolize 2>/dev/null) ]]; then
+    echo "Some packages require libtool. Please install libtool or libtool-bin."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
+    echo "ClamAV requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
-    echo "Wget requires several CA roots. Please run build-cacert.sh."
+    echo "ClamAV requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-if [[ ! -f "$HOME/.cacert/addtrust-root-ca.pem" ]]; then
-    echo "Wget requires several CA roots. Please run build-cacert.sh."
+if [[ ! -f "$HOME/.cacert/cacert.pem" ]]; then
+    echo "ClamAV requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-# ClamAV has a few redirects due to use of a CDN. Just use cacerts.pem
+LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
 IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
 CLAMAV_MULTIPLE_ROOTS="$HOME/.cacert/cacert.pem"
-
-###############################################################################
-
-echo
-echo "If you enter a sudo password, then it will be used for installation."
-echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
-echo "To avoid sudo and the password, just press ENTER and they won't be used."
-read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
-echo
 
 ###############################################################################
 
@@ -92,11 +84,6 @@ THIS_SYSTEM=$(uname -s 2>&1)
 IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c darwin)
 IS_LINUX=$(echo -n "$THIS_SYSTEM" | grep -i -c linux)
 IS_CYGWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c cygwin)
-IS_MINGW=$(echo -n "$THIS_SYSTEM" | grep -i -c mingw)
-IS_OPENBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c openbsd)
-IS_DRAGONFLY=$(echo -n "$THIS_SYSTEM" | grep -i -c dragonfly)
-IS_FREEBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c freebsd)
-IS_NETBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c netbsd)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
 # The BSDs and Solaris should have GMake installed if its needed
@@ -114,33 +101,28 @@ if [[ "$IS_64BIT" -eq "0" ]]; then
     IS_64BIT=$(file /bin/ls 2>&1 | grep -i -c '64-bit')
 fi
 
-if [[ "$IS_SOLARIS" -eq "1" ]]; then
+if [[ "$IS_SOLARIS" -ne "0" ]]; then
     SH_KBITS="64"
     SH_MARCH="-m64"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
-    INSTALL_LIBDIR_DIR="lib64"
-elif [[ "$IS_64BIT" -eq "1" ]]; then
+elif [[ "$IS_64BIT" -ne "0" ]]; then
     if [[ (-d /usr/lib) && (-d /usr/lib32) ]]; then
         SH_KBITS="64"
         SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
-        INSTALL_LIBDIR_DIR="lib"
     elif [[ (-d /usr/lib) && (-d /usr/lib64) ]]; then
         SH_KBITS="64"
         SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
-        INSTALL_LIBDIR_DIR="lib64"
     else
         SH_KBITS="64"
         SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
-        INSTALL_LIBDIR_DIR="lib"
     fi
 else
     SH_KBITS="32"
     SH_MARCH="-m32"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
-    INSTALL_LIBDIR_DIR="lib"
 fi
 
 if [[ (-z "$CC" && $(command -v cc 2>/dev/null) ) ]]; then CC=$(command -v cc); fi
@@ -151,168 +133,95 @@ if [[ "$MARCH_ERROR" -ne "0" ]]; then
     SH_MARCH=
 fi
 
-echo
-echo "********** libdir **********"
-echo
-echo "Using libdir $INSTALL_LIBDIR"
+SH_PIC="-fPIC"
+PIC_ERROR=$($CC $SH_PIC -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
+if [[ "$PIC_ERROR" -ne "0" ]]; then
+    SH_PIC=
+fi
+
+# For the benefit of ClamAV. Make it run fast.
+SH_NATIVE="-march=native"
+NATIVE_ERROR=$($CC $SH_NATIVE -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
+if [[ "$NATIVE_ERROR" -ne "0" ]]; then
+    SH_NATIVE=
+fi
+
+SH_DTAGS="-Wl,--enable-new-dtags"
+DT_ERROR=$($CC $SH_DTAGS -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
+if [[ "$DT_ERROR" -ne "0" ]]; then
+    SH_DTAGS=
+fi
 
 ###############################################################################
 
-echo
-echo "********** zLib **********"
-echo
+OPT_PKGCONFIG=("$INSTALL_LIBDIR/pkgconfig")
+OPT_CPPFLAGS=("-I$INSTALL_PREFIX/include" "-DNDEBUG")
+OPT_CFLAGS=("$SH_MARCH" "$SH_NATIVE")
+OPT_CXXFLAGS=("$SH_MARCH" "$SH_NATIVE")
+OPT_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+OPT_LIBS=("-ldl" "-lpthread")
 
-wget "http://www.zlib.net/$ZLIB_TAR" -O "$ZLIB_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+if [[ ! -z "$SH_DTAGS" ]]; then
+    OPT_LDFLAGS+=("$SH_DTAGS")
 fi
 
-rm -rf "$ZLIB_DIR" &>/dev/null
-gzip -d < "$ZLIB_TAR" | tar xf -
-cd "$ZLIB_DIR"
+echo ""
+echo "Common flags and options:"
+echo "  PKGCONFIG: ${OPT_PKGCONFIG[*]}"
+echo "   CPPFLAGS: ${OPT_CPPFLAGS[*]}"
+echo "     CFLAGS: ${OPT_CFLAGS[*]}"
+echo "   CXXFLAGS: ${OPT_CXXFLAGS[*]}"
+echo "    LDFLAGS: ${OPT_LDFLAGS[*]}"
+echo "     LDLIBS: ${OPT_LIBS[*]}"
 
-if [[ "$IS_CYGWIN" -ne "0" ]]; then
-    if [[ -f "gzguts.h" ]]; then
-        sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
-    fi
+###############################################################################
+
+IS_EXPORTED=$(export | grep -c SUDO_PASSWWORD)
+if [[ "$IS_EXPORTED" -eq "0" ]]; then
+
+  echo
+  echo "If you enter a sudo password, then it will be used for installation."
+  echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
+  echo "To avoid sudo and the password, just press ENTER and they won't be used."
+  read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+  echo
+
+  # If IS_EXPORTED=2, then we unset it after we are done
+  export SUDO_PASSWWORD
+  IS_EXPORTED=2
 fi
 
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+###############################################################################
 
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(-j "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! ./build-zlib.sh
 then
     echo "Failed to build zLib"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
+###############################################################################
 
-cd "$CURR_DIR"
+if ! ./build-bzip.sh
+then
+    echo "Failed to build Bzip2"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
 
 ###############################################################################
 
-echo
-echo "********** OpenSSL **********"
-echo
-
-# wget on Ubuntu 16 cannot validate against Let's Encrypt certificate
-wget --ca-certificate="$IDENTRUST_ROOT" "https://www.openssl.org/source/$OPENSSL_TAR" -O "$OPENSSL_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download OpenSSL"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$OPENSSL_DIR" &>/dev/null
-gzip -d < "$OPENSSL_TAR" | tar xf -
-cd "$OPENSSL_DIR"
-
-# OpenSSL and enable-ec_nistp_64_gcc_128 option
-IS_X86_64=$(uname -m 2>&1 | grep -E -i -c "(amd64|x86_64)")
-if [[ "$SH_KBITS" -eq "32" ]]; then IS_X86_64=0; fi
-
-CONFIG=./config
-CONFIG_FLAGS=("no-ssl2" "no-ssl3" "no-comp" "shared" "-DNDEBUG" "-Wl,-rpath,$INSTALL_LIBDIR"
-        "--prefix=$INSTALL_PREFIX" "--openssldir=$INSTALL_PREFIX" "--libdir=$INSTALL_LIBDIR_DIR")
-if [[ "$IS_X86_64" -eq "1" ]]; then
-    CONFIG_FLAGS+=("enable-ec_nistp_64_gcc_128")
-fi
-
-KERNEL_BITS="$SH_KBITS" "$CONFIG" "${CONFIG_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure OpenSSL"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(depend)
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to build OpenSSL dependencies"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(-j "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! ./build-openssl.sh
 then
     echo "Failed to build OpenSSL"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install_sw)
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
-
 ###############################################################################
 
-echo
-echo "********** PCRE **********"
-echo
-
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.pcre.org/pub/pcre/$PCRE_TAR" -O "$PCRE_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download PCRE"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$PCRE_DIR" &>/dev/null
-gzip -d < "$PCRE_TAR" | tar xf -
-cd "$PCRE_DIR"
-
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-SH_LDLIBS=("-lz" "-ldl" "-lpthread")
-
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --enable-pcregrep-libz --enable-jit --enable-pcregrep-libbz2
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure PCRE"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(-j "$MAKE_JOBS" all)
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! ./build-pcre.sh
 then
     echo "Failed to build PCRE"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
-
-MAKE_FLAGS=(install)
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -331,28 +240,38 @@ rm -rf "$CLAMAV_DIR" &>/dev/null
 gzip -d < "$CLAMAV_TAR" | tar xf -
 cd "$CLAMAV_DIR"
 
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-SH_LDLIBS=("-lz" "-ldl" "-lpthread")
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+if [[ "$IS_LINUX" -ne "0" ]]; then
+    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
+fi
 
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
+    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
+    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-openssl-dir="$INSTALL_PREFIX" --with-zlib="$INSTALL_LIBDIR"
+    --with-openssl-dir="$INSTALL_PREFIX" --with-zlib="$INSTALL_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure ClamAV"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(-j "$MAKE_JOBS" all)
+MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build ClamAV"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install)
+MAKE_FLAGS=("check")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test ClamAV"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
     echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -370,8 +289,7 @@ echo
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$CLAMAV_TAR" "$CLAMAV_DIR"
-               "$PCRE_TAR" "$PCRE_DIR" "$ZLIB_TAR" "$ZLIB_DIR")
+    ARTIFACTS=("$CLAMAV_TAR" "$CLAMAV_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
@@ -381,6 +299,11 @@ if true; then
     if [[ -e build-clamav.log ]]; then
         rm build-clamav.log
     fi
+fi
+
+# If IS_EXPORTED=2, then we set it
+if [[ "$IS_EXPORTED" -eq "2" ]]; then
+    unset SUDO_PASSWORD
 fi
 
 [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
