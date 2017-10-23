@@ -75,7 +75,6 @@ if [[ ! -f "$HOME/.cacert/cacert.pem" ]]; then
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
-IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
 CLAMAV_MULTIPLE_ROOTS="$HOME/.cacert/cacert.pem"
 
 ###############################################################################
@@ -83,7 +82,6 @@ CLAMAV_MULTIPLE_ROOTS="$HOME/.cacert/cacert.pem"
 THIS_SYSTEM=$(uname -s 2>&1)
 IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c darwin)
 IS_LINUX=$(echo -n "$THIS_SYSTEM" | grep -i -c linux)
-IS_CYGWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c cygwin)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
 # The BSDs and Solaris should have GMake installed if its needed
@@ -102,25 +100,20 @@ if [[ "$IS_64BIT" -eq "0" ]]; then
 fi
 
 if [[ "$IS_SOLARIS" -ne "0" ]]; then
-    SH_KBITS="64"
     SH_MARCH="-m64"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 elif [[ "$IS_64BIT" -ne "0" ]]; then
     if [[ (-d /usr/lib) && (-d /usr/lib32) ]]; then
-        SH_KBITS="64"
         SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
     elif [[ (-d /usr/lib) && (-d /usr/lib64) ]]; then
-        SH_KBITS="64"
         SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
     else
-        SH_KBITS="64"
         SH_MARCH="-m64"
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
     fi
 else
-    SH_KBITS="32"
     SH_MARCH="-m32"
     INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
 fi
