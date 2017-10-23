@@ -7,12 +7,6 @@
 INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 
-ZLIB_TAR=zlib-1.2.11.tar.gz
-ZLIB_DIR=zlib-1.2.11
-
-NCURSES_TAR=ncurses-6.0.tar.gz
-NCURSES_DIR=ncurses-6.0
-
 EMACS_TAR=emacs-24.5.tar.gz
 EMACS_DIR=emacs-24.5
 
@@ -143,7 +137,7 @@ if [[ "$PIC_ERROR" -ne "0" ]]; then
     SH_PIC=
 fi
 
-# For the benefit of Nettle, GMP and Emacs. Make them run fast.
+# For the benefit of Emacs. Make it run fast.
 SH_NATIVE="-march=native"
 NATIVE_ERROR=$($CC $SH_NATIVE -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$NATIVE_ERROR" -ne "0" ]]; then
@@ -154,12 +148,6 @@ SH_DTAGS="-Wl,--enable-new-dtags"
 DT_ERROR=$($CC $SH_DTAGS -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$DT_ERROR" -ne "0" ]]; then
     SH_DTAGS=
-fi
-
-# Solaris fixup.... Ncurses 6.0 does not build and the patches don't apply
-if [[ "$IS_SOLARIS" -ne "0" ]]; then
-    NCURSES_TAR=ncurses-5.9.tar.gz
-    NCURSES_DIR=ncurses-5.9
 fi
 
 ###############################################################################
@@ -186,116 +174,36 @@ echo "     LDLIBS: ${OPT_LIBS[*]}"
 
 ###############################################################################
 
-echo
-echo "If you enter a sudo password, then it will be used for installation."
-echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
-echo "To avoid sudo and the password, just press ENTER and they won't be used."
-read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
-echo
+IS_EXPORTED=$(export | grep -c SUDO_PASSWWORD)
+if [[ "$IS_EXPORTED" -eq "0" ]]; then
+
+  echo
+  echo "If you enter a sudo password, then it will be used for installation."
+  echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
+  echo "To avoid sudo and the password, just press ENTER and they won't be used."
+  read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+  echo
+
+  # If IS_EXPORTED=2, then we unset it after we are done
+  export SUDO_PASSWWORD
+  IS_EXPORTED=2
+fi
 
 ###############################################################################
 
-echo
-echo "********** zLib **********"
-echo
-
-wget "http://www.zlib.net/$ZLIB_TAR" -O "$ZLIB_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$ZLIB_DIR" &>/dev/null
-gzip -d < "$ZLIB_TAR" | tar xf -
-cd "$ZLIB_DIR"
-
-if [[ "$IS_CYGWIN" -ne "0" ]]; then
-    if [[ -f "gzguts.h" ]]; then
-        sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
-    fi
-fi
-
-SH_LDLIBS=("-ldl" "-lpthread")
-SH_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
-
-    CPPFLAGS="-I$INSTALL_PREFIX/include -DNDEBUG" \
-    CFLAGS="$SH_MARCH" CXXFLAGS="$SH_MARCH" \
-    LDFLAGS="${SH_LDFLAGS[*]}" LIBS="${SH_LDLIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! ./build-zlib.sh
 then
     echo "Failed to build zLib"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
-
 ###############################################################################
 
-echo
-echo "********** ncurses **********"
-echo
-
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/pub/gnu/ncurses/$NCURSES_TAR" -O "$NCURSES_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$NCURSES_DIR" &>/dev/null
-gzip -d < "$NCURSES_TAR" | tar xf -
-cd "$NCURSES_DIR"
-
-    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
-    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
-    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
-    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-shared --with-cxx-shared --enable-pc-files \
-    --with-termlib --enable-widec --disable-root-environ \
-    --with-build-cc="$CC" --with-build-cxx="$CXX" \
-    --with-build-cpp="${OPT_CPPFLAGS[*]}" \
-    --with-build-cflags="${OPT_CFLAGS[*]}" \
-    --with-build-cxxflags="${OPT_CXXFLAGS[*]}"  \
-    --with-build-ldflags="${OPT_LDFLAGS[*]}" \
-    --with-build-libs="${OPT_LIBS[*]}"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure ncurses"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! ./build-bzip.sh
 then
-    echo "Failed to build ncurses"
+    echo "Failed to build Bzip2"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
-
-MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -360,14 +268,10 @@ cd "$CURR_DIR"
 
 ###############################################################################
 
-echo
-echo "********** Cleanup **********"
-echo
-
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$ZLIB_TAR" "$ZLIB_DIR" "$NCURSES_TAR" "$NCURSES_DIR" "$EMACS_TAR" "$EMACS_DIR")
+    ARTIFACTS=("$NCURSES_TAR" "$NCURSES_DIR" "$EMACS_TAR" "$EMACS_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
@@ -377,6 +281,11 @@ if true; then
     if [[ -e build-emacs.log ]]; then
         rm build-emacs.log
     fi
+fi
+
+# If IS_EXPORTED=2, then we set it
+if [[ "$IS_EXPORTED" -eq "2" ]]; then
+    unset SUDO_PASSWORD
 fi
 
 [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
