@@ -131,7 +131,7 @@ fi
 
 GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
 if [[ "$GNU_LD" -ne "0" ]]; then
-    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c error)
+    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | egrep -i -c 'fatal|error|not found')
     if [[ "$SH_ERROR" -eq "0" ]]; then
         SH_DTAGS="-Wl,--enable-new-dtags"
     fi
