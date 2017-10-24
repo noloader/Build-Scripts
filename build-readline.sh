@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds PCRE and PCRE2 from sources.
+# This script builds Readline from sources. Ncurses should
+# be built first. If it is built, then tinfo will be used.
 
 # See fixup for INSTALL_LIBDIR below
 INSTALL_PREFIX=/usr/local
@@ -71,6 +72,7 @@ IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
 THIS_SYSTEM=$(uname -s 2>&1)
 IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c darwin)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
+IS_FEDORA=$(lsb_release -a 2>&1 | grep -i -c fedora)
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ $(command -v gmake 2>/dev/null) ]]; then
@@ -127,10 +129,12 @@ if [[ "$NATIVE_ERROR" -ne "0" ]]; then
     SH_NATIVE=
 fi
 
-SH_DTAGS="-Wl,--enable-new-dtags"
-DT_ERROR=$($CC $SH_DTAGS -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
-if [[ "$DT_ERROR" -ne "0" ]]; then
-    SH_DTAGS=
+GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
+if [[ "$GNU_LD" -ne "0" ]]; then
+    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c error)
+    if [[ "$SH_ERROR" -eq "0" ]]; then
+        SH_DTAGS="-Wl,--enable-new-dtags"
+    fi
 fi
 
 ###############################################################################
@@ -181,10 +185,6 @@ rm -rf "$READLN_DIR" &>/dev/null
 gzip -d < "$READLN_TAR" | tar xf -
 cd "$READLN_DIR"
 
-if [[ -f "$INSTALL_LIBDIR/libtinfow.so" ]]; then
-    OPT_LIBS+=("-ltinfow")
-fi
-
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
     CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
@@ -192,10 +192,16 @@ fi
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --enable-shared --with-curses
 
-# Fix broken Linux dynamic linker
-if [[ -f "$INSTALL_LIBDIR/libtinfow.so" ]]; then
+# Fix broken Linux dynamic linker. tinfow or tinfo from ncurses
+if [[ ! -z $(find /usr/local/lib64 -name '*tinfow*') ]]; then
+    SH_TINFO="-ltinfow"
+elif [[ ! -z $(find /usr/local/lib64 -name '*tinfo*') ]]; then
+    SH_TINFO="-ltinfo"
+fi
+
+if [[ ! -z "$SH_TINFO" ]]; then
     for mfile in $(find "$PWD" -name 'Makefile'); do
-        sed -i 's|SHLIB_LIBS =|SHLIB_LIBS = -ltinfow|g' "$mfile"
+        sed -i "s|SHLIB_LIBS =|SHLIB_LIBS = $SH_TINFO|g" "$mfile"
     done
 fi
 

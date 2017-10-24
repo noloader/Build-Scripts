@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds zLib from sources.
+# This script builds Ncurses from sources.
 
 # See fixup for INSTALL_LIBDIR below
 INSTALL_PREFIX=/usr/local
@@ -59,7 +59,7 @@ if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
 fi
 
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "zLib requires several CA roots. Please run build-cacert.sh."
+    echo "Ncurses requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -128,10 +128,12 @@ if [[ "$NATIVE_ERROR" -ne "0" ]]; then
     SH_NATIVE=
 fi
 
-SH_DTAGS="-Wl,--enable-new-dtags"
-DT_ERROR=$($CC $SH_DTAGS -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
-if [[ "$DT_ERROR" -ne "0" ]]; then
-    SH_DTAGS=
+GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
+if [[ "$GNU_LD" -ne "0" ]]; then
+    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c error)
+    if [[ "$SH_ERROR" -eq "0" ]]; then
+        SH_DTAGS="-Wl,--enable-new-dtags"
+    fi
 fi
 
 # Solaris fixup.... Ncurses 6.0 does not build and the patches don't apply
@@ -148,6 +150,12 @@ OPT_CFLAGS=("$SH_MARCH" "$SH_NATIVE")
 OPT_CXXFLAGS=("$SH_MARCH" "$SH_NATIVE")
 OPT_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 OPT_LIBS=("-ldl" "-lpthread")
+
+if [[ ! -z "$SH_PIC" ]]; then
+    OPT_CPPFLAGS+=("$SH_PIC")
+    OPT_CFLAGS+=("$SH_PIC")
+    OPT_CXXFLAGS+=("$SH_PIC")
+fi
 
 if [[ ! -z "$SH_DTAGS" ]]; then
     OPT_LDFLAGS+=("$SH_DTAGS")
@@ -180,7 +188,7 @@ echo
 wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/pub/gnu/ncurses/$NCURSES_TAR" -O "$NCURSES_TAR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download zLib"
+    echo "Failed to download Ncurses"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 

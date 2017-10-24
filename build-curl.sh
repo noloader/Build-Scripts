@@ -127,10 +127,12 @@ if [[ "$NATIVE_ERROR" -ne "0" ]]; then
     SH_NATIVE=
 fi
 
-SH_DTAGS="-Wl,--enable-new-dtags"
-DT_ERROR=$($CC $SH_DTAGS -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
-if [[ "$DT_ERROR" -ne "0" ]]; then
-    SH_DTAGS=
+GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
+if [[ "$GNU_LD" -ne "0" ]]; then
+    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c error)
+    if [[ "$SH_ERROR" -eq "0" ]]; then
+        SH_DTAGS="-Wl,--enable-new-dtags"
+    fi
 fi
 
 # cURL CA cert path. Should be the hashes.
