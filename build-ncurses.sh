@@ -195,12 +195,6 @@ rm -rf "$NCURSES_DIR" &>/dev/null
 gzip -d < "$NCURSES_TAR" | tar xf -
 cd "$NCURSES_DIR"
 
-if [[ "$IS_CLANG" -ne "0" ]]; then
-    for mfile in $(find "$PWD" -name 'Makefile'); do
-        sed -i 's|--param max-inline-insns-single=1200||g' "$mfile"
-    done
-fi
-
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
     CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
@@ -214,6 +208,12 @@ fi
     --with-build-cxxflags="${OPT_CXXFLAGS[*]}" \
     --with-build-ldflags="${OPT_LDFLAGS[*]}" \
     --with-build-libs="${OPT_LIBS[*]}"
+
+if [[ "$IS_CLANG" -ne "0" ]]; then
+    for mfile in $(find "$PWD" -name 'Makefile'); do
+        sed -i 's|--param max-inline-insns-single=1200||g' "$mfile"
+    done
+fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure ncurses"
