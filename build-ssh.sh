@@ -7,15 +7,8 @@
 INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 
-# OpenSSH can only use OpenSSL 1.0.2 at the moment
-OPENSSL_TAR=openssl-1.0.2l.tar.gz
-OPENSSL_DIR=openssl-1.0.2l
-
 OPENSSH_TAR=openssh-7.6p1.tar.gz
 OPENSSH_DIR=openssh-7.6p1
-
-ZLIB_TAR=zlib-1.2.11.tar.gz
-ZLIB_DIR=zlib-1.2.11
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -87,9 +80,7 @@ IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
 
 THIS_SYSTEM=$(uname -s 2>&1)
 IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c darwin)
-IS_CYGWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c cygwin)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
-IS_FEDORA=$(lsb_release -a 2>/dev/null | grep -i -c 'Fedora')
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ $(command -v gmake 2>/dev/null) ]]; then
@@ -146,6 +137,14 @@ if [[ "$NATIVE_ERROR" -ne "0" ]]; then
     SH_NATIVE=
 fi
 
+GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
+if [[ "$GNU_LD" -ne "0" ]]; then
+    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c error)
+    if [[ "$SH_ERROR" -eq "0" ]]; then
+        SH_DTAGS="-Wl,--enable-new-dtags"
+    fi
+fi
+
 ###############################################################################
 
 OPT_PKGCONFIG=("$INSTALL_LIBDIR/pkgconfig")
@@ -155,130 +154,52 @@ OPT_CXXFLAGS=("$SH_MARCH" "$SH_NATIVE")
 OPT_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 OPT_LIBS=("-ldl" "-lpthread")
 
+if [[ ! -z "$SH_DTAGS" ]]; then
+    OPT_LDFLAGS+=("$SH_DTAGS")
+fi
+
+echo ""
+echo "Common flags and options:"
+echo "  PKGCONFIG: ${OPT_PKGCONFIG[*]}"
+echo "   CPPFLAGS: ${OPT_CPPFLAGS[*]}"
+echo "     CFLAGS: ${OPT_CFLAGS[*]}"
+echo "   CXXFLAGS: ${OPT_CXXFLAGS[*]}"
+echo "    LDFLAGS: ${OPT_LDFLAGS[*]}"
+echo "     LDLIBS: ${OPT_LIBS[*]}"
+
 ###############################################################################
 
-echo
-echo "If you enter a sudo password, then it will be used for installation."
-echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
-echo "To avoid sudo and the password, just press ENTER and they won't be used."
-read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
-echo
+# If IS_EXPORTED=1, then it was set in the parent shell
+IS_EXPORTED=$(export | grep -c SUDO_PASSWWORD)
+if [[ "$IS_EXPORTED" -eq "0" ]]; then
+
+  echo
+  echo "If you enter a sudo password, then it will be used for installation."
+  echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
+  echo "To avoid sudo and the password, just press ENTER and they won't be used."
+  read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+  echo
+
+  # If IS_EXPORTED=2, then we unset it after we are done
+  export SUDO_PASSWWORD
+  IS_EXPORTED=2
+fi
 
 ###############################################################################
 
-echo
-echo "********** zLib **********"
-echo
-
-wget "http://www.zlib.net/$ZLIB_TAR" -O "$ZLIB_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$ZLIB_DIR" &>/dev/null
-gzip -d < "$ZLIB_TAR" | tar xf -
-cd "$ZLIB_DIR"
-
-if [[ "$IS_CYGWIN" -ne "0" ]]; then
-    if [[ -f "gzguts.h" ]]; then
-        sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
-    fi
-fi
-
-    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
-    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
-    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
-    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! ./build-zlib.sh
 then
     echo "Failed to build zLib"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
-
 ###############################################################################
 
-echo
-echo "********** OpenSSL **********"
-echo
-
-# wget on Ubuntu 16 cannot validate against Let's Encrypt certificate
-wget --ca-certificate="$IDENTRUST_ROOT" "https://www.openssl.org/source/$OPENSSL_TAR" -O "$OPENSSL_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download OpenSSL"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$OPENSSL_DIR" &>/dev/null
-gzip -d < "$OPENSSL_TAR" | tar xf -
-cd "$OPENSSL_DIR"
-
-# OpenSSL and enable-ec_nistp_64_gcc_128 option
-IS_X86_64=$(uname -m 2>&1 | grep -E -i -c "(amd64|x86_64)")
-if [[ "$SH_KBITS" -eq "32" ]]; then IS_X86_64=0; fi
-
-CONFIG=./config
-CONFIG_FLAGS=("no-ssl2" "no-ssl3" "no-comp" "shared" "-DNDEBUG" "-Wl,-rpath,$INSTALL_LIBDIR"
-        "--prefix=$INSTALL_PREFIX" "--openssldir=$INSTALL_PREFIX" "--libdir=$INSTALL_LIBDIR_DIR")
-if [[ "$IS_X86_64" -eq "1" ]]; then
-    CONFIG_FLAGS+=("enable-ec_nistp_64_gcc_128")
-fi
-
-KERNEL_BITS="$SH_KBITS" "$CONFIG" "${CONFIG_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure OpenSSL"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=(depend)
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to build OpenSSL dependencies"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! ./build-openssl.sh
 then
     echo "Failed to build OpenSSL"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
-
-MAKE_FLAGS=("test")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to test OpenSSL"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("install_sw")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -309,7 +230,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("-j" "$MAKE_JOBS" all)
+MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build SSH"
@@ -341,15 +262,15 @@ echo
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR" "$OPENSSH_TAR" "$OPENSSH_DIR" "$ZLIB_TAR" "$ZLIB_DIR")
+    ARTIFACTS=("$OPENSSH_TAR" "$OPENSSH_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
 
-    # ./build-ssh.sh 2>&1 | tee build-ssh.log
-    if [[ -e build-ssh.log ]]; then
-        rm build-ssh.log
+    # ./build-openssh.sh 2>&1 | tee build-openssh.log
+    if [[ -e build-openssh.log ]]; then
+        rm build-openssh.log
     fi
 fi
 
