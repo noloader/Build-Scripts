@@ -64,6 +64,7 @@ if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
+IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
 
 ###############################################################################
 
