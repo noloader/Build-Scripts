@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds zLib from sources.
+# This script builds IDN from sources.
 
 # See fixup for INSTALL_LIBDIR below
 INSTALL_PREFIX=/usr/local
@@ -61,7 +61,7 @@ if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
 fi
 
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "zLib requires several CA roots. Please run build-cacert.sh."
+    echo "IDN requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 

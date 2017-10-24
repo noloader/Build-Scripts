@@ -234,9 +234,9 @@ if true; then
         rm -rf "$artifact"
     done
 
-    # ./build-zlib.sh 2>&1 | tee build-zlib.log
-    if [[ -e build-zlib.log ]]; then
-        rm -f build-zlib.log
+    # ./build-nettle.sh 2>&1 | tee build-nettle.log
+    if [[ -e build-nettle.log ]]; then
+        rm -f build-nettle.log
     fi
 fi
 
