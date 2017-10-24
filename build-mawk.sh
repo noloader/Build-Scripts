@@ -8,9 +8,6 @@
 INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 
-ZLIB_TAR=zlib-1.2.11.tar.gz
-ZLIB_DIR=zlib-1.2.11
-
 MAWK_TAR=mawk.tar.gz
 MAWK_DIR=mawk-1.3.4-20171017
 
@@ -139,7 +136,7 @@ fi
 
 GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
 if [[ "$GNU_LD" -ne "0" ]]; then
-    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | egrep -i -c 'fatal|error|not found')
+    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c -E 'fatal|error|not found')
     if [[ "$SH_ERROR" -eq "0" ]]; then
         SH_DTAGS="-Wl,--enable-new-dtags"
     fi
@@ -154,72 +151,35 @@ OPT_CXXFLAGS=("$SH_MARCH" "$SH_NATIVE")
 OPT_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 OPT_LIBS=("-ldl" "-lpthread")
 
-# OPT_CFLAGS+=("-fsanitize=undefined")
-# OPT_CXXFLAGS+=("-fsanitize=undefined")
-# OPT_LDFLAGS+=("-lubsan")
-
 if [[ ! -z "$SH_DTAGS" ]]; then
     OPT_LDFLAGS+=("$SH_DTAGS")
 fi
 
+echo ""
+echo "Common flags and options:"
+echo "  PKGCONFIG: ${OPT_PKGCONFIG[*]}"
+echo "   CPPFLAGS: ${OPT_CPPFLAGS[*]}"
+echo "     CFLAGS: ${OPT_CFLAGS[*]}"
+echo "   CXXFLAGS: ${OPT_CXXFLAGS[*]}"
+echo "    LDFLAGS: ${OPT_LDFLAGS[*]}"
+echo "     LDLIBS: ${OPT_LIBS[*]}"
+
 ###############################################################################
 
-echo
-echo "If you enter a sudo password, then it will be used for installation."
-echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
-echo "To avoid sudo and the password, just press ENTER and they won't be used."
-read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
-echo
+IS_EXPORTED=$(export | grep -c SUDO_PASSWORD)
+if [[ "$IS_EXPORTED" -eq "0" ]]; then
 
-###############################################################################
+  echo
+  echo "If you enter a sudo password, then it will be used for installation."
+  echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
+  echo "To avoid sudo and the password, just press ENTER and they won't be used."
+  read -r -s -p "Please enter password for sudo: " SUDO_PASSWORD
+  echo
 
-echo
-echo "********** zLib **********"
-echo
-
-wget "http://www.zlib.net/$ZLIB_TAR" -O "$ZLIB_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+  # If IS_EXPORTED=2, then we unset it after we are done
+  export SUDO_PASSWORD
+  IS_EXPORTED=2
 fi
-
-rm -rf "$ZLIB_DIR" &>/dev/null
-gzip -d < "$ZLIB_TAR" | tar xf -
-cd "$ZLIB_DIR"
-
-if [[ "$IS_CYGWIN" -ne "0" ]]; then
-    if [[ -f "gzguts.h" ]]; then
-        sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
-    fi
-fi
-
-    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
-    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
-    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
-    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to build zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -264,26 +224,22 @@ then
 fi
 
 MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-    echo "$SUDO_PASSWWORD" | sudo -S ln -s "$INSTALL_PREFIX/bin/mawk" "$INSTALL_PREFIX/bin/awk"
+if [[ ! (-z "$SUDO_PASSWORD") ]]; then
+    echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+    echo "$SUDO_PASSWORD" | sudo -S ln -s "$INSTALL_PREFIX/bin/mawk" "$INSTALL_PREFIX/bin/awk" 2>/dev/null
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
-    ln -s "$INSTALL_PREFIX/bin/mawk" "$INSTALL_PREFIX/bin/awk"
+    ln -s "$INSTALL_PREFIX/bin/mawk" "$INSTALL_PREFIX/bin/awk" 2>/dev/null
 fi
 
 cd "$CURR_DIR"
 
 ###############################################################################
 
-echo
-echo "********** Cleanup **********"
-echo
-
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$ZLIB_TAR" "$ZLIB_DIR" "$MAWK_TAR" "$MAWK_DIR")
+    ARTIFACTS=("$MAWK_TAR" "$MAWK_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
@@ -291,7 +247,7 @@ if true; then
 
     # ./build-mawk.sh 2>&1 | tee build-mawk.log
     if [[ -e build-mawk.log ]]; then
-        rm build-mawk.log
+        rm -f build-mawk.log
     fi
 fi
 

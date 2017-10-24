@@ -7,25 +7,8 @@
 INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 
-OPENSSL_TAR=openssl-1.0.2l.tar.gz
-OPENSSL_DIR=openssl-1.0.2l
-
-ZLIB_TAR=zlib-1.2.11.tar.gz
-ZLIB_DIR=zlib-1.2.11
-
 UNISTR_TAR=libunistring-0.9.7.tar.gz
 UNISTR_DIR=libunistring-0.9.7
-
-ICONV_TAR=libiconv-1.15.tar.gz
-ICONV_DIR=libiconv-1.15
-
-# Use libidn-1.33 for Solaris and OS X... IDN2 causes too
-# many problems and too few answers on the mailing list.
-IDN_TAR=libidn-1.33.tar.gz
-IDN_DIR=libidn-1.33
-
-PCRE_TAR=pcre-8.41.tar.gz
-PCRE_DIR=pcre-8.41
 
 WGET_TAR=wget-1.19.1.tar.gz
 WGET_DIR=wget-1.19.1
@@ -153,6 +136,14 @@ if [[ "$NATIVE_ERROR" -ne "0" ]]; then
     SH_NATIVE=
 fi
 
+GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
+if [[ "$GNU_LD" -ne "0" ]]; then
+    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c -E 'fatal|error|not found')
+    if [[ "$SH_ERROR" -eq "0" ]]; then
+        SH_DTAGS="-Wl,--enable-new-dtags"
+    fi
+fi
+
 ###############################################################################
 
 OPT_PKGCONFIG=("$INSTALL_LIBDIR/pkgconfig")
@@ -162,64 +153,43 @@ OPT_CXXFLAGS=("$SH_MARCH" "$SH_NATIVE")
 OPT_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 OPT_LIBS=("-ldl" "-lpthread")
 
+if [[ ! -z "$SH_DTAGS" ]]; then
+    OPT_LDFLAGS+=("$SH_DTAGS")
+fi
+
+echo ""
+echo "Common flags and options:"
+echo "  PKGCONFIG: ${OPT_PKGCONFIG[*]}"
+echo "   CPPFLAGS: ${OPT_CPPFLAGS[*]}"
+echo "     CFLAGS: ${OPT_CFLAGS[*]}"
+echo "   CXXFLAGS: ${OPT_CXXFLAGS[*]}"
+echo "    LDFLAGS: ${OPT_LDFLAGS[*]}"
+echo "     LDLIBS: ${OPT_LIBS[*]}"
+
 ###############################################################################
 
-echo
-echo "If you enter a sudo password, then it will be used for installation."
-echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
-echo "To avoid sudo and the password, just press ENTER and they won't be used."
-read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
-echo
+IS_EXPORTED=$(export | grep -c SUDO_PASSWORD)
+if [[ "$IS_EXPORTED" -eq "0" ]]; then
+
+  echo
+  echo "If you enter a sudo password, then it will be used for installation."
+  echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
+  echo "To avoid sudo and the password, just press ENTER and they won't be used."
+  read -r -s -p "Please enter password for sudo: " SUDO_PASSWORD
+  echo
+
+  # If IS_EXPORTED=2, then we unset it after we are done
+  export SUDO_PASSWORD
+  IS_EXPORTED=2
+fi
 
 ###############################################################################
 
-echo
-echo "********** zLib **********"
-echo
-
-wget "http://www.zlib.net/$ZLIB_TAR" -O "$ZLIB_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$ZLIB_DIR" &>/dev/null
-gzip -d < "$ZLIB_TAR" | tar xf -
-cd "$ZLIB_DIR"
-
-if [[ "$IS_CYGWIN" -ne "0" ]]; then
-    if [[ -f "gzguts.h" ]]; then
-        sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
-    fi
-fi
-
-    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
-    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
-    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
-    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! ./build-zlib.sh
 then
     echo "Failed to build zLib"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
-
-MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -257,8 +227,8 @@ then
 fi
 
 MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+if [[ ! (-z "$SUDO_PASSWORD") ]]; then
+    echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
@@ -267,268 +237,35 @@ cd "$CURR_DIR"
 
 ###############################################################################
 
-echo
-echo "********** iConvert **********"
-echo
-
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/pub/gnu/libiconv/$ICONV_TAR" -O "$ICONV_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download iConvert"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$ICONV_DIR" &>/dev/null
-gzip -d < "$ICONV_TAR" | tar xf -
-cd "$ICONV_DIR"
-
-    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
-    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
-    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
-    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure iConvert"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! ./build-iconv.sh
 then
     echo "Failed to build iConv"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
-
 ###############################################################################
 
-echo
-echo "********** IDN **********"
-echo
-
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/libidn/$IDN_TAR" -O "$IDN_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download IDN"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$IDN_DIR" &>/dev/null
-gzip -d < "$IDN_TAR" | tar xf -
-cd "$IDN_DIR"
-
-if [[ "$IS_SOLARIS" -ne "0" ]]; then
-  if [[ (-f src/idn2.c) ]]; then
-    cp src/idn2.c src/idn2.c.orig
-    sed '/^#include "error.h"/d' src/idn2.c.orig > src/idn2.c
-    cp src/idn2.c src/idn2.c.orig
-    sed '43istatic void error (int status, int errnum, const char *format, ...);' src/idn2.c.orig > src/idn2.c
-    rm src/idn2.c.orig
-
-    {
-      echo ""
-      echo "static void"
-      echo "error (int status, int errnum, const char *format, ...)"
-      echo "{"
-      echo "  va_list args;"
-      echo "  va_start(args, format);"
-      echo "  vfprintf(stderr, format, args);"
-      echo "  va_end(args);"
-      echo "  exit(status);"
-      echo "}"
-      echo ""
-    } >> src/idn2.c
-  fi
-fi
-
-# Darwin is mostly fucked up at the moment. Also see
-# http://lists.gnu.org/archive/html/help-libidn/2017-10/msg00002.html
-if [[ "$IS_DARWIN" -ne "0" ]]; then
-    sed -i "" 's|$AR cru|$AR $ARFLAGS|g' configure
-    sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure
-    #sed -i "" 's|$AR cru|$AR $ARFLAGS|g' aclocal.m4
-    #sed -i "" 's|$AR cr|$AR $ARFLAGS|g' aclocal.m4
-    #sed -i "" 's|$AR cru|$AR $ARFLAGS|g' m4/libtool.m4
-    #sed -i "" 's|$AR cr|$AR $ARFLAGS|g' m4/libtool.m4
-    #sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' m4/libtool.m4
-
-    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
-    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
-    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
-    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --enable-shared
-
-    for mfile in $(find "$PWD" -iname 'Makefile'); do
-        echo "Fixing makefile $mfile"
-        sed -i "" 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile"
-        sed -i "" 's|ARFLAGS = cru|ARFLAGS = -static -o |g' "$mfile"
-        sed -i "" 's|ARFLAGS = cr|ARFLAGS = -static -o |g' "$mfile"
-    done
-
-    #for sfile in $(find "$PWD" -iname '*.sh'); do
-    #    echo "Fixing script $sfile"
-    #    sed -i "" 's|$AR cru |$AR $ARFLAGS |g' "$sfile"
-    #    sed -i "" 's|$AR cr |$AR $ARFLAGS |g' "$sfile"
-    #done
-
-else
-
-    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
-    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
-    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
-    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --enable-shared
-
-fi
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure IDN"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! ./build-idn.sh
 then
     echo "Failed to build IDN"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
+###############################################################################
 
-cd "$CURR_DIR"
+if ! ./build-pcre.sh
+then
+    echo "Failed to build PCRE and PCRE2"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
 
 ###############################################################################
 
-echo
-echo "********** PCRE **********"
-echo
-
-wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.pcre.org/pub/pcre/$PCRE_TAR" -O "$PCRE_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download PCRE"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$PCRE_DIR" &>/dev/null
-gzip -d < "$PCRE_TAR" | tar xf -
-cd "$PCRE_DIR"
-
-    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
-    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
-    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
-    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --enable-shared --enable-pcregrep-libz --enable-jit --enable-pcregrep-libbz2
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure PCRE"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to build PCRE"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("check")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to test PCRE"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
-
-###############################################################################
-
-echo
-echo "********** OpenSSL **********"
-echo
-
-wget --ca-certificate="$IDENTRUST_ROOT" "https://www.openssl.org/source/$OPENSSL_TAR" -O "$OPENSSL_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download OpenSSL"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$OPENSSL_DIR" &>/dev/null
-gzip -d < "$OPENSSL_TAR" | tar xf -
-cd "$OPENSSL_DIR"
-
-# OpenSSL and enable-ec_nistp_64_gcc_128 option
-IS_X86_64=$(uname -m 2>&1 | grep -E -i -c "(amd64|x86_64)")
-if [[ "$SH_KBITS" -eq "32" ]]; then IS_X86_64=0; fi
-
-CONFIG=./config
-CONFIG_FLAGS=("no-ssl2" "no-ssl3" "no-comp" "shared" "-DNDEBUG" "-Wl,-rpath,$INSTALL_LIBDIR"
-        "--prefix=$INSTALL_PREFIX" "--openssldir=$INSTALL_PREFIX" "--libdir=$INSTALL_LIBDIR_DIR")
-if [[ "$IS_X86_64" -ne "0" ]]; then
-    CONFIG_FLAGS+=("enable-ec_nistp_64_gcc_128")
-fi
-
-KERNEL_BITS="$SH_KBITS" "$CONFIG" "${CONFIG_FLAGS[@]}"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure OpenSSL"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("depend")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to build OpenSSL dependencies"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! ./build-openssl.sh
 then
     echo "Failed to build OpenSSL"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
-
-MAKE_FLAGS=("test")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to test OpenSSL"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("install_sw")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
 
 ###############################################################################
 
@@ -560,7 +297,7 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("-j" "$MAKE_JOBS" all)
+MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build Wget"
@@ -575,8 +312,8 @@ then
 fi
 
 MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+if [[ ! (-z "$SUDO_PASSWORD") ]]; then
+    echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
@@ -585,15 +322,10 @@ cd "$CURR_DIR"
 
 ###############################################################################
 
-echo
-echo "********** Cleanup **********"
-echo
-
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$ZLIB_TAR" "$ZLIB_DIR" "OPENSSL_TAR" "OPENSSL_DIR" "UNISTR_TAR" "UNISTR_DIR" 
-               "ICONV_TAR" "ICONV_DIR" "PCRE_TAR" "PCRE_DIR" "$WGET_TAR" "$WGET_DIR")
+    ARTIFACTS=("UNISTR_TAR" "UNISTR_DIR" "$WGET_TAR" "$WGET_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
@@ -601,8 +333,13 @@ if true; then
 
     # ./build-wget.sh 2>&1 | tee build-wget.log
     if [[ -e build-wget.log ]]; then
-        rm build-wget.log
+        rm -f build-wget.log
     fi
+fi
+
+# If IS_EXPORTED=2, then we set it
+if [[ "$IS_EXPORTED" -eq "2" ]]; then
+    unset SUDO_PASSWORD
 fi
 
 [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0

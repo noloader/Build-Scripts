@@ -63,6 +63,19 @@ if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+# Boehm garbage collector. Look in /usr/lib and /usr/lib64
+if [[ "$IS_DEBIAN" -ne "0" ]]; then
+    if [[ -z $(find /usr -maxdepth 2 -name libgc.so 2>/dev/null) ]]; then
+        echo "GnuTLS requires Boehm garbage collector. Please install libgc-dev."
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
+elif [[ "$IS_FEDORA" -ne "0" ]]; then
+    if [[ -z $(find /usr -maxdepth 2 -name libgc.so 2>/dev/null) ]]; then
+        echo "GnuTLS requires Boehm garbage collector. Please install gc-devel."
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
+fi
+
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
 IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
 
@@ -129,10 +142,19 @@ fi
 
 GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
 if [[ "$GNU_LD" -ne "0" ]]; then
-    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | egrep -i -c 'fatal|error|not found')
+    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c -E 'fatal|error|not found')
     if [[ "$SH_ERROR" -eq "0" ]]; then
         SH_DTAGS="-Wl,--enable-new-dtags"
     fi
+fi
+
+if [[ -f "/usr/lib64/pkgconfig/bdw-gc.pc" ]]; then
+    SH_BDWGC_PC="/usr/lib64/pkgconfig/bdw-gc.pc"
+fi
+
+if [[ -z "$SH_BDWGC_PC" ]]; then
+    echo "Some packages gzip. Please install gzip."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 ###############################################################################
@@ -155,18 +177,18 @@ fi
 ###############################################################################
 
 # If IS_EXPORTED=1, then it was set in the parent shell
-IS_EXPORTED=$(export | grep -c SUDO_PASSWWORD)
+IS_EXPORTED=$(export | grep -c SUDO_PASSWORD)
 if [[ "$IS_EXPORTED" -eq "0" ]]; then
 
   echo
   echo "If you enter a sudo password, then it will be used for installation."
   echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
   echo "To avoid sudo and the password, just press ENTER and they won't be used."
-  read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+  read -r -s -p "Please enter password for sudo: " SUDO_PASSWORD
   echo
 
   # If IS_EXPORTED=2, then we unset it after we are done
-  export SUDO_PASSWWORD
+  export SUDO_PASSWORD
   IS_EXPORTED=2
 fi
 
@@ -195,15 +217,22 @@ if [[ "$IS_LINUX" -ne "0" ]]; then
     sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
 fi
 
+# --with-bdw-gc="${OPT_PKGCONFIG[*]}/"
+# --disable-posix --disable-networking
+
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
     CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
     LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared --enable-static --with-pic \
+    --disable-deprecated \
     --with-libgmp-prefix="$INSTALL_PREFIX" \
     --with-libunistring-prefix="$INSTALL_PREFIX" \
     --with-libiconv-prefix="$INSTALL_PREFIX" \
-    --with-readline-prefix="$INSTALL_PREFIX"
+    --with-libltdl-prefix="$INSTALL_PREFIX" \
+    --with-readline-prefix="$INSTALL_PREFIX" \
+    --with-libintl-prefix="$INSTALL_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Guile"
@@ -226,8 +255,8 @@ fi
 # fi
 
 MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+if [[ ! (-z "$SUDO_PASSWORD") ]]; then
+    echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
@@ -247,7 +276,7 @@ if true; then
 
     # ./build-guile.sh 2>&1 | tee build-guile.log
     if [[ -e build-guile.log ]]; then
-        rm build-guile.log
+        rm -f build-guile.log
     fi
 fi
 

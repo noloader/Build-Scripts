@@ -151,18 +151,18 @@ fi
 ###############################################################################
 
 # If IS_EXPORTED=1, then it was set in the parent shell
-IS_EXPORTED=$(export | grep -c SUDO_PASSWWORD)
+IS_EXPORTED=$(export | grep -c SUDO_PASSWORD)
 if [[ "$IS_EXPORTED" -eq "0" ]]; then
 
   echo
   echo "If you enter a sudo password, then it will be used for installation."
   echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
   echo "To avoid sudo and the password, just press ENTER and they won't be used."
-  read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+  read -r -s -p "Please enter password for sudo: " SUDO_PASSWORD
   echo
 
   # If IS_EXPORTED=2, then we unset it after we are done
-  export SUDO_PASSWWORD
+  export SUDO_PASSWORD
   IS_EXPORTED=2
 fi
 
@@ -222,8 +222,8 @@ fi
 # fi
 
 MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+if [[ ! (-z "$SUDO_PASSWORD") ]]; then
+    echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
@@ -241,9 +241,9 @@ if true; then
         rm -rf "$artifact"
     done
 
-    # ./build-zlib.sh 2>&1 | tee build-zlib.log
-    if [[ -e build-zlib.log ]]; then
-        rm build-zlib.log
+    # ./build-expat.sh 2>&1 | tee build-expat.log
+    if [[ -e build-expat.log ]]; then
+        rm -f build-expat.log
     fi
 fi
 

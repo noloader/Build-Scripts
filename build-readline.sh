@@ -131,7 +131,7 @@ fi
 
 GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
 if [[ "$GNU_LD" -ne "0" ]]; then
-    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | egrep -i -c 'fatal|error|not found')
+    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c -E 'fatal|error|not found')
     if [[ "$SH_ERROR" -eq "0" ]]; then
         SH_DTAGS="-Wl,--enable-new-dtags"
     fi
@@ -153,18 +153,18 @@ fi
 ###############################################################################
 
 # If IS_EXPORTED=1, then it was set in the parent shell
-IS_EXPORTED=$(export | grep -c SUDO_PASSWWORD)
+IS_EXPORTED=$(export | grep -c SUDO_PASSWORD)
 if [[ "$IS_EXPORTED" -eq "0" ]]; then
 
   echo
   echo "If you enter a sudo password, then it will be used for installation."
   echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
   echo "To avoid sudo and the password, just press ENTER and they won't be used."
-  read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+  read -r -s -p "Please enter password for sudo: " SUDO_PASSWORD
   echo
 
   # If IS_EXPORTED=2, then we unset it after we are done
-  export SUDO_PASSWWORD
+  export SUDO_PASSWORD
   IS_EXPORTED=2
 fi
 
@@ -225,9 +225,9 @@ then
 fi
 
 MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S rm -f "$INSTALL_LIBDIR/libreadline*.*"
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+if [[ ! (-z "$SUDO_PASSWORD") ]]; then
+    echo "$SUDO_PASSWORD" | sudo -S rm -f "$INSTALL_LIBDIR/libreadline*.*"
+    echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     rm -rf "$INSTALL_LIBDIR/libreadline*.*"
     "$MAKE" "${MAKE_FLAGS[@]}"
@@ -248,7 +248,7 @@ if true; then
 
     # ./build-readline.sh 2>&1 | tee build-readline.log
     if [[ -e build-readline.log ]]; then
-        rm build-readline.log
+        rm -f build-readline.log
     fi
 fi
 

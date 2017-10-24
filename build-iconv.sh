@@ -127,10 +127,12 @@ if [[ "$NATIVE_ERROR" -ne "0" ]]; then
     SH_NATIVE=
 fi
 
-SH_DTAGS="-Wl,--enable-new-dtags"
-DT_ERROR=$($CC $SH_DTAGS -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
-if [[ "$DT_ERROR" -ne "0" ]]; then
-    SH_DTAGS=
+GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
+if [[ "$GNU_LD" -ne "0" ]]; then
+    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c -E 'fatal|error|not found')
+    if [[ "$SH_ERROR" -eq "0" ]]; then
+        SH_DTAGS="-Wl,--enable-new-dtags"
+    fi
 fi
 
 ###############################################################################
@@ -149,18 +151,18 @@ fi
 ###############################################################################
 
 # If IS_EXPORTED=1, then it was set in the parent shell
-IS_EXPORTED=$(export | grep -c SUDO_PASSWWORD)
+IS_EXPORTED=$(export | grep -c SUDO_PASSWORD)
 if [[ "$IS_EXPORTED" -eq "0" ]]; then
 
   echo
   echo "If you enter a sudo password, then it will be used for installation."
   echo "If you don't enter a password, then ensure INSTALL_PREFIX is writable."
   echo "To avoid sudo and the password, just press ENTER and they won't be used."
-  read -r -s -p "Please enter password for sudo: " SUDO_PASSWWORD
+  read -r -s -p "Please enter password for sudo: " SUDO_PASSWORD
   echo
 
   # If IS_EXPORTED=2, then we unset it after we are done
-  export SUDO_PASSWWORD
+  export SUDO_PASSWORD
   IS_EXPORTED=2
 fi
 
@@ -212,8 +214,8 @@ then
 fi
 
 MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWWORD") ]]; then
-    echo "$SUDO_PASSWWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+if [[ ! (-z "$SUDO_PASSWORD") ]]; then
+    echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
@@ -233,7 +235,7 @@ if true; then
 
     # ./build-iconv.sh 2>&1 | tee build-iconv.log
     if [[ -e build-iconv.log ]]; then
-        rm build-iconv.log
+        rm -f build-iconv.log
     fi
 fi
 

@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds OpenVPN and its dependencies from sources.
+# This script builds GMP from sources.
 
 # See fixup for INSTALL_LIBDIR below
 INSTALL_PREFIX=/usr/local
 INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
 
-TUNTAP_TAR=v1.3.3.tar.gz
-TUNTAP_DIR=tuntap-1.3.3
-
-OPENVPN_TAR=openvpn-2.4.4.tar.gz
-OPENVPN_DIR=openvpn-2.4.4
+GMP_TAR=gmp-6.1.2.tar.bz2
+GMP_DIR=gmp-6.1.2
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -62,18 +59,11 @@ if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
 fi
 
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "OpenVPN requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ ! -f "$HOME/.cacert/digicert-root-ca.pem" ]]; then
-    echo "OpenVPN requires several CA roots. Please run build-cacert.sh."
+    echo "GMP requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
-DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
-ADDTRUST_ROOT="$HOME/.cacert/addtrust-root-ca.pem"
 
 ###############################################################################
 
@@ -129,7 +119,7 @@ if [[ "$PIC_ERROR" -ne "0" ]]; then
     SH_PIC=
 fi
 
-# For the benefit of OpenVPN. Make it run fast.
+# For the benefit of GMP. Make it run fast.
 SH_NATIVE="-march=native"
 NATIVE_ERROR=$($CC $SH_NATIVE -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$NATIVE_ERROR" -ne "0" ]]; then
@@ -157,17 +147,9 @@ if [[ ! -z "$SH_DTAGS" ]]; then
     OPT_LDFLAGS+=("$SH_DTAGS")
 fi
 
-echo ""
-echo "Common flags and options:"
-echo "  PKGCONFIG: ${OPT_PKGCONFIG[*]}"
-echo "   CPPFLAGS: ${OPT_CPPFLAGS[*]}"
-echo "     CFLAGS: ${OPT_CFLAGS[*]}"
-echo "   CXXFLAGS: ${OPT_CXXFLAGS[*]}"
-echo "    LDFLAGS: ${OPT_LDFLAGS[*]}"
-echo "     LDLIBS: ${OPT_LIBS[*]}"
-
 ###############################################################################
 
+# If IS_EXPORTED=1, then it was set in the parent shell
 IS_EXPORTED=$(export | grep -c SUDO_PASSWORD)
 if [[ "$IS_EXPORTED" -eq "0" ]]; then
 
@@ -185,108 +167,43 @@ fi
 
 ###############################################################################
 
-if ! ./build-zlib.sh
-then
-    echo "Failed to build zLib"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-###############################################################################
-
-if ! ./build-openssl.sh
-then
-    echo "Failed to build OpenSSL"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-###############################################################################
-
-if [[ "$IS_SOLARIS" -ne "0" ]]; then
-
 echo
-echo "********** Solaris TUN/TAP Driver **********"
+echo "********** GMP **********"
 echo
 
-wget --ca-certificate="$DIGICERT_ROOT" "https://github.com/kaizawa/tuntap/archive/$TUNTAP_TAR" -O "$TUNTAP_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/gmp/$GMP_TAR" -O "$GMP_TAR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download TUN/TAP driver"
+    echo "Failed to download GMP"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-rm -rf "$TUNTAP_DIR" &>/dev/null
-gzip -d < "$TUNTAP_TAR" | tar xf -
-cd "$TUNTAP_DIR"
+rm -rf "$GMP_DIR" &>/dev/null
+bzip2 -d < "$GMP_TAR" | tar xf -
+cd "$GMP_DIR"
 
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
     CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
     LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure TUN/TAP driver"
+    echo "Failed to configure GMP"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build TUN/TAP driver"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWORD") ]]; then
-    echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
-
-fi  # Solaris
-
-###############################################################################
-
-echo
-echo "********** OpenVPN **********"
-echo
-
-wget --ca-certificate="$ADDTRUST_ROOT" "https://swupdate.openvpn.org/community/releases/$OPENVPN_TAR" -O "$OPENVPN_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download OpenVPN"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$OPENVPN_DIR" &>/dev/null
-gzip -d < "$OPENVPN_TAR" | tar xf -
-cd "$OPENVPN_DIR"
-
-    PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
-    CPPFLAGS="${OPT_CPPFLAGS[*]}" \
-    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
-    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-crypto-library=openssl --disable-lzo --disable-lz4 --disable-plugin-auth-pam
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure OpenVPN"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to build OpenVPN"
+    echo "Failed to build GMP"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=("check")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build zLib"
+    echo "Failed to test GMP"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -304,15 +221,15 @@ cd "$CURR_DIR"
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$TUNTAP_TAR" "$TUNTAP_DIR" "$OPENVPN_TAR" "$OPENVPN_DIR")
+    ARTIFACTS=("$GMP_TAR" "$GMP_DIR")
 
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
 
-    # ./build-openvpn.sh 2>&1 | tee build-openvpn.log
-    if [[ -e build-openvpn.log ]]; then
-        rm -f build-openvpn.log
+    # ./build-gmp.sh 2>&1 | tee build-gmp.log
+    if [[ -e build-gmp.log ]]; then
+        rm -f build-gmp.log
     fi
 fi
 
