@@ -271,8 +271,10 @@ fi
 
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
-    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
-    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="-lidn2 -lssl -lcrypto -lz ${OPT_LIBS[*]}" \
+    CFLAGS="${OPT_CFLAGS[*]}" \
+    CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" \
+    LIBS="-lidn2 -lssl -lcrypto -lz ${OPT_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     "${CURL_CONFIG_OPTIONS[@]}"
 
