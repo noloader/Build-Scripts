@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds zLib from sources.
+# This script builds Guile from sources. Guile has a lot of issues
+# and I am not sure all of them can be worked around. See, for example,
+# https://lists.gnu.org/archive/html/guile-devel/2017-10/msg00005.html
+# https://lists.gnu.org/archive/html/guile-devel/2017-10/msg00021.html
+# https://lists.gnu.org/archive/html/guile-devel/2017-10/msg00006.html
+# https://lists.gnu.org/archive/html/guile-devel/2017-10/msg00024.html
 
 # See fixup for INSTALL_LIBDIR below
 INSTALL_PREFIX=/usr/local
@@ -59,7 +64,7 @@ if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
 fi
 
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "zLib requires several CA roots. Please run build-cacert.sh."
+    echo "Guile requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -169,6 +174,11 @@ OPT_LIBS=("-ldl" "-lpthread")
 # OPT_CFLAGS+=("-fsanitize=undefined")
 # OPT_CXXFLAGS+=("-fsanitize=undefined")
 # OPT_LDFLAGS+=("-lubsan")
+
+if [[ ! -z "$SH_PIC" ]]; then
+    OPT_CFLAGS+=("$SH_PIC")
+    OPT_CXXFLAGS+=("$SH_PIC")
+fi
 
 if [[ ! -z "$SH_DTAGS" ]]; then
     OPT_LDFLAGS+=("$SH_DTAGS")

@@ -152,7 +152,6 @@ OPT_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 OPT_LIBS=("-ldl" "-lpthread")
 
 if [[ ! -z "$SH_PIC" ]]; then
-    OPT_CPPFLAGS+=("$SH_PIC")
     OPT_CFLAGS+=("$SH_PIC")
     OPT_CXXFLAGS+=("$SH_PIC")
 fi

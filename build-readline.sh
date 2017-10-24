@@ -122,7 +122,7 @@ if [[ "$PIC_ERROR" -ne "0" ]]; then
     SH_PIC=
 fi
 
-# For the benefit of PCRE and PCRE2. Make them run fast.
+# For the benefit of Readline. Make it run fast.
 SH_NATIVE="-march=native"
 NATIVE_ERROR=$($CC $SH_NATIVE -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c error)
 if [[ "$NATIVE_ERROR" -ne "0" ]]; then
@@ -145,6 +145,11 @@ OPT_CFLAGS=("$SH_MARCH" "$SH_NATIVE")
 OPT_CXXFLAGS=("$SH_MARCH" "$SH_NATIVE")
 OPT_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 OPT_LIBS=("-ldl" "-lpthread")
+
+if [[ ! -z "$SH_PIC" ]]; then
+    OPT_CFLAGS+=("$SH_PIC")
+    OPT_CXXFLAGS+=("$SH_PIC")
+fi
 
 if [[ ! -z "$SH_DTAGS" ]]; then
     OPT_LDFLAGS+=("$SH_DTAGS")
