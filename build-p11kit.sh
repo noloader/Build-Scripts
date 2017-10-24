@@ -64,6 +64,7 @@ if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
+P11KIT_CA_ZOO="$HOME/.cacert/cacert.pem"
 
 ###############################################################################
 
@@ -143,6 +144,11 @@ OPT_CXXFLAGS=("$SH_MARCH" "$SH_NATIVE")
 OPT_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
 OPT_LIBS=("-ldl" "-lpthread")
 
+if [[ ! -z "$SH_PIC" ]]; then
+    OPT_CFLAGS+=("$SH_PIC")
+    OPT_CXXFLAGS+=("$SH_PIC")
+fi
+
 if [[ ! -z "$SH_DTAGS" ]]; then
     OPT_LDFLAGS+=("$SH_DTAGS")
 fi
@@ -171,7 +177,7 @@ echo
 echo "********** p11-kit **********"
 echo
 
-wget --ca-certificate="$IDENTRUST_ROOT" "https://p11-glue.freedesktop.org/releases/$P11KIT_TAR" -O "$P11KIT_TAR"
+wget --ca-certificate="$P11KIT_CA_ZOO" "https://p11-glue.freedesktop.org/releases/$P11KIT_TAR" -O "$P11KIT_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download p11-kit"
