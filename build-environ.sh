@@ -95,34 +95,41 @@ if [[ (-z "$CC" && $(command -v gcc 2>/dev/null) ) ]]; then CC=$(command -v gcc)
 if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC); fi
 if [[ (-z "$CXX" && $(command -v g++ 2>/dev/null) ) ]]; then CXX=$(command -v g++); fi
 
-MARCH_ERROR=$(echo 'int main() {}' | $CC -x c "$SH_MARCH" -o /dev/null - 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+# `gcc ... -o /dev/null` does not work on Solaris due to LD bug.
+# `mktemp is not available on AIX or Git Windows shell...
+infile="in.$RANDOM$RANDOM.c"
+outfile="out.$RANDOM$RANDOM"
+echo 'int main(int argc, char* argv[]) {return 0;}' > "$infile"
+echo "" >> "$infile"
+
+MARCH_ERROR=$($CC "$SH_MARCH" -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
     SH_MARCH=
 fi
 
-PIC_ERROR=$(echo 'int main() {}' | $CC -x c -fPIC -o /dev/null - 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+PIC_ERROR=$($CC -fPIC -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
 if [[ "$PIC_ERROR" -eq "0" ]]; then
     SH_PIC="-fPIC"
 fi
 
 # For the benefit of the programs and libraries. Make them run faster.
-NATIVE_ERROR=$(echo 'int main() {}' | $CC -x c -march=native -o /dev/null - 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+NATIVE_ERROR=$($CC -march=native -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
 if [[ "$NATIVE_ERROR" -eq "0" ]]; then
     SH_NATIVE="-march=native"
 fi
 
-RPATH_ERROR=$(echo 'int main() {}' | $CC -x c -Wl,-rpath,$INSTALL_LIBDIR -o /dev/null - 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+RPATH_ERROR=$($CC -Wl,-rpath,$INSTALL_LIBDIR -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
 if [[ "$RPATH_ERROR" -eq "0" ]]; then
     SH_RPATH="-Wl,-rpath,$INSTALL_LIBDIR"
 fi
 
-GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
-if [[ "$GNU_LD" -ne "0" ]]; then
-    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c -E 'fatal|error|not found|not exist')
-    if [[ "$SH_ERROR" -eq "0" ]]; then
-        SH_DTAGS="-Wl,--enable-new-dtags"
-    fi
+SH_ERROR=$($CC -Wl,--enable-new-dtags -o "$outfile" "$infile" 2>&1 | grep -i -c -E 'fatal|error|not found|not exist')
+if [[ "$SH_ERROR" -eq "0" ]]; then
+	SH_DTAGS="-Wl,--enable-new-dtags"
 fi
+
+rm -f "$infile" 2>/dev/null
+rm -f "$outfile" 2>/dev/null
 
 ###############################################################################
 
