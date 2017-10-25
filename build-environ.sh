@@ -89,30 +89,36 @@ else
     SH_MARCH="-m32"
 fi
 
+# If CC and CXX is not set, then use default or assume GCC
 if [[ (-z "$CC" && $(command -v cc 2>/dev/null) ) ]]; then CC=$(command -v cc); fi
+if [[ (-z "$CC" && $(command -v gcc 2>/dev/null) ) ]]; then CC=$(command -v gcc); fi
 if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC); fi
+if [[ (-z "$CXX" && $(command -v g++ 2>/dev/null) ) ]]; then CXX=$(command -v g++); fi
 
-MARCH_ERROR=$($CC $SH_MARCH -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c -E "fatal|error|not found")
+MARCH_ERROR=$(echo 'int main() {}' | $CC -x c "$SH_MARCH" -o /dev/null - 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
 if [[ "$MARCH_ERROR" -ne "0" ]]; then
     SH_MARCH=
 fi
 
-SH_PIC="-fPIC"
-PIC_ERROR=$($CC $SH_PIC -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c -E "fatal|error|not found")
-if [[ "$PIC_ERROR" -ne "0" ]]; then
-    SH_PIC=
+PIC_ERROR=$(echo 'int main() {}' | $CC -x c -fPIC -o /dev/null - 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+if [[ "$PIC_ERROR" -eq "0" ]]; then
+    SH_PIC="-fPIC"
 fi
 
 # For the benefit of the programs and libraries. Make them run faster.
-SH_NATIVE="-march=native"
-NATIVE_ERROR=$($CC $SH_NATIVE -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c -E "fatal|error|not found")
-if [[ "$NATIVE_ERROR" -ne "0" ]]; then
-    SH_NATIVE=
+NATIVE_ERROR=$(echo 'int main() {}' | $CC -x c -march=native -o /dev/null - 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+if [[ "$NATIVE_ERROR" -eq "0" ]]; then
+    SH_NATIVE="-march=native"
+fi
+
+RPATH_ERROR=$(echo 'int main() {}' | $CC -x c -Wl,-rpath,$INSTALL_LIBDIR -o /dev/null - 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+if [[ "$RPATH_ERROR" -eq "0" ]]; then
+    SH_RPATH="-Wl,-rpath,$INSTALL_LIBDIR"
 fi
 
 GNU_LD=$(ld -v 2>&1 | grep -i -c 'GNU ld')
 if [[ "$GNU_LD" -ne "0" ]]; then
-    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c -E 'fatal|error|not found')
+    SH_ERROR=$(echo 'int main() {}' | $CC -Wl,--enable-new-dtags -x c -o /dev/null - 2>&1 | grep -i -c -E 'fatal|error|not found|not exist')
     if [[ "$SH_ERROR" -eq "0" ]]; then
         SH_DTAGS="-Wl,--enable-new-dtags"
     fi
@@ -122,14 +128,29 @@ fi
 
 BUILD_PKGCONFIG=("$INSTALL_LIBDIR/pkgconfig")
 BUILD_CPPFLAGS=("-I$INSTALL_PREFIX/include" "-DNDEBUG")
-BUILD_CFLAGS=("$SH_MARCH" "$SH_NATIVE")
-BUILD_CXXFLAGS=("$SH_MARCH" "$SH_NATIVE")
-BUILD_LDFLAGS=("$SH_MARCH" "-Wl,-rpath,$INSTALL_LIBDIR" "-L$INSTALL_LIBDIR")
+BUILD_CFLAGS=()
+BUILD_CXXFLAGS=()
+BUILD_LDFLAGS=("-L$INSTALL_LIBDIR")
 BUILD_LIBS=("-ldl" "-lpthread")
+
+if [[ ! -z "$SH_MARCH" ]]; then
+    BUILD_CFLAGS+=("$SH_MARCH")
+    BUILD_CXXFLAGS+=("$SH_MARCH")
+    BUILD_LDFLAGS+=("$SH_MARCH")
+fi
+
+if [[ ! -z "$SH_NATIVE" ]]; then
+    BUILD_CFLAGS+=("$SH_NATIVE")
+    BUILD_CXXFLAGS+=("$SH_NATIVE")
+fi
 
 if [[ ! -z "$SH_PIC" ]]; then
     BUILD_CFLAGS+=("$SH_PIC")
     BUILD_CXXFLAGS+=("$SH_PIC")
+fi
+
+if [[ ! -z "$SH_RPATH" ]]; then
+    BUILD_LDFLAGS+=("$SH_RPATH")
 fi
 
 if [[ ! -z "$SH_DTAGS" ]]; then
