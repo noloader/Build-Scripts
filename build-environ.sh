@@ -103,7 +103,7 @@ if [[ "$PIC_ERROR" -ne "0" ]]; then
     SH_PIC=
 fi
 
-# For the benefit of P11-Kit. Make it run fast.
+# For the benefit of the programs and libraries. Make them run faster.
 SH_NATIVE="-march=native"
 NATIVE_ERROR=$($CC $SH_NATIVE -x c -c -o /dev/null - </dev/null 2>&1 | grep -i -c -E "fatal|error|not found")
 if [[ "$NATIVE_ERROR" -ne "0" ]]; then
