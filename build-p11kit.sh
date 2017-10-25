@@ -135,6 +135,13 @@ if [[ "$GNU_LD" -ne "0" ]]; then
     fi
 fi
 
+# CA cert path?
+if [[ -d "/etc/ssl/certs/" ]]; then
+    SH_CACERT_PATH="/etc/ssl/certs/"
+elif [[ -d "/etc/openssl/certs" ]]; then
+    SH_CACERT_PATH="/etc/openssl/certs"
+fi
+
 ###############################################################################
 
 OPT_PKGCONFIG=("$INSTALL_LIBDIR/pkgconfig")
@@ -188,23 +195,45 @@ rm -rf "$P11KIT_DIR" &>/dev/null
 gzip -d < "$P11KIT_TAR" | tar xf -
 cd "$P11KIT_DIR"
 
- http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
 if [[ "$IS_LINUX" -ne "0" ]]; then
     sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
 fi
 
+P11KIT_CONFIG_OPTIONS=("--enable-shared" "--prefix=$INSTALL_PREFIX" "--libdir=$INSTALL_LIBDIR")
+if [[ ! -z "$SH_CACERT_PATH" ]]; then
+    P11KIT_CONFIG_OPTIONS+=("--with-trust-paths=$SH_CACERT_PATH")
+else
+    P11KIT_CONFIG_OPTIONS+=("--without-trust-paths")
+fi
+
+if [[ "$IS_SOLARIS" -ne "0" ]]; then
+    OPT_CPPFLAGS+=("-D_XOPEN_SOURCE=500")
+    OPT_LDFLAGS=("-lsocket -lnsl ${OPT_LDFLAGS[@]}")
+fi
+
     PKG_CONFIG_PATH="${OPT_PKGCONFIG[*]}" \
     CPPFLAGS="${OPT_CPPFLAGS[*]}" \
-    CFLAGS="${OPT_CFLAGS[*]}" CXXFLAGS="${OPT_CXXFLAGS[*]}" \
-    LDFLAGS="${OPT_LDFLAGS[*]}" LIBS="${OPT_LIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+    CFLAGS="${OPT_CFLAGS[*]}" \
+    CXXFLAGS="${OPT_CXXFLAGS[*]}" \
+    LDFLAGS="${OPT_LDFLAGS[*]}" \
+    LIBS="${OPT_LIBS[*]}" \
+./configure "${P11KIT_CONFIG_OPTIONS[@]}"
+
+# On Solaris the script puts /usr/gnu/bin on-path, so we get a useful grep
+if [[ "$IS_SOLARIS" -ne "0" ]]; then
+    for sfile in $(grep -IR '#define _XOPEN_SOURCE' "$PWD" | cut -f 1 -d ':' | sort | uniq); do
+        echo "Fixing $sfile"
+        sed -i '/#define _XOPEN_SOURCE/d' "$sfile"
+    done
+fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure p11-kit"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
+MAKE_FLAGS=("-j" "$MAKE_JOBS" "V=1")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build p11-kit"
