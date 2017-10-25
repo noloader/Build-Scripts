@@ -19,12 +19,6 @@ if [[ -z $(command -v gzip 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-IS_DARWIN=$(uname -s | grep -i -c darwin)
-if [[ ("$IS_DARWIN" -eq "0") ]] && [[ -z $(command -v libtoolize 2>/dev/null) ]]; then
-    echo "Some packages require libtool. Please install libtool or libtool-bin."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
 if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
@@ -75,36 +69,42 @@ sed 's|$(PREFIX)/lib|$(LIBDIR)|g' Makefile-libbz2_so.orig > Makefile-libbz2_so
 rm Makefile-libbz2_so.orig
 
 # Fix Bzip cpu architecture
-cp Makefile Makefile.orig
-sed "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile.orig > Makefile
-cp Makefile Makefile.orig
-sed "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile.orig > Makefile
-rm Makefile.orig
-cp Makefile-libbz2_so Makefile-libbz2_so.orig
-sed "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
-cp Makefile-libbz2_so Makefile-libbz2_so.orig
-sed "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
-rm Makefile-libbz2_so.orig
+if [[ ! -z "$SH_MARCH" ]]; then
+    cp Makefile Makefile.orig
+    sed "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile.orig > Makefile
+    cp Makefile Makefile.orig
+    sed "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile.orig > Makefile
+    rm Makefile.orig
+    cp Makefile-libbz2_so Makefile-libbz2_so.orig
+    sed "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
+    cp Makefile-libbz2_so Makefile-libbz2_so.orig
+    sed "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
+    rm Makefile-libbz2_so.orig
+fi
 
 # Fix Bzip missing PIC
-cp Makefile Makefile.orig
-sed "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile.orig > Makefile
-cp Makefile Makefile.orig
-sed "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile.orig > Makefile
-rm Makefile.orig
-cp Makefile-libbz2_so Makefile-libbz2_so.orig
-sed "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
-cp Makefile-libbz2_so Makefile-libbz2_so.orig
-sed "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
-rm Makefile-libbz2_so.orig
+if [[ ! -z "$SH_PIC" ]]; then
+    cp Makefile Makefile.orig
+    sed "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile.orig > Makefile
+    cp Makefile Makefile.orig
+    sed "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile.orig > Makefile
+    rm Makefile.orig
+    cp Makefile-libbz2_so Makefile-libbz2_so.orig
+    sed "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
+    cp Makefile-libbz2_so Makefile-libbz2_so.orig
+    sed "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
+    rm Makefile-libbz2_so.orig
+fi
 
 # Add RPATH
-cp Makefile Makefile.orig
-sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH -Wl,-rpath,$INSTALL_LIBDIR -L$INSTALL_LIBDIR|g" Makefile.orig > Makefile
-rm Makefile.orig
-cp Makefile-libbz2_so Makefile-libbz2_so.orig
-sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH -Wl,-rpath,$INSTALL_LIBDIR -L$INSTALL_LIBDIR|g" Makefile-libbz2_so.orig > Makefile-libbz2_so
-rm Makefile-libbz2_so.orig
+if [[ ! -z "$SH_RPATH" ]]; then
+    cp Makefile Makefile.orig
+    sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH -Wl,-rpath,$INSTALL_LIBDIR -L$INSTALL_LIBDIR|g" Makefile.orig > Makefile
+    rm Makefile.orig
+    cp Makefile-libbz2_so Makefile-libbz2_so.orig
+    sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH -Wl,-rpath,$INSTALL_LIBDIR -L$INSTALL_LIBDIR|g" Makefile-libbz2_so.orig > Makefile-libbz2_so
+    rm Makefile-libbz2_so.orig
+fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"

@@ -96,7 +96,7 @@ if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC)
 if [[ (-z "$CXX" && $(command -v g++ 2>/dev/null) ) ]]; then CXX=$(command -v g++); fi
 
 # `gcc ... -o /dev/null` does not work on Solaris due to LD bug.
-# `mktemp is not available on AIX or Git Windows shell...
+# `mktemp` is not available on AIX or Git Windows shell...
 infile="in.$RANDOM$RANDOM.c"
 outfile="out.$RANDOM$RANDOM"
 echo 'int main(int argc, char* argv[]) {return 0;}' > "$infile"
