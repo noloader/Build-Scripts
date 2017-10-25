@@ -25,11 +25,6 @@ if [[ -z $(command -v bzip2 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
-    echo "Some packages require autoreconf. Please install autoconf or automake."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
     echo "ClamAV requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
@@ -42,7 +37,6 @@ fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
 IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
-IS_DARWIN=$(uname -s | grep -i -c darwin)
 
 ###############################################################################
 
@@ -55,6 +49,9 @@ fi
 if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
 fi
+
+IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
+IS_GMAKE=$($MAKE -v 2>&1 | grep -i -c 'gnu make')
 
 ###############################################################################
 
@@ -114,11 +111,12 @@ KERNEL_BITS="$SH_KBITS" "$CONFIG_PROG" "${CONFIG_FLAGS[@]}"
 
 # OpenSSL configuration is so broken. The dev team just makes the
 #   shit up as they go rather than following conventions.
-for mfile in $(find "$PWD" -iname 'Makefile'); do
-    if [[ "$IS_DARWIN" -ne "0" ]]; then
-        sed -i "" 's|$(INSTALL_PREFIX)|$(DESTDIR)|g' "$mfile"
-    else
-        sed -i 's|$(INSTALL_PREFIX)|$(DESTDIR)|g' "$mfile"
+for mfile in $(find "$PWD" -name 'Makefile'); do
+    sed 's|$(INSTALL_PREFIX)|$(DESTDIR)|g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    if [[ "$IS_GMAKE" -ne "0" ]]; then
+        sed 's|$(MAKE)|$(MAKE) -j $(MAKE_JOBS)|g' "$mfile" > "$mfile.fixed"
+        mv "$mfile.fixed" "$mfile"
     fi
 done
 
@@ -128,7 +126,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS" "depend")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
+if ! "$MAKE" "MAKE_JOBS=$MAKE_JOBS" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build OpenSSL dependencies"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
@@ -144,8 +142,10 @@ fi
 MAKE_FLAGS=(install_sw)
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+    echo "$SUDO_PASSWORD" | sudo -S rm -rf /usr/local/usr/
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
+    rm -rf /usr/local/usr/
 fi
 
 cd "$CURR_DIR"
