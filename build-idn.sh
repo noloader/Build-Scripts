@@ -96,13 +96,22 @@ fi
 # Darwin is mostly fucked up at the moment. Also see
 # http://lists.gnu.org/archive/html/help-libidn/2017-10/msg00002.html
 if [[ "$IS_DARWIN" -ne "0" ]]; then
-    sed -i "" 's|$AR cru|$AR $ARFLAGS|g' configure
-    sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure
-    #sed -i "" 's|$AR cru|$AR $ARFLAGS|g' aclocal.m4
-    #sed -i "" 's|$AR cr|$AR $ARFLAGS|g' aclocal.m4
-    #sed -i "" 's|$AR cru|$AR $ARFLAGS|g' m4/libtool.m4
-    #sed -i "" 's|$AR cr|$AR $ARFLAGS|g' m4/libtool.m4
-    #sed -i "" 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' m4/libtool.m4
+    sed 's|$AR cru|$AR $ARFLAGS|g' configure > configure.fixed
+    mv configure.fixed configure
+    sed 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure
+    mv configure.fixed configure
+
+    #sed 's|$AR cru|$AR $ARFLAGS|g' aclocal.m4 > aclocal.m4.fixed
+    # mv aclocal.m4.fixed aclocal.m4
+    #sed 's|$AR cr|$AR $ARFLAGS|g' aclocal.m4 > aclocal.m4.fixed
+    # mv aclocal.m4.fixed aclocal.m4
+    #sed 's|$AR cru|$AR $ARFLAGS|g' m4/libtool.m4 > m4/libtool.m4.fixed
+    # mv m4/libtool.m4.fixed > m4/libtool.m4
+    #sed 's|$AR cr|$AR $ARFLAGS|g' m4/libtool.m4 > m4/libtool.m4.fixed
+    # mv m4/libtool.m4.fixed > m4/libtool.m4
+    #sed 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' m4/libtool.m4 > m4/libtool.m4.fixed
+    # mv m4/libtool.m4.fixed > m4/libtool.m4
+fi
 
     PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
@@ -111,28 +120,16 @@ if [[ "$IS_DARWIN" -ne "0" ]]; then
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --enable-shared
 
-    for mfile in $(find "$PWD" -iname 'Makefile'); do
+if [[ "$IS_DARWIN" -ne "0" ]]; then
+    for mfile in $(find "$PWD" -name 'Makefile'); do
         echo "Fixing makefile $mfile"
-        sed -i "" 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile"
-        sed -i "" 's|ARFLAGS = cru |ARFLAGS = -static -o |g' "$mfile"
-        sed -i "" 's|ARFLAGS = cr |ARFLAGS = -static -o |g' "$mfile"
+        sed 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile" > "$mfile.fixed"
+        mv "$mfile.fixed" "$mfile"
+        sed 's|ARFLAGS = cru |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
+        mv "$mfile.fixed" "$mfile"
+        sed 's|ARFLAGS = cr |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
+        mv "$mfile.fixed" "$mfile"
     done
-
-    #for sfile in $(find "$PWD" -iname '*.sh'); do
-    #    echo "Fixing script $sfile"
-    #    sed -i "" 's|$AR cru |$AR $ARFLAGS |g' "$sfile"
-    #    sed -i "" 's|$AR cr |$AR $ARFLAGS |g' "$sfile"
-    #done
-
-else
-
-    PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
-    CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
-    CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
-    LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --enable-shared
-
 fi
 
 if [[ "$?" -ne "0" ]]; then
@@ -162,7 +159,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$IDN_TAR" "$IDN_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

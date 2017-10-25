@@ -123,6 +123,12 @@ if [[ "$RPATH_ERROR" -eq "0" ]]; then
     SH_RPATH="-Wl,-rpath,$INSTALL_LIBDIR"
 fi
 
+# AIX ld uses -R for runpath when -bsvr4
+RPATH_ERROR=$($CC -Wl,-R,$INSTALL_LIBDIR -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+if [[ "$RPATH_ERROR" -eq "0" ]]; then
+    SH_RPATH="-Wl,-R,$INSTALL_LIBDIR"
+fi
+
 SH_ERROR=$($CC -Wl,--enable-new-dtags -o "$outfile" "$infile" 2>&1 | grep -i -c -E 'fatal|error|not found|not exist')
 if [[ "$SH_ERROR" -eq "0" ]]; then
 	SH_DTAGS="-Wl,--enable-new-dtags"

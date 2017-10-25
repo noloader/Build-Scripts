@@ -83,7 +83,8 @@ cd "$NCURSES_DIR"
 
 if [[ "$IS_CLANG" -ne "0" ]]; then
     for mfile in $(find "$PWD" -name 'Makefile'); do
-        sed -i 's|--param max-inline-insns-single=1200||g' "$mfile"
+        sed 's|--param max-inline-insns-single=1200||g' "$mfile" > "$mfile.fixed"
+        mv "$mfile.fixed" "$mfile"
     done
 fi
 

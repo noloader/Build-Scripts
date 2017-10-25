@@ -173,7 +173,7 @@ then
 fi
 
 # "Instruct Git to use pthread library?", http://stackoverflow.com/q/43080417/
-for file in $(find "$PWD" -iname 'Makefile*')
+for file in $(find "$PWD" -name 'Makefile*')
 do
     cp "$file" "$file.orig"
     sed 's|-lrt|-lrt -lpthread|g' "$file.orig" > "$file"
@@ -182,7 +182,7 @@ done
 
 # Various Solaris 11 workarounds
 if [[ "$IS_SOLARIS" -eq "1" ]]; then
-    for file in $(find "$PWD" -iname 'Makefile*')
+    for file in $(find "$PWD" -name 'Makefile*')
     do
         cp "$file" "$file.orig"
         sed 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"
@@ -190,7 +190,7 @@ if [[ "$IS_SOLARIS" -eq "1" ]]; then
         sed 's|/usr/ucb/install|install|g' "$file.orig" > "$file"
         rm "$file.orig"
     done
-    for file in $(find "$PWD" -iname 'config*')
+    for file in $(find "$PWD" -name 'config*')
     do
         cp "$file" "$file.orig"
         sed 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"
