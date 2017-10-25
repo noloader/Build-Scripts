@@ -153,7 +153,7 @@ cd "$CURR_DIR"
 ###############################################################################
 
 # Set to false to retain artifacts
-if false; then
+if true; then
 
     ARTIFACTS=("$OPENSSL_TAR" "$OPENSSL_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
