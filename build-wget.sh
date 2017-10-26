@@ -19,17 +19,6 @@ if [[ -z $(command -v gzip 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-if [[ -z $(command -v bzip2 2>/dev/null) ]]; then
-    echo "Some packages bzip2. Please install bzip2."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-IS_DARWIN=$(uname -s | grep -i -c darwin)
-if [[ ("$IS_DARWIN" -eq "0") ]] && [[ -z $(command -v libtoolize 2>/dev/null) ]]; then
-    echo "Some packages require libtool. Please install libtool or libtool-bin."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
 if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1

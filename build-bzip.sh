@@ -60,50 +60,46 @@ rm -rf "$BZIP2_DIR" &>/dev/null
 gzip -d < "$BZIP2_TAR" | tar xf -
 cd "$BZIP2_DIR"
 
+# Squash a warning
+sed -e '558i(void)nread;' bzip.c > bzip.c.fixed
+mv bzip.c.fixed bzip.c
+
 # Fix Bzip install paths
-cp Makefile Makefile.orig
-sed 's|$(PREFIX)/lib|$(LIBDIR)|g' Makefile.orig > Makefile
-rm Makefile.orig
-cp Makefile-libbz2_so Makefile-libbz2_so.orig
-sed 's|$(PREFIX)/lib|$(LIBDIR)|g' Makefile-libbz2_so.orig > Makefile-libbz2_so
-rm Makefile-libbz2_so.orig
+sed 's|$(PREFIX)/lib|$(LIBDIR)|g' Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+sed 's|$(PREFIX)/lib|$(LIBDIR)|g' Makefile-libbz2_so > Makefile-libbz2_so.fixed
+mv Makefile-libbz2_so.fixed Makefile-libbz2_so
 
 # Fix Bzip cpu architecture
 if [[ ! -z "$SH_MARCH" ]]; then
-    cp Makefile Makefile.orig
-    sed "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile.orig > Makefile
-    cp Makefile Makefile.orig
-    sed "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile.orig > Makefile
-    rm Makefile.orig
-    cp Makefile-libbz2_so Makefile-libbz2_so.orig
-    sed "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
-    cp Makefile-libbz2_so Makefile-libbz2_so.orig
-    sed "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
-    rm Makefile-libbz2_so.orig
+    sed "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile > Makefile.fixed
+    mv Makefile.fixed Makefile
+    sed "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile > Makefile.fixed
+    mv Makefile.fixed Makefile
+    sed "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+    mv Makefile-libbz2_so.fixed Makefile-libbz2_so
+    sed "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+    mv Makefile-libbz2_so.fixed Makefile-libbz2_so
 fi
 
 # Fix Bzip missing PIC
 if [[ ! -z "$SH_PIC" ]]; then
-    cp Makefile Makefile.orig
-    sed "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile.orig > Makefile
-    cp Makefile Makefile.orig
-    sed "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile.orig > Makefile
-    rm Makefile.orig
-    cp Makefile-libbz2_so Makefile-libbz2_so.orig
-    sed "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
-    cp Makefile-libbz2_so Makefile-libbz2_so.orig
-    sed "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile-libbz2_so.orig > Makefile-libbz2_so
-    rm Makefile-libbz2_so.orig
+    sed "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile > Makefile.fixed
+    mv Makefile.fixed Makefile
+    sed "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile > Makefile.fixed
+    mv Makefile.fixed Makefile
+    sed "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+    mv Makefile-libbz2_so.fixed Makefile-libbz2_so
+    sed "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+    mv Makefile-libbz2_so.fixed Makefile-libbz2_so
 fi
 
 # Add RPATH
 if [[ ! -z "$SH_RPATH" ]]; then
-    cp Makefile Makefile.orig
-    sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH -Wl,-rpath,$INSTALL_LIBDIR -L$INSTALL_LIBDIR|g" Makefile.orig > Makefile
-    rm Makefile.orig
-    cp Makefile-libbz2_so Makefile-libbz2_so.orig
-    sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH -Wl,-rpath,$INSTALL_LIBDIR -L$INSTALL_LIBDIR|g" Makefile-libbz2_so.orig > Makefile-libbz2_so
-    rm Makefile-libbz2_so.orig
+    sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTALL_LIBDIR|g" Makefile > Makefile.fixed
+    mv Makefile.fixed Makefile
+    sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTALL_LIBDIR|g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+    mv Makefile-libbz2_so.fixed Makefile-libbz2_so
 fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
@@ -128,14 +124,13 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$BZIP2_TAR" "$BZIP2_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
 
-    # ./build-openssl.sh 2>&1 | tee build-openssl.log
-    if [[ -e build-openssl.log ]]; then
-        rm -f build-openssl.log
+    # ./build-bzip.sh 2>&1 | tee build-bzip.log
+    if [[ -e build-bzip.log ]]; then
+        rm -f build-bzip.log
     fi
 fi
 

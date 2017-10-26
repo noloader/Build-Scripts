@@ -21,12 +21,6 @@ if [[ -z $(command -v gzip 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-IS_DARWIN=$(uname -s | grep -i -c darwin)
-if [[ ("$IS_DARWIN" -eq "0") ]] && [[ -z $(command -v libtoolize 2>/dev/null) ]]; then
-    echo "Some packages require libtool. Please install libtool or libtool-bin."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
 if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
@@ -71,11 +65,10 @@ cd "$IDN_DIR"
 
 if [[ "$IS_SOLARIS" -eq "1" ]]; then
   if [[ (-f src/idn2.c) ]]; then
-    cp src/idn2.c src/idn2.c.orig
-    sed '/^#include "error.h"/d' src/idn2.c.orig > src/idn2.c
-    cp src/idn2.c src/idn2.c.orig
-    sed '43istatic void error (int status, int errnum, const char *format, ...);' src/idn2.c.orig > src/idn2.c
-    rm src/idn2.c.orig
+    sed '/^#include "error.h"/d' src/idn2.c > src/idn2.c.fixed
+    mv src/idn2.c.fixed src/idn2.c
+    sed '43istatic void error (int status, int errnum, const char *format, ...);' src/idn2.c > src/idn2.c.fixed
+    mv src/idn2.c.fixed src/idn2.c
 
     {
       echo ""
@@ -98,7 +91,7 @@ fi
 if [[ "$IS_DARWIN" -ne "0" ]]; then
     sed 's|$AR cru|$AR $ARFLAGS|g' configure > configure.fixed
     mv configure.fixed configure
-    sed 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure
+    sed 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure > configure.fixed
     mv configure.fixed configure
 
     #sed 's|$AR cru|$AR $ARFLAGS|g' aclocal.m4 > aclocal.m4.fixed
@@ -122,7 +115,6 @@ fi
 
 if [[ "$IS_DARWIN" -ne "0" ]]; then
     for mfile in $(find "$PWD" -name 'Makefile'); do
-        echo "Fixing makefile $mfile"
         sed 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile" > "$mfile.fixed"
         mv "$mfile.fixed" "$mfile"
         sed 's|ARFLAGS = cru |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"

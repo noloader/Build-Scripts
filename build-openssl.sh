@@ -20,11 +20,6 @@ if [[ -z $(command -v gzip 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-if [[ -z $(command -v bzip2 2>/dev/null) ]]; then
-    echo "Some packages bzip2. Please install bzip2."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
     echo "ClamAV requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
