@@ -30,7 +30,6 @@ fi
 ###############################################################################
 
 THIS_SYSTEM=$(uname -s 2>&1)
-IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c darwin)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
 
 # The BSDs and Solaris should have GMake installed if its needed
@@ -76,17 +75,17 @@ if [[ -z "$INSTALL_LIBDIR" ]]; then
 fi
 
 if [[ "$IS_SOLARIS" -ne "0" ]]; then
-    SH_MARCH="-m64"
+    SH_MARCH="64"
 elif [[ "$IS_64BIT" -ne "0" ]]; then
     if [[ (-d /usr/lib) && (-d /usr/lib32) ]]; then
-        SH_MARCH="-m64"
+        SH_MARCH="64"
     elif [[ (-d /usr/lib) && (-d /usr/lib64) ]]; then
-        SH_MARCH="-m64"
+        SH_MARCH="64"
     else
-        SH_MARCH="-m64"
+        SH_MARCH="64"
     fi
 else
-    SH_MARCH="-m32"
+    SH_MARCH="32"
 fi
 
 # If CC and CXX is not set, then use default or assume GCC
@@ -102,9 +101,30 @@ outfile="out.$RANDOM$RANDOM"
 echo 'int main(int argc, char* argv[]) {return 0;}' > "$infile"
 echo "" >> "$infile"
 
-MARCH_ERROR=$($CC "$SH_MARCH" -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
-if [[ "$MARCH_ERROR" -ne "0" ]]; then
+# Try to determine -m64, -X64, -m32, -X32, etc
+if [[ "$SH_MARCH" = "32" ]]; then
     SH_MARCH=
+    MARCH_ERROR=$($CC -m32 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+    if [[ "$MARCH_ERROR" -eq "0" ]]; then
+        SH_MARCH="-m32"
+    fi
+    # IBM XL C/C++ on AIX uses -X32 and -X64
+    MARCH_ERROR=$($CC -X32 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+    if [[ "$MARCH_ERROR" -eq "0" ]]; then
+        SH_MARCH="-X32"
+    fi
+fi
+if [[ "$SH_MARCH" = "64" ]]; then
+    SH_MARCH=
+    MARCH_ERROR=$($CC -m64 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+    if [[ "$MARCH_ERROR" -eq "0" ]]; then
+        SH_MARCH="-m64"
+    fi
+    # IBM XL C/C++ on AIX uses -X32 and -X64
+    MARCH_ERROR=$($CC -X64 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
+    if [[ "$MARCH_ERROR" -eq "0" ]]; then
+        SH_MARCH="-X64"
+    fi
 fi
 
 PIC_ERROR=$($CC -fPIC -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
