@@ -16,7 +16,7 @@ MAKE_JOBS=4
 ###############################################################################
 
 if [[ -z $(command -v gzip 2>/dev/null) ]]; then
-    echo "Some packages gzip. Please install gzip."
+    echo "Some packages require gzip. Please install gzip."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 

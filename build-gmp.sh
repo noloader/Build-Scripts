@@ -15,12 +15,12 @@ CURR_DIR="$PWD"
 ###############################################################################
 
 if [[ -z $(command -v gzip 2>/dev/null) ]]; then
-    echo "Some packages gzip. Please install gzip."
+    echo "Some packages require gzip. Please install gzip."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ -z $(command -v bzip2 2>/dev/null) ]]; then
-    echo "Some packages bzip2. Please install bzip2."
+    echo "Some packages require bzip2. Please install bzip2."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
