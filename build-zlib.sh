@@ -62,7 +62,8 @@ cd "$ZLIB_DIR"
 
 if [[ "$IS_CYGWIN" -ne "0" ]]; then
     if [[ -f "gzguts.h" ]]; then
-        sed -i 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h
+        sed -e 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h > gzguts.h.fixed
+        mv gzguts.h.fixed gzguts.h
     fi
 fi
 
@@ -100,7 +101,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$ZLIB_TAR" "$ZLIB_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

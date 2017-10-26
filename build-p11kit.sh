@@ -62,9 +62,8 @@ gzip -d < "$P11KIT_TAR" | tar xf -
 cd "$P11KIT_DIR"
 
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
-if [[ "$IS_LINUX" -ne "0" ]]; then
-    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
-fi
+sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
+mv configure.fixed configure
 
 P11KIT_CONFIG_OPTS=("--enable-shared" "--prefix=$INSTALL_PREFIX" "--libdir=$INSTALL_LIBDIR")
 
@@ -98,8 +97,8 @@ fi
 # On Solaris the script puts /usr/gnu/bin on-path, so we get a useful grep
 if [[ "$IS_SOLARIS" -ne "0" ]]; then
     for sfile in $(grep -IR '#define _XOPEN_SOURCE' "$PWD" | cut -f 1 -d ':' | sort | uniq); do
-        echo "Fixing $sfile"
-        sed -i '/#define _XOPEN_SOURCE/d' "$sfile"
+        sed -e '/#define _XOPEN_SOURCE/d' "$sfile" > "$sfile.fixed"
+        mv "$sfile.fixed" "$sfile"
     done
 fi
 

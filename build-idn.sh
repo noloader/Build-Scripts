@@ -65,9 +65,9 @@ cd "$IDN_DIR"
 
 if [[ "$IS_SOLARIS" -eq "1" ]]; then
   if [[ (-f src/idn2.c) ]]; then
-    sed '/^#include "error.h"/d' src/idn2.c > src/idn2.c.fixed
+    sed -e '/^#include "error.h"/d' src/idn2.c > src/idn2.c.fixed
     mv src/idn2.c.fixed src/idn2.c
-    sed '43istatic void error (int status, int errnum, const char *format, ...);' src/idn2.c > src/idn2.c.fixed
+    sed -e '43istatic void error (int status, int errnum, const char *format, ...);' src/idn2.c > src/idn2.c.fixed
     mv src/idn2.c.fixed src/idn2.c
 
     {
@@ -89,9 +89,9 @@ fi
 # Darwin is mostly fucked up at the moment. Also see
 # http://lists.gnu.org/archive/html/help-libidn/2017-10/msg00002.html
 if [[ "$IS_DARWIN" -ne "0" ]]; then
-    sed 's|$AR cru|$AR $ARFLAGS|g' configure > configure.fixed
+    sed -e 's|$AR cru|$AR $ARFLAGS|g' configure > configure.fixed
     mv configure.fixed configure
-    sed 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure > configure.fixed
+    sed -e 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure > configure.fixed
     mv configure.fixed configure
 
     #sed 's|$AR cru|$AR $ARFLAGS|g' aclocal.m4 > aclocal.m4.fixed
@@ -115,11 +115,11 @@ fi
 
 if [[ "$IS_DARWIN" -ne "0" ]]; then
     for mfile in $(find "$PWD" -name 'Makefile'); do
-        sed 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile" > "$mfile.fixed"
+        sed -e 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile" > "$mfile.fixed"
         mv "$mfile.fixed" "$mfile"
-        sed 's|ARFLAGS = cru |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
+        sed -e 's|ARFLAGS = cru |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
         mv "$mfile.fixed" "$mfile"
-        sed 's|ARFLAGS = cr |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
+        sed -e 's|ARFLAGS = cr |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
         mv "$mfile.fixed" "$mfile"
     done
 fi

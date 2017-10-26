@@ -83,9 +83,8 @@ cd "$GUILE_DIR"
 autoconf
 
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
-if [[ "$IS_LINUX" -ne "0" ]]; then
-    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
-fi
+sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
+mv configure.fixed configure
 
 # --with-bdw-gc="${BUILD_PKGCONFIG[*]}/"
 # --disable-posix --disable-networking

@@ -171,7 +171,7 @@ fi
 for file in $(find "$PWD" -name 'Makefile*')
 do
     cp "$file" "$file.orig"
-    sed 's|-lrt|-lrt -lpthread|g' "$file.orig" > "$file"
+    sed -e 's|-lrt|-lrt -lpthread|g' "$file.orig" > "$file"
     rm "$file.orig"
 done
 
@@ -180,17 +180,17 @@ if [[ "$IS_SOLARIS" -eq "1" ]]; then
     for file in $(find "$PWD" -name 'Makefile*')
     do
         cp "$file" "$file.orig"
-        sed 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"
+        sed -e 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"
         cp "$file" "$file.orig"
-        sed 's|/usr/ucb/install|install|g' "$file.orig" > "$file"
+        sed -e 's|/usr/ucb/install|install|g' "$file.orig" > "$file"
         rm "$file.orig"
     done
     for file in $(find "$PWD" -name 'config*')
     do
         cp "$file" "$file.orig"
-        sed 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"
+        sed -e 's|-lsocket|-lnsl -lsocket|g' "$file.orig" > "$file"
         cp "$file" "$file.orig"
-        sed 's|/usr/ucb/install|install|g' "$file.orig" > "$file"
+        sed -e 's|/usr/ucb/install|install|g' "$file.orig" > "$file"
         rm "$file.orig"
     done
 fi

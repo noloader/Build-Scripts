@@ -107,10 +107,10 @@ KERNEL_BITS="$SH_KBITS" "$CONFIG_PROG" "${CONFIG_FLAGS[@]}"
 # OpenSSL configuration is so broken. The dev team just makes the
 #   shit up as they go rather than following conventions.
 for mfile in $(find "$PWD" -name 'Makefile'); do
-    sed 's|$(INSTALL_PREFIX)|$(DESTDIR)|g' "$mfile" > "$mfile.fixed"
+    sed -e 's|$(INSTALL_PREFIX)|$(DESTDIR)|g' "$mfile" > "$mfile.fixed"
     mv "$mfile.fixed" "$mfile"
     if [[ "$IS_GMAKE" -ne "0" ]]; then
-        sed 's|$(MAKE)|$(MAKE) -j $(MAKE_JOBS)|g' "$mfile" > "$mfile.fixed"
+        sed -e 's|$(MAKE)|$(MAKE) -j $(MAKE_JOBS)|g' "$mfile" > "$mfile.fixed"
         mv "$mfile.fixed" "$mfile"
     fi
 done

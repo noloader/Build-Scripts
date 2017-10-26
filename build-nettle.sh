@@ -63,8 +63,10 @@ cd "$NETTLE_DIR"
 
 # This works for all versions of Nettle on all Apple platforms
 if [[ "$IS_DARWIN" -ne "0" ]]; then
-    sed -i "" -e 's|LD_LIBRARY_PATH|DYLD_LIBRARY_PATH|g' examples/Makefile.in
-    sed -i "" -e 's|LD_LIBRARY_PATH|DYLD_LIBRARY_PATH|g' testsuite/Makefile.in
+    sed -e 's|LD_LIBRARY_PATH|DYLD_LIBRARY_PATH|g' examples/Makefile.in > examples/Makefile.in.fixed
+    mv examples/Makefile.in.fixed examples/Makefile.in
+    sed -e 's|LD_LIBRARY_PATH|DYLD_LIBRARY_PATH|g' testsuite/Makefile.in > testsuite/Makefile.in.fixed
+    mv testsuite/Makefile.in.fixed testsuite/Makefile.in
 fi
 
     PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \

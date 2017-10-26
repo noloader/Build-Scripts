@@ -72,33 +72,33 @@ mv Makefile-libbz2_so.fixed Makefile-libbz2_so
 
 # Fix Bzip cpu architecture
 if [[ ! -z "$SH_MARCH" ]]; then
-    sed "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile > Makefile.fixed
+    sed -e "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile > Makefile.fixed
     mv Makefile.fixed Makefile
-    sed "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile > Makefile.fixed
+    sed -e "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile > Makefile.fixed
     mv Makefile.fixed Makefile
-    sed "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+    sed -e "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
     mv Makefile-libbz2_so.fixed Makefile-libbz2_so
-    sed "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+    sed -e "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
     mv Makefile-libbz2_so.fixed Makefile-libbz2_so
 fi
 
 # Fix Bzip missing PIC
 if [[ ! -z "$SH_PIC" ]]; then
-    sed "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile > Makefile.fixed
+    sed -e "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile > Makefile.fixed
     mv Makefile.fixed Makefile
-    sed "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile > Makefile.fixed
+    sed -e "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile > Makefile.fixed
     mv Makefile.fixed Makefile
-    sed "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+    sed -e "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
     mv Makefile-libbz2_so.fixed Makefile-libbz2_so
-    sed "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+    sed -e "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
     mv Makefile-libbz2_so.fixed Makefile-libbz2_so
 fi
 
 # Add RPATH
 if [[ ! -z "$SH_RPATH" ]]; then
-    sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTALL_LIBDIR|g" Makefile > Makefile.fixed
+    sed -e "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTALL_LIBDIR|g" Makefile > Makefile.fixed
     mv Makefile.fixed Makefile
-    sed "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTALL_LIBDIR|g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+    sed -e "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTALL_LIBDIR|g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
     mv Makefile-libbz2_so.fixed Makefile-libbz2_so
 fi
 

@@ -61,6 +61,10 @@ rm -rf "$TERMCAP_DIR" &>/dev/null
 gzip -d < "$TERMCAP_TAR" | tar xf -
 cd "$TERMCAP_DIR"
 
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
+mv configure.fixed configure
+
     # Termcap does not honor anything below. Its why we have so many sed's.
     PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
@@ -69,10 +73,14 @@ cd "$TERMCAP_DIR"
 ./configure --enable-install-termcap --prefix="$INSTALL_PREFIX" \
     --enable-shared
 
-sed -i -e '42i#include <unistd.h>' tparam.c
-sed -i -e 's|$(CPPFLAGS)|$(CPPFLAGS) $(CFLAGS)|g' Makefile
-sed -i -e 's|$(AR) rc |$(AR) $(ARFLAGS) |g' Makefile
-sed -i -e "s|CFLAGS = -g|CFLAGS = -g ${BUILD_CFLAGS[*]}|g" Makefile
+sed -e '42i#include <unistd.h>' tparam.c > tparam.c.fixed
+mv tparam.c.fixed tparam.c
+sed -e 's|$(CPPFLAGS)|$(CPPFLAGS) $(CFLAGS)|g' Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+sed -e 's|$(AR) rc |$(AR) $(ARFLAGS) |g' Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+sed -e "s|CFLAGS = -g|CFLAGS = -g ${BUILD_CFLAGS[*]}|g" Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Termcap"

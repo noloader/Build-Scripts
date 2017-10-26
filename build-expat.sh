@@ -62,9 +62,8 @@ gzip -d < "$EXPAT_TAR" | tar xf -
 cd "$EXPAT_DIR/expat"
 
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
-if [[ "$IS_LINUX" -ne "0" ]]; then
-    sed -i -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure
-fi
+sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
+mv configure.fixed configure
 
 if ! ./buildconf.sh
 then
