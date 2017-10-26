@@ -110,7 +110,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$TASN1_TAR" "$TASN1_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

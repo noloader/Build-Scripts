@@ -139,7 +139,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$GUILE_TAR" "$GUILE_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

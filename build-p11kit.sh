@@ -138,7 +138,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$P11KIT_TAR" "$P11KIT_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

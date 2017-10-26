@@ -132,7 +132,6 @@ echo
 if true; then
 
     ARTIFACTS=("$OPENSSH_TAR" "$OPENSSH_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

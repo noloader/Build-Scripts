@@ -106,7 +106,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$ICONV_TAR" "$ICONV_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

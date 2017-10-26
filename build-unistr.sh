@@ -100,7 +100,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$UNISTR_TAR" "$UNISTR_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

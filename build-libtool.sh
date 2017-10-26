@@ -111,7 +111,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$LIBTOOL_TAR" "$LIBTOOL_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

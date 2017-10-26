@@ -116,7 +116,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$TERMCAP_TAR" "$TERMCAP_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

@@ -111,7 +111,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$GMP_TAR" "$GMP_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

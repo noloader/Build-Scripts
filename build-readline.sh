@@ -124,7 +124,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$READLN_TAR" "$READLN_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

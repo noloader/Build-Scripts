@@ -114,7 +114,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$NETTLE_TAR" "$NETTLE_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

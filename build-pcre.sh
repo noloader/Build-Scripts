@@ -148,7 +148,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$PCRE_TAR" "$PCRE_DIR" "$PCRE2_TAR" "$PCRE2_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done

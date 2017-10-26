@@ -262,7 +262,6 @@ cd "$CURR_DIR"
 if true; then
 
     ARTIFACTS=("$GIT_TAR" "$GIT_DIR")
-
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
