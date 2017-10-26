@@ -60,6 +60,11 @@ rm -rf "$ZLIB_DIR" &>/dev/null
 gzip -d < "$ZLIB_TAR" | tar xf -
 cd "$ZLIB_DIR"
 
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+# AIX needs the execute bit reset on the file.
+sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
+mv configure.fixed configure; chmod +x configure
+
 if [[ "$IS_CYGWIN" -ne "0" ]]; then
     if [[ -f "gzguts.h" ]]; then
         sed -e 's/defined(_WIN32) || defined(__CYGWIN__)/defined(_WIN32)/g' gzguts.h > gzguts.h.fixed
