@@ -16,7 +16,7 @@ CURR_DIR="$PWD"
 ###############################################################################
 
 if [[ -z $(command -v gzip 2>/dev/null) ]]; then
-    echo "Some packages require gzip. Please install gzip."
+    echo "Some packages gzip. Please install gzip."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -84,7 +84,8 @@ fi
 if [[ ! -z "$SH_TINFO" ]]; then
     for mfile in $(find "$PWD" -name 'Makefile'); do
         sed -e "s|SHLIB_LIBS =|SHLIB_LIBS = $SH_TINFO|g" "$mfile" > "$mfile.fixed"
-        "$mfile.fixed" "$mfile"
+        mv "$mfile.fixed" "$mfile"
+        chmod +x "$mfile"
     done
 fi
 
