@@ -61,8 +61,17 @@ gzip -d < "$BZIP2_TAR" | tar xf -
 cd "$BZIP2_DIR"
 
 # Squash a warning
-sed -e '558i(void)nread;' bzip.c > bzip.c.fixed
-mv bzip.c.fixed bzip.c
+sed -e '558i \
+(void)nread;' bzip2.c > bzip2.c.fixed
+mv bzip2.c.fixed bzip2.c
+
+# Fix format specifier
+if [[ "$IS_64BIT" -ne "0" ]]; then
+    for cfile in $(find "$PWD" -name '*.c'); do
+        sed -e "s|%Lu|%llu|g" "$cfile" > "$cfile.fixed"
+        mv "$cfile.fixed" "$cfile"
+    done
+fi
 
 # Fix Bzip install paths
 sed 's|$(PREFIX)/lib|$(LIBDIR)|g' Makefile > Makefile.fixed

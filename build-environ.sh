@@ -102,6 +102,7 @@ echo 'int main(int argc, char* argv[]) {return 0;}' > "$infile"
 echo "" >> "$infile"
 
 # Try to determine -m64, -X64, -m32, -X32, etc
+IS_AIX=$(uname -s 2>&1 | grep -i -c 'aix')
 if [[ "$SH_MARCH" = "32" ]]; then
     SH_MARCH=
     MARCH_ERROR=$($CC -m32 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
@@ -110,7 +111,7 @@ if [[ "$SH_MARCH" = "32" ]]; then
     fi
     # IBM XL C/C++ on AIX uses -X32 and -X64
     MARCH_ERROR=$($CC -X32 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
-    if [[ "$MARCH_ERROR" -eq "0" ]]; then
+    if [[ "$MARCH_ERROR" -eq "0" ]] && [[ "$IS_AIX" -ne "0" ]]; then
         SH_MARCH="-X32"
     fi
 fi
@@ -122,7 +123,7 @@ if [[ "$SH_MARCH" = "64" ]]; then
     fi
     # IBM XL C/C++ on AIX uses -X32 and -X64
     MARCH_ERROR=$($CC -X64 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|not found|not exist")
-    if [[ "$MARCH_ERROR" -eq "0" ]]; then
+    if [[ "$MARCH_ERROR" -eq "0" ]] && [[ "$IS_AIX" -ne "0" ]]; then
         SH_MARCH="-X64"
     fi
 fi

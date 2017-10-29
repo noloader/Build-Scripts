@@ -85,7 +85,6 @@ if [[ ! -z "$SH_TINFO" ]]; then
     for mfile in $(find "$PWD" -name 'Makefile'); do
         sed -e "s|SHLIB_LIBS =|SHLIB_LIBS = $SH_TINFO|g" "$mfile" > "$mfile.fixed"
         mv "$mfile.fixed" "$mfile"
-        chmod +x "$mfile"
     done
 fi
 
