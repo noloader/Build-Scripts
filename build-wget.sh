@@ -29,6 +29,19 @@ if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+# Wget self tests
+if ! perl -MHTTP::Daemon -e1 2>/dev/null
+then
+    echo "Wget requires Perl's HTTP::Daemon. Please install perl-HTTP-Daemon."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+if ! perl -MHTTP::Request -e1 2>/dev/null
+then
+    echo "Wget requires Perl's HTTP::Request. Please install perl-HTTP-Message."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
 IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
 
