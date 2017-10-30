@@ -63,6 +63,13 @@ rm -rf "$IDN_DIR" &>/dev/null
 gzip -d < "$IDN_TAR" | tar xf -
 cd "$IDN_DIR"
 
+autoreconf
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to reconfigure IDN"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
 # AIX needs the execute bit reset on the file.
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
