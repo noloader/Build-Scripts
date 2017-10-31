@@ -63,7 +63,8 @@ rm -rf "$IDN_DIR" &>/dev/null
 gzip -d < "$IDN_TAR" | tar xf -
 cd "$IDN_DIR"
 
-autoreconf
+# Automake version problems, https://stackoverflow.com/q/47017841/608639
+autoreconf --install --force
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to reconfigure IDN"

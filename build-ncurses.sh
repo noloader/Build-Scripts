@@ -76,11 +76,13 @@ mv configure.fixed configure; chmod +x configure
     --with-shared --with-cxx-shared --without-ada --enable-pc-files \
     --with-termlib --enable-widec --disable-root-environ \
     --with-build-cc="$CC" --with-build-cxx="$CXX" \
+    --with-build-cpp="${BUILD_CPPFLAGS[*]}" \
     --with-build-cflags="${BUILD_CPPFLAGS[*]} ${BUILD_CFLAGS[*]}" \
     --with-build-cxxflags="${BUILD_CPPFLAGS[*]} ${BUILD_CXXFLAGS[*]}" \
     --with-build-ldflags="${BUILD_LDFLAGS[*]}" \
     --with-build-libs="${BUILD_LIBS[*]}"
 
+# Fix Clang warning
 if [[ "$IS_CLANG" -ne "0" ]]; then
     for mfile in $(find "$PWD" -name 'Makefile'); do
         sed -e 's|--param max-inline-insns-single=1200||g' "$mfile" > "$mfile.fixed"
@@ -100,6 +102,14 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+# Uninstall the existing copy first. Ncurses does not install over top of itself
+MAKE_FLAGS=("uninstall")
+if [[ ! (-z "$SUDO_PASSWORD") ]]; then
+    echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+    "$MAKE" "${MAKE_FLAGS[@]}"
+fi
+
 MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
@@ -112,7 +122,7 @@ cd "$CURR_DIR"
 ###############################################################################
 
 # Set to false to retain artifacts
-if false; then
+if true; then
 
     ARTIFACTS=("$NCURSES_TAR" "$NCURSES_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
