@@ -32,13 +32,13 @@ fi
 # Wget self tests
 if ! perl -MHTTP::Daemon -e1 2>/dev/null
 then
-    echo "Wget requires Perl's HTTP::Daemon. Please install perl-HTTP-Daemon."
+    echo "Wget requires Perl's HTTP::Daemon. Please install HTTP-Daemon."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if ! perl -MHTTP::Request -e1 2>/dev/null
 then
-    echo "Wget requires Perl's HTTP::Request. Please install perl-HTTP-Message."
+    echo "Wget requires Perl's HTTP::Request. Please install HTTP-Message."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 

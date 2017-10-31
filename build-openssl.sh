@@ -30,6 +30,20 @@ if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+# Wget self tests
+if ! perl -MTest::More -e1 2>/dev/null
+then
+    echo "Wget requires Perl's Test::More. Please install Test-More."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+# Wget self tests
+if ! perl -MText::Template -e1 2>/dev/null
+then
+    echo "Wget requires Perl's Text::Template. Please install Text-Template."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
 IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
 
@@ -87,14 +101,15 @@ if [[ "$SH_KBITS" -eq "32" ]]; then IS_X86_64=0; fi
 CONFIG_PROG="./config"
 CONFIG_FLAGS=("no-ssl2" "no-ssl3" "no-comp" "shared" "-DNDEBUG")
 
+if [[ "$IS_X86_64" -eq "1" ]]; then
+    CONFIG_FLAGS+=("enable-ec_nistp_64_gcc_128")
+fi
+
 if [[ ! -z "$SH_RPATH" ]]; then
     CONFIG_FLAGS+=("$SH_RPATH")
 fi
 if [[ ! -z "$SH_DTAGS" ]]; then
     CONFIG_FLAGS+=("$SH_DTAGS")
-fi
-if [[ "$IS_X86_64" -eq "1" ]]; then
-    CONFIG_FLAGS+=("enable-ec_nistp_64_gcc_128")
 fi
 
 CONFIG_FLAGS+=("--prefix=$INSTALL_PREFIX" "--libdir=$(basename "$INSTALL_LIBDIR")")

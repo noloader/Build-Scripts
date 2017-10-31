@@ -56,7 +56,7 @@ rm -rf "$PERL_DIR" &>/dev/null
 gzip -d < "$PERL_TAR" | tar xf -
 cd "$PERL_DIR"
 
-./Configure -des -Dextras="HTTP::Daemon HTTP::Request Test"
+./Configure -des -Dextras="HTTP::Daemon HTTP::Request Test::More Text::Template"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Perl"
@@ -85,6 +85,7 @@ else
 fi
 
 # This downloads and installs Perl's package manager
+# curl -L http://cpanmin.us | perl - App::cpanminus
 
 cd "$CURR_DIR"
 
