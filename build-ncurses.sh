@@ -68,15 +68,16 @@ mv configure.fixed configure; chmod +x configure
 
     PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
-    CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
-    LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
+    CFLAGS="${BUILD_CFLAGS[*]}" \
+    CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
+    LDFLAGS="${BUILD_LDFLAGS[*]}" \
+    LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-shared --with-cxx-shared --enable-pc-files \
+    --with-shared --with-cxx-shared --without-ada --enable-pc-files \
     --with-termlib --enable-widec --disable-root-environ \
     --with-build-cc="$CC" --with-build-cxx="$CXX" \
-    --with-build-cpp="${BUILD_CPPFLAGS[*]}" \
-    --with-build-cflags="${BUILD_CFLAGS[*]}" \
-    --with-build-cxxflags="${BUILD_CXXFLAGS[*]}" \
+    --with-build-cflags="${BUILD_CPPFLAGS[*]} ${BUILD_CFLAGS[*]}" \
+    --with-build-cxxflags="${BUILD_CPPFLAGS[*]} ${BUILD_CXXFLAGS[*]}" \
     --with-build-ldflags="${BUILD_LDFLAGS[*]}" \
     --with-build-libs="${BUILD_LIBS[*]}"
 
@@ -111,7 +112,7 @@ cd "$CURR_DIR"
 ###############################################################################
 
 # Set to false to retain artifacts
-if true; then
+if false; then
 
     ARTIFACTS=("$NCURSES_TAR" "$NCURSES_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
