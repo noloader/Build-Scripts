@@ -122,6 +122,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-gettext.sh
+then
+    echo "Failed to build iConv"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+###############################################################################
+
 if ! ./build-idn.sh
 then
     echo "Failed to build IDN"
