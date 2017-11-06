@@ -4,8 +4,8 @@
 # This script builds OpenSSL from sources.
 
 # OpenSSH and a few other key programs can only use OpenSSL 1.0.2 at the moment
-OPENSSL_TAR=openssl-1.0.2l.tar.gz
-OPENSSL_DIR=openssl-1.0.2l
+OPENSSL_TAR=openssl-1.0.2m.tar.gz
+OPENSSL_DIR=openssl-1.0.2m
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
