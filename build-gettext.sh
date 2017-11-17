@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds GetText from sources.
 
-GETTEXT_TAR=gettext-0.19.8.1.tar.xz
+GETTEXT_TAR=gettext-0.19.8.1.tar.gz
 GETTEXT_DIR=gettext-0.19.8.1
 
 # Avoid shellcheck.net warning
@@ -58,7 +58,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$GETTEXT_DIR" &>/dev/null
-tar xf "$GETTEXT_TAR"
+gzip -d < "$GETTEXT_TAR" | tar xf -
 cd "$GETTEXT_DIR"
 
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
