@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds GnuTLS and its dependencies from sources.
 
-GNUTLS_TAR=gnutls-3.5.15.tar.xz
-GNUTLS_DIR=gnutls-3.5.15
+GNUTLS_TAR=gnutls-3.5.16.tar.xz
+GNUTLS_DIR=gnutls-3.5.16
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
