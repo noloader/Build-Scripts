@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds cURL from sources.
 
-CURL_TAR=curl-7.56.1.tar.gz
-CURL_DIR=curl-7.56.1
+CURL_TAR=curl-7.57.0.tar.gz
+CURL_DIR=curl-7.57.0
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
