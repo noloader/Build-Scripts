@@ -101,56 +101,58 @@ outfile="out.$RANDOM$RANDOM"
 echo 'int main(int argc, char* argv[]) {return 0;}' > "$infile"
 echo "" >> "$infile"
 
+BAD_MSG="fatal|error|unknown|unrecognized|not found|not exist"
+
 # Try to determine -m64, -X64, -m32, -X32, etc
 IS_AIX=$(uname -s 2>&1 | grep -i -c 'aix')
 if [[ "$SH_MARCH" = "32" ]]; then
     SH_MARCH=
-    MARCH_ERROR=$($CC -m32 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|unrecognized|not found|not exist")
+    MARCH_ERROR=$($CC -m32 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
     if [[ "$MARCH_ERROR" -eq "0" ]]; then
         SH_MARCH="-m32"
     fi
     # IBM XL C/C++ on AIX uses -X32 and -X64
-    MARCH_ERROR=$($CC -X32 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|unrecognized|not found|not exist")
+    MARCH_ERROR=$($CC -X32 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
     if [[ "$MARCH_ERROR" -eq "0" ]] && [[ "$IS_AIX" -ne "0" ]]; then
         SH_MARCH="-X32"
     fi
 fi
 if [[ "$SH_MARCH" = "64" ]]; then
     SH_MARCH=
-    MARCH_ERROR=$($CC -m64 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|unrecognized|not found|not exist")
+    MARCH_ERROR=$($CC -m64 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
     if [[ "$MARCH_ERROR" -eq "0" ]]; then
         SH_MARCH="-m64"
     fi
     # IBM XL C/C++ on AIX uses -X32 and -X64
-    MARCH_ERROR=$($CC -X64 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|unrecognized|not found|not exist")
+    MARCH_ERROR=$($CC -X64 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
     if [[ "$MARCH_ERROR" -eq "0" ]] && [[ "$IS_AIX" -ne "0" ]]; then
         SH_MARCH="-X64"
     fi
 fi
 
-PIC_ERROR=$($CC -fPIC -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|unrecognized|not found|not exist")
+PIC_ERROR=$($CC -fPIC -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
 if [[ "$PIC_ERROR" -eq "0" ]]; then
     SH_PIC="-fPIC"
 fi
 
 # For the benefit of the programs and libraries. Make them run faster.
-NATIVE_ERROR=$($CC -march=native -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|unrecognized|not found|not exist")
+NATIVE_ERROR=$($CC -march=native -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
 if [[ "$NATIVE_ERROR" -eq "0" ]]; then
     SH_NATIVE="-march=native"
 fi
 
-RPATH_ERROR=$($CC -Wl,-rpath,$INSTALL_LIBDIR -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|unrecognized|not found|not exist")
+RPATH_ERROR=$($CC -Wl,-rpath,$INSTALL_LIBDIR -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
 if [[ "$RPATH_ERROR" -eq "0" ]]; then
     SH_RPATH="-Wl,-rpath,$INSTALL_LIBDIR"
 fi
 
 # AIX ld uses -R for runpath when -bsvr4
-RPATH_ERROR=$($CC -Wl,-R,$INSTALL_LIBDIR -o "$outfile" "$infile" 2>&1 | grep -i -c -E "fatal|error|unrecognized|not found|not exist")
+RPATH_ERROR=$($CC -Wl,-R,$INSTALL_LIBDIR -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
 if [[ "$RPATH_ERROR" -eq "0" ]]; then
     SH_RPATH="-Wl,-R,$INSTALL_LIBDIR"
 fi
 
-SH_ERROR=$($CC -Wl,--enable-new-dtags -o "$outfile" "$infile" 2>&1 | grep -i -c -E 'fatal|error|unrecognized|not found|not exist')
+SH_ERROR=$($CC -Wl,--enable-new-dtags -o "$outfile" "$infile" 2>&1 | grep -i -c -E 'fatal|error|unknown|unrecognized|not found|not exist')
 if [[ "$SH_ERROR" -eq "0" ]]; then
 	SH_DTAGS="-Wl,--enable-new-dtags"
 fi
