@@ -159,12 +159,13 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("-j" "$MAKE_JOBS" test)
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to test OpenSSL"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
+# Self tests are still unreliable, https://github.com/openssl/openssl/issues/4963
+# MAKE_FLAGS=("-j" "$MAKE_JOBS" test)
+# if ! "$MAKE" "${MAKE_FLAGS[@]}"
+# then
+#     echo "Failed to test OpenSSL"
+#     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+# fi
 
 MAKE_FLAGS=(install_sw)
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
