@@ -98,6 +98,9 @@ fi
 IS_X86_64=$(uname -m 2>&1 | grep -E -i -c "(amd64|x86_64)")
 if [[ "$SH_KBITS" -eq "32" ]]; then IS_X86_64=0; fi
 
+# Fix LD_LIBRARY_PATH on Darwin for self-tests
+IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
+
 CONFIG_PROG="./config"
 CONFIG_FLAGS=("no-ssl2" "no-ssl3" "no-comp" "shared" "-DNDEBUG")
 
@@ -130,6 +133,13 @@ for mfile in $(find "$PWD" -name 'Makefile'); do
     fi
 done
 
+if [[ "$IS_DARWIN" -ne "0" ]]; then
+    for mfile in $(find "$PWD" -name 'Makefile'); do
+        sed -e 's|LD_LIBRARY_PATH|DYLD_LIBRARY_PATH|g' "$mfile" > "$mfile.fixed"
+        mv "$mfile.fixed" "$mfile"
+    done
+fi
+
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure OpenSSL"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
@@ -146,6 +156,13 @@ MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build OpenSSL"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("-j" "$MAKE_JOBS" test)
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test OpenSSL"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
