@@ -68,13 +68,6 @@ mv configure.fixed configure; chmod +x configure
 
 P11KIT_CONFIG_OPTS=("--enable-shared" "--prefix=$INSTALL_PREFIX" "--libdir=$INSTALL_LIBDIR")
 
-# CA cert path?
-if [[ -d "/etc/ssl/certs/" ]]; then
-    SH_CACERT_PATH="/etc/ssl/certs/"
-elif [[ -d "/etc/openssl/certs" ]]; then
-    SH_CACERT_PATH="/etc/openssl/certs"
-fi
-
 # Use the path if available
 if [[ ! -z "$SH_CACERT_PATH" ]]; then
     P11KIT_CONFIG_OPTS+=("--with-trust-paths=$SH_CACERT_PATH")

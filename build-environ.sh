@@ -71,7 +71,7 @@ if [[ -z "$INSTALL_LIBDIR" ]]; then
         INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
     fi
 
-	export INSTALL_LIBDIR
+    export INSTALL_LIBDIR
 fi
 
 if [[ "$IS_SOLARIS" -ne "0" ]]; then
@@ -154,11 +154,30 @@ fi
 
 SH_ERROR=$($CC -Wl,--enable-new-dtags -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
 if [[ "$SH_ERROR" -eq "0" ]]; then
-	SH_DTAGS="-Wl,--enable-new-dtags"
+    SH_DTAGS="-Wl,--enable-new-dtags"
 fi
 
 rm -f "$infile" 2>/dev/null
 rm -f "$outfile" 2>/dev/null
+
+###############################################################################
+
+# CA cert path? Also see http://gagravarr.org/writing/openssl-certs/others.shtml
+if [[ -e "/etc/ssl/certs/ca-certificates.crt" ]]; then
+    SH_CACERT_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
+elif [[ -e "/etc/ssl/certs/ca-bundle.crt" ]]; then
+    SH_CACERT_BUNDLE="/etc/ssl/certs/ca-bundle.crt"
+elif [[ -d "/etc/ssl/certs" ]]; then
+    SH_CACERT_PATH="/etc/ssl/certs"
+elif [[ -d "/etc/openssl/certs" ]]; then
+    SH_CACERT_PATH="/etc/openssl/certs"
+elif [[ -d "/etc/pki/tls/" ]]; then
+    SH_CACERT_PATH="/etc/pki/tls/"
+elif [[ -d "/etc/ssl/certs/" ]]; then
+    SH_CACERT_PATH="/etc/ssl/certs/"
+elif [[ -d "/etc/pki/ca-trust/extracted/pem/" ]]; then
+    SH_CACERT_PATH="/etc/pki/ca-trust/extracted/pem/certs"
+fi
 
 ###############################################################################
 
@@ -198,8 +217,8 @@ if [[ -z "$BUILD_OPTS" ]]; then
     echo ""
     echo "Common flags and options:"
     echo ""
-	echo " INSTALL_PREFIX: $INSTALL_PREFIX"
-	echo " INSTALL_LIBDIR: $INSTALL_LIBDIR"
+    echo " INSTALL_PREFIX: $INSTALL_PREFIX"
+    echo " INSTALL_LIBDIR: $INSTALL_LIBDIR"
     echo ""
     echo "      PKGCONFIG: ${BUILD_PKGCONFIG[*]}"
     echo "       CPPFLAGS: ${BUILD_CPPFLAGS[*]}"
@@ -208,6 +227,14 @@ if [[ -z "$BUILD_OPTS" ]]; then
     echo "        LDFLAGS: ${BUILD_LDFLAGS[*]}"
     echo "         LDLIBS: ${BUILD_LIBS[*]}"
 
+    if [[ ! -z "$SH_CACERT_PATH" ]]; then
+        echo ""
+        echo " SH_CACERT_PATH: $SH_CACERT_PATH"
+    fi
+    if [[ ! -z "$SH_CACERT_BUNDLE" ]]; then
+        echo ""
+        echo " SH_CACERT_BUNDLE: $SH_CACERT_BUNDLE"
+    fi
 fi
 
 export BUILD_OPTS="TRUE"

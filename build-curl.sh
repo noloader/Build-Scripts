@@ -115,16 +115,12 @@ CURL_CONFIG_OPTIONS=("--enable-shared" "--enable-static" "--enable-optimize" "--
                      "--without-polarssl" "--without-mbedtls" "--without-cyassl" "--without-nss"
                      "--without-libssh2" "--with-libidn2=$INSTALL_PREFIX" "--with-nghttp2")
 
-if [[ ! -z "$SH_CACERT_PATH" ]]; then
+if [[ ! -z "$SH_CACERT_BUNDLE" ]]; then
+    CURL_CONFIG_OPTIONS+=("--with-ca-bundle=$SH_CACERT_BUNDLE")
+elif [[ ! -z "$SH_CACERT_PATH" ]]; then
     CURL_CONFIG_OPTIONS+=("--with-ca-path=$SH_CACERT_PATH")
 else
-    CURL_CONFIG_OPTIONS+=("--without-ca-path")
-fi
-
-if [[ ! -z "$SH_CACERT_FILE" ]]; then
-    CURL_CONFIG_OPTIONS+=("--with-ca-bundle=$SH_CACERT_FILE")
-else
-    CURL_CONFIG_OPTIONS+=("--without-ca-bundle")
+    CURL_CONFIG_OPTIONS+=("--without-ca-path" "--without-ca-bundle")
 fi
 
     PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
