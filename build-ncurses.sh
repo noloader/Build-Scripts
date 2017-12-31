@@ -82,17 +82,17 @@ mv configure.fixed configure; chmod +x configure
     --with-build-ldflags="${BUILD_LDFLAGS[*]}" \
     --with-build-libs="${BUILD_LIBS[*]}"
 
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure ncurses"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 # Fix Clang warning
 if [[ "$IS_CLANG" -ne "0" ]]; then
     for mfile in $(find "$PWD" -name 'Makefile'); do
         sed -e 's|--param max-inline-insns-single=1200||g' "$mfile" > "$mfile.fixed"
         mv "$mfile.fixed" "$mfile"
     done
-fi
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure ncurses"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
