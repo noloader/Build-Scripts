@@ -67,9 +67,9 @@ fi
 
 ###############################################################################
 
-if ! ./build-ncurses.sh
+if ! ./build-termcap.sh
 then
-    echo "Failed to build Ncurses"
+    echo "Failed to build Termcap"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -78,6 +78,14 @@ fi
 if ! ./build-gettext.sh
 then
     echo "Failed to build GetText"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+###############################################################################
+
+if ! ./build-ncurses.sh
+then
+    echo "Failed to build Ncurses"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 

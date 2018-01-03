@@ -37,3 +37,19 @@ Be sure to run `hash -r` after installing new programs to invalidate the Bash pr
 The scripts do not check signatures on tarballs with GnuPG. Its non-trivial to build and install GnuPG for some of these machines. Instead, the scripts rely on a trusted distribution channel to deliver authentic tarballs. `build-cacerts.sh` and `build-wget.sh` are enough to ensure the correct CAs and Wget are available to bootstrap the process with minimal risk.
 
 It is unfortunate GNU does not run their own PKI and have their own CA. More risk could be eliminated if we only needed to trust the GNU organization and their root certificate.
+
+# Bugs
+
+If you find a bug then submit a patch or raise a bug report.
+
+If you experience a failure like `reset` failing in your shell:
+
+```
+$ reset
+reset: error while loading shared libraries: libtinfow.so.6:
+Cannot open shared object file: No such file or directory
+```
+
+Then build Ncurses again with `./build-ncurses.sh`. `reset` will work again after building and installing Ncurses.
+
+The failure is unexplained at the moment, but the scripts are probably doing something wrong, like building Termcap, GetText or Ncurses in the wrong order for a program like cURL or Git.

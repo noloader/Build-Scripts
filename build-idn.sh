@@ -8,6 +8,9 @@
 IDN_TAR=libidn-1.33.tar.gz
 IDN_DIR=libidn-1.33
 
+IDN2_TAR=libidn2-2.0.4.tar.gz
+IDN2_DIR=libidn2-2.0.4
+
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
 
@@ -99,26 +102,6 @@ if [[ "$IS_SOLARIS" -eq "1" ]]; then
   fi
 fi
 
-# Darwin is mostly fucked up at the moment. Also see
-# http://lists.gnu.org/archive/html/help-libidn/2017-10/msg00002.html
-if [[ "$IS_DARWIN" -ne "0" ]]; then
-    sed -e 's|$AR cru|$AR $ARFLAGS|g' configure > configure.fixed
-    mv configure.fixed configure
-    sed -e 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' configure > configure.fixed
-    mv configure.fixed configure
-
-    #sed 's|$AR cru|$AR $ARFLAGS|g' aclocal.m4 > aclocal.m4.fixed
-    # mv aclocal.m4.fixed aclocal.m4
-    #sed 's|$AR cr|$AR $ARFLAGS|g' aclocal.m4 > aclocal.m4.fixed
-    # mv aclocal.m4.fixed aclocal.m4
-    #sed 's|$AR cru|$AR $ARFLAGS|g' m4/libtool.m4 > m4/libtool.m4.fixed
-    # mv m4/libtool.m4.fixed > m4/libtool.m4
-    #sed 's|$AR cr|$AR $ARFLAGS|g' m4/libtool.m4 > m4/libtool.m4.fixed
-    # mv m4/libtool.m4.fixed > m4/libtool.m4
-    #sed 's|${AR_FLAGS=cru}|${AR_FLAGS=-static -o }|g' m4/libtool.m4 > m4/libtool.m4.fixed
-    # mv m4/libtool.m4.fixed > m4/libtool.m4
-fi
-
     PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
@@ -126,7 +109,7 @@ fi
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --enable-shared
 
-if [[ "$IS_DARWIN" -ne "0" ]]; then
+if [[ "$IS_DARWIN" -ne "0" ]] && false; then
     for mfile in $(find "$PWD" -name 'Makefile'); do
         sed -e 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile" > "$mfile.fixed"
         mv "$mfile.fixed" "$mfile"
@@ -160,10 +143,79 @@ cd "$CURR_DIR"
 
 ###############################################################################
 
+echo
+echo "********** IDN2 **********"
+echo
+
+wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.gnu.org/gnu/libidn/$IDN2_TAR" -O "$IDN2_TAR"
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to download IDN2"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+rm -rf "$IDN2_DIR" &>/dev/null
+gzip -d < "$IDN2_TAR" | tar xf -
+cd "$IDN2_DIR"
+
+# Automake version problems, https://stackoverflow.com/q/47017841/608639
+autoreconf --install --force
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to reconfigure IDN2"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
+# AIX needs the execute bit reset on the file.
+sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
+mv configure.fixed configure; chmod +x configure
+
+    PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
+    CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
+    CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
+    LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
+./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-shared
+
+if [[ "$IS_DARWIN" -ne "0" ]] && false; then
+    for mfile in $(find "$PWD" -name 'Makefile'); do
+        sed -e 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile" > "$mfile.fixed"
+        mv "$mfile.fixed" "$mfile"
+        sed -e 's|ARFLAGS = cru |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
+        mv "$mfile.fixed" "$mfile"
+        sed -e 's|ARFLAGS = cr |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
+        mv "$mfile.fixed" "$mfile"
+    done
+fi
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure IDN2"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to build IDN2"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+MAKE_FLAGS=("install")
+if [[ ! (-z "$SUDO_PASSWORD") ]]; then
+    echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+else
+    "$MAKE" "${MAKE_FLAGS[@]}"
+fi
+
+cd "$CURR_DIR"
+
+###############################################################################
+
 # Set to false to retain artifacts
 if true; then
 
-    ARTIFACTS=("$IDN_TAR" "$IDN_DIR")
+    ARTIFACTS=("$IDN_TAR" "$IDN_DIR" "$IDN2_TAR" "$IDN2_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
