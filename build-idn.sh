@@ -109,17 +109,6 @@ fi
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --enable-shared
 
-if [[ "$IS_DARWIN" -ne "0" ]] && false; then
-    for mfile in $(find "$PWD" -name 'Makefile'); do
-        sed -e 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile" > "$mfile.fixed"
-        mv "$mfile.fixed" "$mfile"
-        sed -e 's|ARFLAGS = cru |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
-        mv "$mfile.fixed" "$mfile"
-        sed -e 's|ARFLAGS = cr |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
-        mv "$mfile.fixed" "$mfile"
-    done
-fi
-
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
@@ -159,7 +148,7 @@ gzip -d < "$IDN2_TAR" | tar xf -
 cd "$IDN2_DIR"
 
 # Automake version problems, https://stackoverflow.com/q/47017841/608639
-autoreconf --install --force
+# autoreconf --install --force
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to reconfigure IDN2"
@@ -177,17 +166,6 @@ mv configure.fixed configure; chmod +x configure
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --enable-shared
-
-if [[ "$IS_DARWIN" -ne "0" ]] && false; then
-    for mfile in $(find "$PWD" -name 'Makefile'); do
-        sed -e 's|AR = ar|AR = /usr/bin/libtool|g' "$mfile" > "$mfile.fixed"
-        mv "$mfile.fixed" "$mfile"
-        sed -e 's|ARFLAGS = cru |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
-        mv "$mfile.fixed" "$mfile"
-        sed -e 's|ARFLAGS = cr |ARFLAGS = -static -o |g' "$mfile" > "$mfile.fixed"
-        mv "$mfile.fixed" "$mfile"
-    done
-fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN2"

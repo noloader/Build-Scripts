@@ -50,6 +50,6 @@ reset: error while loading shared libraries: libtinfow.so.6:
 Cannot open shared object file: No such file or directory
 ```
 
-Then build Ncurses again with `./build-ncurses.sh`. `reset` will work again after building and installing Ncurses.
+Then build Ncurses again with `./build-ncurses.sh`. `reset` will work again after building and installing Ncurses a second time.
 
 The failure is unexplained at the moment, but the scripts are probably doing something wrong, like building Termcap, GetText or Ncurses in the wrong order for a program like cURL or Git.
