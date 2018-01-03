@@ -29,17 +29,22 @@ if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+# May be skipped if Perl is too old
+SKIP_WGET_TESTS=0
+
 # Wget self tests
 if ! perl -MHTTP::Daemon -e1 2>/dev/null
 then
-    echo "Wget requires Perl's HTTP::Daemon. Please install HTTP-Daemon."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+     echo "Wget requires Perl's HTTP::Daemon. Skipping Wget self tests."
+     echo "To fix this issue, please install HTTP-Daemon."
+     SKIP_WGET_TESTS=1
 fi
 
 if ! perl -MHTTP::Request -e1 2>/dev/null
 then
-    echo "Wget requires Perl's HTTP::Request. Please install HTTP-Message."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+     echo "Wget requires Perl's HTTP::Request.  Skipping Wget self tests."
+     echo "To fix this issue, please install HTTP-Request or HTTP-Message."
+     SKIP_WGET_TESTS=1
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
@@ -149,11 +154,13 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("check")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to test Wget"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+if [[ ! "$SKIP_WGET_TESTS" -eq "1" ]]; then
+    MAKE_FLAGS=("check")
+    if ! "$MAKE" "${MAKE_FLAGS[@]}"
+    then
+        echo "Failed to test Wget"
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
 fi
 
 MAKE_FLAGS=("install")
