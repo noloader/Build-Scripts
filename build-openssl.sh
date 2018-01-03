@@ -30,18 +30,23 @@ if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+# May be skipped if Perl is too old
+NO_OPENSSL_TESTS=0
+
 # Wget self tests
 if ! perl -MTest::More -e1 2>/dev/null
 then
-    echo "Wget requires Perl's Test::More. Please install Test-More."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    echo "OpenSSL requires Perl's Test::More. Skipping OpenSSL self tests."
+	echo "To fix this issue, please install Test-More."
+    NO_OPENSSL_TESTS=1
 fi
 
 # Wget self tests
 if ! perl -MText::Template -e1 2>/dev/null
 then
-    echo "Wget requires Perl's Text::Template. Please install Text-Template."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    echo "OpenSSL requires Perl's Text::Template. Skipping OpenSSL self tests."
+	echo "To fix this issue, please install Text-Template."
+    NO_OPENSSL_TESTS=1
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
