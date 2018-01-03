@@ -27,7 +27,11 @@ INSTALL_PREFIX="$HOME/tmp" INSTALL_LIBDIR="$HOME/mylibs" ./build-wget.sh
 ```
 
 # Boot strapping
-Wget should be built first when working on older systems. CentOS 5 provides Wget 1.11, and it does not support SNI (SNI support did not arrive until Wget 1.14). The old Wget will fail to download cURL which Git needs for its build. The cURL download fails due to shared hosting and lack of SNI.
+A basic order should be followed. Older systems like CentOS 5 are more sensitive than newer systems. First, run `build-cacerts.sh` to install several CAs in `$HOME/.cacerts`. Second, run `build-autotools.sh`, which should bring Autotools up to date. After CA have been installed and Autotools updated you should be mostly OK.
+
+Wget should be built next when working on older systems. CentOS 5 provides Wget 1.11, and it does not support SNI (SNI support did not arrive until Wget 1.14). The old Wget will fail to download cURL which Git needs for its build. The cURL download fails due to shared hosting and lack of SNI.
+
+Be sure to run `hash -r` after installing new programs to invalidate the Bash program cache. Otherwise old programs may be used.
 
 # Authenticity
 The scripts do not check signatures on tarballs with GnuPG. Its non-trivial to build and install GnuPG for some of these machines. Instead, the scripts rely on a trusted distribution channel to deliver authentic tarballs. `build-cacerts.sh` and `build-wget.sh` are enough to ensure the correct CAs and Wget are available to bootstrap the process with minimal risk.
