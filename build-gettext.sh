@@ -73,7 +73,7 @@ mv configure.fixed configure; chmod +x configure
     LDFLAGS="${BUILD_LDFLAGS[*]}" \
     LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --enable-shared
+    --enable-shared --with-pic
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure GetText"
