@@ -44,6 +44,9 @@ if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
 fi
 
+IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
+IS_GMAKE=$($MAKE -v 2>&1 | grep -i -c 'gnu make')
+
 ###############################################################################
 
 echo
@@ -95,11 +98,19 @@ fi
 MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
+    if [[ "$IS_DARWIN" -ne "0" ]]; then
+        echo "$SUDO_PASSWORD" | sudo -S  mv "$INSTALL_PREFIX/bin/libtool" "$INSTALL_PREFIX/bin/libtoolize"
+    fi
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
+    if [[ "$IS_DARWIN" -ne "0" ]]; then
+        mv "$INSTALL_PREFIX/bin/libtool" "$INSTALL_PREFIX/bin/libtoolize"
+    fi
 fi
 
 cd "$CURR_DIR"
+
+[[ "$0" = "${BASH_SOURCE[0]}" ]] && hash -r
 
 ###############################################################################
 
