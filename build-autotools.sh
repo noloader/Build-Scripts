@@ -177,13 +177,16 @@ mv configure.fixed configure; chmod +x configure
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
+sed -e 's|^MAKEINFO =*|MAKEINFO = true|g' Makefile > Makefile.fixed
+mv Makefile.fixed Makefile; chmod +x Makefile
+
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Automake"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" MAKEINFO=true "${MAKE_FLAGS[@]}"
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build Automake"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
