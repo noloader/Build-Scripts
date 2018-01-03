@@ -1,5 +1,5 @@
 # Build-Scripts
-This GitHub is a collection of build scripts useful when building and testing programs and libraries on downlevel and unique clients. It should result in working SSH, Wget, cURL and Git clients on systems like Fedora 10, CentOS 5 and Solaris 11. After you have a modern Git and Wget you can usually test your software as desired.
+This GitHub is a collection of build scripts useful when building and testing programs and libraries on downlevel and unique clients. It should result in working SSH, Wget, cURL and Git clients on systems like PowerMac G5, Fedora 10, CentOS 5 and Solaris 11. After you have a modern Git and Wget you can usually test your software as desired.
 
 The general idea of the scripts are, you want to run `./build-wget.sh`, `./build-ssh.sh`, `./build-git.sh` or some other program build script. The build script for the program will download an build the dependent libraries for the program (even if the library was previously built before). You can build a library yourself, but you need to make sure the dependents are built in the case of a library (only programs build dependencies for you).
 
