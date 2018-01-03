@@ -102,7 +102,7 @@ then
 fi
 
 # libdir="$INSTALL_LIBDIR"
-MAKE_FLAGS=("install")
+MAKE_FLAGS=("install" "libdir=$INSTALL_LIBDIR")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
@@ -114,7 +114,7 @@ cd "$CURR_DIR"
 ###############################################################################
 
 # Set to false to retain artifacts
-if false; then
+if true; then
 
     ARTIFACTS=("$TERMCAP_TAR" "$TERMCAP_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
