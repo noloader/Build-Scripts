@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Git and its dependencies from sources.
 
-GIT_TAR=v2.15.0.tar.gz
+GIT_TAR=v2.15.1.tar.gz
 GIT_DIR=git-2.15.1
 
 # Avoid shellcheck.net warning
@@ -158,7 +158,7 @@ echo
 echo "********** Git **********"
 echo
 
-wget --ca-certificate="$DIGICERT_ROOT" "https://github.com/git/git/releases/$GIT_TAR" -O "$GIT_TAR"
+wget --ca-certificate="$DIGICERT_ROOT" "https://github.com/git/git/archive/$GIT_TAR" -O "$GIT_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download Git"

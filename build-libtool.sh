@@ -98,14 +98,8 @@ fi
 MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-    if [[ "$IS_DARWIN" -ne "0" ]]; then
-        echo "$SUDO_PASSWORD" | sudo -S  mv "$INSTALL_PREFIX/bin/libtool" "$INSTALL_PREFIX/bin/libtoolize"
-    fi
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
-    if [[ "$IS_DARWIN" -ne "0" ]]; then
-        mv "$INSTALL_PREFIX/bin/libtool" "$INSTALL_PREFIX/bin/libtoolize"
-    fi
 fi
 
 cd "$CURR_DIR"
