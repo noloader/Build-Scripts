@@ -214,7 +214,7 @@ echo "**************************************************************************
 ###############################################################################
 
 # Set to false to retain artifacts
-if false; then
+if true; then
 
     ARTIFACTS=("$M4_TAR" "$M4_DIR" "$AUTOCONF_TAR" "$AUTOCONF_DIR" "$AUTOMAKE_TAR" "$AUTOMAKE_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
