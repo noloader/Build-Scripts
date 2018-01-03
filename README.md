@@ -5,7 +5,7 @@ The general idea of the scripts are, you want to run `./build-wget.sh`, `./build
 
 The scripts should mostly work on AIX, Android, BSDs, Cygwin, iOS, Linux, OS X and Solaris. GnuTLS is included but it is mostly experimental/non-working at the moment due to problems with dependencies like Guile.
 
-Adding a new library script is mostly copy and paste. Start with `build-zlib.h`, copy/paste it to a new file, and then add the necessary pieces for the library. Program scripts are copy and paste too, but they are also more involved because you have to tend to the dependent libraries. See `./build-ssh.sh` as an example because its small.
+Adding a new library script is mostly copy and paste. Start with `build-zlib.h`, copy/paste it to a new file, and then add the necessary pieces for the library. Program scripts are copy and paste too, but they are also more involved because you have to tend to the dependent libraries. See `build-ssh.sh` as an example because its small.
 
 # Output Artifacts
 All artifacts are placed in `/usr/local` by default with runtime paths and dtags set to the proper library location. The proper library location on 32-bit machines is `/usr/local/lib`; while 64-bit systems use `/usr/local/lib` (Debian and derivatives) or `/usr/local/lib64` (Red Hat and derivatives).
