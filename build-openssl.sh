@@ -37,7 +37,7 @@ NO_OPENSSL_TESTS=0
 if ! perl -MTest::More -e1 2>/dev/null
 then
     echo "OpenSSL requires Perl's Test::More. Skipping OpenSSL self tests."
-	echo "To fix this issue, please install Test-More."
+    echo "To fix this issue, please install Test-More."
     NO_OPENSSL_TESTS=1
 fi
 
@@ -45,7 +45,7 @@ fi
 if ! perl -MText::Template -e1 2>/dev/null
 then
     echo "OpenSSL requires Perl's Text::Template. Skipping OpenSSL self tests."
-	echo "To fix this issue, please install Text-Template."
+    echo "To fix this issue, please install Text-Template."
     NO_OPENSSL_TESTS=1
 fi
 
@@ -165,6 +165,7 @@ then
 fi
 
 # Self tests are still unreliable, https://github.com/openssl/openssl/issues/4963
+# TODO: tie self-tests to NO_OPENSSL_TESTS
 # MAKE_FLAGS=("-j" "$MAKE_JOBS" test)
 # if ! "$MAKE" "${MAKE_FLAGS[@]}"
 # then
