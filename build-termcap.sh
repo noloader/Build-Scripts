@@ -74,6 +74,11 @@ mv configure.fixed configure; chmod +x configure
 ./configure --enable-install-termcap --prefix="$INSTALL_PREFIX" \
     --enable-shared
 
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure Termcap"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 sed -e '42i#include <unistd.h>' tparam.c > tparam.c.fixed
 mv tparam.c.fixed tparam.c
 sed -e 's|$(CPPFLAGS)|$(CPPFLAGS) $(CFLAGS)|g' Makefile > Makefile.fixed
@@ -82,17 +87,12 @@ sed -e 's|$(AR) rc |$(AR) $(ARFLAGS) |g' Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
 sed -e "s|CFLAGS = -g|CFLAGS = -g ${BUILD_CFLAGS[*]}|g" Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
+sed -e "/^oldincludedir/d" Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+sed -e "s|libdir = \$(exec_prefix)/lib|libdir = $INSTALL_LIBDIR|g" Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
 
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure Termcap"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ "$IS_DARWIN" -ne "0" ]]; then
-    ARFLAGS="-static -o"
-else
-    ARFLAGS="cr"
-fi
+ARFLAGS="cr"
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! ARFLAGS="$ARFLAGS" "$MAKE" "${MAKE_FLAGS[@]}"
@@ -101,6 +101,7 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+# libdir="$INSTALL_LIBDIR"
 MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
@@ -113,7 +114,7 @@ cd "$CURR_DIR"
 ###############################################################################
 
 # Set to false to retain artifacts
-if true; then
+if false; then
 
     ARTIFACTS=("$TERMCAP_TAR" "$TERMCAP_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
