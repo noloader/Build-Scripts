@@ -88,17 +88,24 @@ cd "$EMACS_DIR"
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
 mv configure.fixed configure; chmod +x configure
 
+BUILD_OPTS=('--with-xml2' '--without-x' '--without-sound' '--without-xpm'
+    '--without-jpeg' '--without-tiff' '--without-gif' '--without-png'
+	'--without-rsvg' '--without-imagemagick' '--without-xft' '--without-libotf'
+	'--without-m17n-flt' '--without-xaw3d' '--without-toolkit-scroll-bars'
+	'--without-gpm' '--without-dbus' '--without-gconf' '--without-gsettings'
+	'--without-makeinfo' '--without-compress-install')
+
+if [[ ! -e "/usr/include/selinux/context.h" ]] &&
+   [[ ! -e "/usr/local/include/selinux/context.h" ]]; then
+    BUILD_OPTS+=('--without-selinux')
+fi
+
     PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-xml2 --without-x --without-sound --without-xpm \
-    --without-jpeg --without-tiff --without-gif --without-png --without-rsvg \
-    --without-imagemagick --without-xft --without-libotf --without-m17n-flt \
-    --without-xaw3d --without-toolkit-scroll-bars --without-gpm --without-dbus \
-    --without-gconf --without-gsettings --without-makeinfo \
-    --without-compress-install
+    "${BUILD_OPTS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure emacs"
