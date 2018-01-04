@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Unistring from sources.
 
-UNISTR_TAR=libunistring-0.9.7.tar.gz
-UNISTR_DIR=libunistring-0.9.7
+UNISTR_TAR=libunistring-0.9.8.tar.gz
+UNISTR_DIR=libunistring-0.9.8
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"

@@ -118,6 +118,9 @@ for sfile in $(grep -IR 'CHAR_WIDTH' * | cut -f 1 -d ':' | uniq); do
     mv "$sfile.fixed" "$sfile"
 done
 
+#echo "Removing terminfo.c source file"
+#find $(PWD) -name "terminfo.c" -exec rm {} \;
+
 MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
