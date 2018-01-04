@@ -31,6 +31,7 @@ fi
 
 THIS_SYSTEM=$(uname -s 2>&1)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
+IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ -z "$MAKE" ]]; then
@@ -157,6 +158,12 @@ if [[ "$SH_ERROR" -eq "0" ]]; then
     SH_DTAGS="-Wl,--enable-new-dtags"
 fi
 
+# OS X linker and install names
+SH_ERROR=$($CC -headerpad_max_install_names -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
+if [[ "$SH_ERROR" -eq "0" ]]; then
+    SH_INSTNAME="-headerpad_max_install_names"
+fi
+
 rm -f "$infile" 2>/dev/null
 rm -f "$outfile" 2>/dev/null
 
@@ -211,6 +218,10 @@ fi
 if [[ ! -z "$SH_DTAGS" ]]; then
     BUILD_LDFLAGS+=("$SH_DTAGS")
 fi
+
+#if [[ "$IS_DARWIN" -ne "0" ]] && [[ ! -z "$SH_INSTNAME" ]]; then
+#    BUILD_LDFLAGS+=("$SH_INSTNAME")
+#fi
 
 if [[ -z "$BUILD_OPTS" ]]; then
 
