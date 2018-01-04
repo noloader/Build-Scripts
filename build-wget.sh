@@ -63,6 +63,8 @@ if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
 fi
 
+if false; then
+
 ###############################################################################
 
 if ! ./build-zlib.sh
@@ -113,6 +115,8 @@ fi
 
 ###############################################################################
 
+fi
+
 echo
 echo "********** Wget **********"
 echo
@@ -141,7 +145,9 @@ mv configure.fixed configure; chmod +x configure
     LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
     --with-ssl=openssl --with-libssl-prefix="$INSTALL_PREFIX" \
-    --with-libiconv-prefix="$INSTALL_PREFIX" --with-libunistring-prefix="$INSTALL_PREFIX"
+    --with-libiconv-prefix="$INSTALL_PREFIX" \
+    --with-libunistring-prefix="$INSTALL_PREFIX" \
+    --with-libidn="$INSTALL_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Wget"
@@ -175,8 +181,15 @@ cd "$CURR_DIR"
 
 ###############################################################################
 
+echo ""
+echo "*****************************************************************************"
+echo "Please run Bash's 'hash -r' to update program cache in the current shell"
+echo "*****************************************************************************"
+
+###############################################################################
+
 # Set to false to retain artifacts
-if true; then
+if false; then
 
     ARTIFACTS=("$WGET_TAR" "$WGET_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
