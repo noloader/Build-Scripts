@@ -16,6 +16,12 @@ CURR_DIR="$PWD"
 
 if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
     echo "Some packages require autoreconf. Please install autoconf or automake."
+    echo "You can run build-autotools.sh and build-libtool.sh to update them."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+if [[ -z $(command -v gzip 2>/dev/null) ]]; then
+    echo "Some packages require gzip. Please install gzip."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -43,14 +49,6 @@ fi
 if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
 fi
-
-###############################################################################
-
-##if ! ./build-iconv.sh
-##then
-##    echo "Failed to build iConv"
-##    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-##fi
 
 ###############################################################################
 
