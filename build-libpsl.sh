@@ -68,10 +68,11 @@ cd "$PSL_DIR"
 #fi
 
 # Try to reconfigure. Autotools is so broken...
-libtoolize --force && aclocal && autoheader && autoreconf --force --install
+#libtoolize --force && aclocal && autoheader && autoreconf --force --install
 #libtoolize -v --force
-#aclocal -v
+#aclocal -v 
 #autoheader -v
+# Avoid reconfiguring.
 #autoreconf -v --force --install
 
 if [[ "$?" -ne "0" ]]; then
