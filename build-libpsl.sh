@@ -25,6 +25,11 @@ if [[ -z $(command -v gzip 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+if [[ -z $(command -v git 2>/dev/null) ]]; then
+    echo "Some packages require git. Please install git."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
     echo "PSL requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
@@ -47,6 +52,30 @@ fi
 
 ###############################################################################
 
+if ! ./build-iconv.sh
+then
+    echo "Failed to build iConv"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+###############################################################################
+
+if ! ./build-unistr.sh
+then
+    echo "Failed to build Unistring"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+###############################################################################
+
+if ! ./build-idn.sh
+then
+    echo "Failed to build IDN"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+###############################################################################
+
 echo
 echo "********** libpsl **********"
 echo
@@ -62,17 +91,6 @@ rm -rf "$PSL_DIR" &>/dev/null
 gzip -d < "$PSL_TAR" | tar xf -
 cd "$PSL_DIR"
 
-#general=$(find /usr/local -name general.m4 2>/dev/null | head -n 1)
-#if [[ ! -z "general" ]]; then
-#    cp "$general" "m4/"
-#fi
-
-# Try to reconfigure. Autotools is so broken...
-#libtoolize --force && aclocal && autoheader && autoreconf --force --install
-#libtoolize -v --force
-#aclocal -v
-#autoheader -v
-
 # Avoid reconfiguring.
 if [[ -e "autogen.sh" ]]; then
     ./autogen.sh
@@ -85,6 +103,15 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+# Add the PSL data as a submodule
+mkdir -p list
+wget --ca-certificate="$DIGICERT_ROOT" https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat -O list/public_suffix_list.dat
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to download Public Suffix List (PSL)"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
 # AIX needs the execute bit reset on the file.
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
@@ -94,7 +121,10 @@ mv configure.fixed configure; chmod +x configure
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
+./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --enable-runtime=libidn2 \
+    --with-libiconv-prefix="$INSTALL_PREFIX" \
+    --with-libintl-prefix="$INSTALL_PREFIX" \
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure libpsl"
