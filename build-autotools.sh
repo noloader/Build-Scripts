@@ -11,8 +11,8 @@ AUTOCONF_TAR=autoconf-2.69.tar.gz
 AUTOCONF_DIR=autoconf-2.69
 
 # Autoconf Archive
-AUTOCONF_ARCH_TAR=autoconf-archive-2010.06.04.tar.gz
-AUTOCONF_ARCH_DIR=autoconf-archive-2010.06.04
+# AUTOCONF_ARCH_TAR=autoconf-archive-2010.06.04.tar.gz
+# AUTOCONF_ARCH_DIR=autoconf-archive-2010.06.04
 
 AUTOMAKE_TAR=automake-1.15.1.tar.gz
 AUTOMAKE_DIR=automake-1.15.1
@@ -140,58 +140,6 @@ MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build Autoconf"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("install")
-if [[ ! (-z "$SUDO_PASSWORD") ]]; then
-    echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-else
-    "$MAKE" "${MAKE_FLAGS[@]}"
-fi
-
-cd "$CURR_DIR"
-
-# Update program cache
-[[ "$0" = "${BASH_SOURCE[0]}" ]] && hash -r
-
-###############################################################################
-
-echo
-echo "********** Autoconf Archive **********"
-echo
-
-wget --ca-certificate="$DIGICERT_ROOT" "https://ftp.wayne.edu/gnu/autoconf-archive/$AUTOCONF_ARCH_TAR" -O "$AUTOCONF_ARCH_TAR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download libtool"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-rm -rf "$AUTOCONF_ARCH_DIR" &>/dev/null
-gzip -d < "$AUTOCONF_ARCH_TAR" | tar xf -
-cd "$AUTOCONF_ARCH_DIR"
-
-# http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
-# AIX needs the execute bit reset on the file.
-sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
-mv configure.fixed configure; chmod +x configure
-
-    PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
-    CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
-    CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
-    LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure Autoconf Archive"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-if ! "$MAKE" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to build Autoconf Archive"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
