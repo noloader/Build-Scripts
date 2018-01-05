@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds Libtool from sources.
+# This script builds Autotools from sources. A separate
+# script is available for Libtool for brave souls.
+
+# Trying to update Autotools may be more trouble than it is worth.
+# If the updagrade goes bad, then you can uninstall it with:
+#
+#   find /usr/local -name 'autom4te' -exec rm -rf {} \;
+#   find /usr/local -name 'autopoint' -exec rm -rf {} \;
+#   find /usr/local -name 'autoconf' -exec rm -rf {} \;
+#   find /usr/local -name 'autoheader' -exec rm -rf {} \;
+#   find /usr/local -name 'automake' -exec rm -rf {} \;
+#   find /usr/local -name 'autoupdate' -exec rm -rf {} \;
+#   find /usr/local -name 'aclocal*' -exec rm -rf {} \;
+#   hash -r
 
 M4_TAR=m4-1.4.18.tar.gz
 M4_DIR=m4-1.4.18
@@ -9,10 +22,6 @@ M4_DIR=m4-1.4.18
 # Autoconf
 AUTOCONF_TAR=autoconf-2.69.tar.gz
 AUTOCONF_DIR=autoconf-2.69
-
-# Autoconf Archive
-# AUTOCONF_ARCH_TAR=autoconf-archive-2010.06.04.tar.gz
-# AUTOCONF_ARCH_DIR=autoconf-archive-2010.06.04
 
 AUTOMAKE_TAR=automake-1.15.1.tar.gz
 AUTOMAKE_DIR=automake-1.15.1
