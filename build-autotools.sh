@@ -6,6 +6,7 @@
 M4_TAR=m4-1.4.18.tar.gz
 M4_DIR=m4-1.4.18
 
+# Autoconf
 AUTOCONF_TAR=autoconf-2.69.tar.gz
 AUTOCONF_DIR=autoconf-2.69
 
@@ -235,7 +236,7 @@ mv configure.fixed configure; chmod +x configure
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
 sed -e 's|^MAKEINFO =*|MAKEINFO = true|g' Makefile > Makefile.fixed
-mv Makefile.fixed Makefile; chmod +x Makefile
+mv Makefile.fixed Makefile
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Automake"
