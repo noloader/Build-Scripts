@@ -4,17 +4,9 @@
 # This script builds Autotools from sources. A separate
 # script is available for Libtool for brave souls.
 
-# Trying to update Autotools may be more trouble than it is worth.
-# If the updagrade goes bad, then you can uninstall it with:
-#
-#   find /usr/local -name 'autom4te' -exec rm -rf {} \;
-#   find /usr/local -name 'autopoint' -exec rm -rf {} \;
-#   find /usr/local -name 'autoconf' -exec rm -rf {} \;
-#   find /usr/local -name 'autoheader' -exec rm -rf {} \;
-#   find /usr/local -name 'automake' -exec rm -rf {} \;
-#   find /usr/local -name 'autoupdate' -exec rm -rf {} \;
-#   find /usr/local -name 'aclocal*' -exec rm -rf {} \;
-#   hash -r
+# Trying to update Autotools may be more trouble than it is
+# worth. If the upgrade goes bad, then you can uninstall
+# it with the script clean-autotools.sh
 
 M4_TAR=m4-1.4.18.tar.gz
 M4_DIR=m4-1.4.18
