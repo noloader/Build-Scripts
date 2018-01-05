@@ -13,13 +13,13 @@
 # Autotools files. Its non-trivial to reinstall the missing
 # Perl files because the sources must be compiled again.
 
-AUTOTOOLS=(autom4te autoconf automake autopoint autoreconf autoupdate autoheader autoscan)
+AUTOTOOLS=(autom4te autoconf automake autopoint autoreconf autoupdate autoheader autoscan aclocal)
 for dir in "${AUTOTOOLS[@]}"; do
-    find /usr/local -type d -name "$dir*" -exec rm -rf {} \;
+    find /usr/local -type d -name "$dir*" -exec rm -rf {} \; 2>/dev/null
 done
 
 for file in "${AUTOTOOLS[@]}"; do
-    find /usr/local -type f -name "$file*" -exec rm -f {} \;
+    find /usr/local -type f -name "$file*" -exec rm -f {} \; 2>/dev/null
 done
 
 echo "You may need to update libtool if you did so previously."
