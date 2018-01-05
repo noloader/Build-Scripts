@@ -38,6 +38,22 @@ The scripts do not check signatures on tarballs with GnuPG. Its non-trivial to b
 
 It is unfortunate GNU does not run their own PKI and have their own CA. More risk could be eliminated if we only needed to trust the GNU organization and their root certificate.
 
+# Autotools
+
+Autotools is its own special kind of hell. Autotools is where a progammer gets sent when he or she has behaved very badly.
+
+On new distros you should install Autotools from the distribution. The packages in the Autotools collection which should be installed through the distribution include:
+
+* Aclocal
+* Autoconf
+* Autopoint
+* Automake
+* Libtool
+
+The build scripts include `build-autotools.sh` but you should use it sparingly on old distros. Attempting to update Autotools creates a lot of tangential incompatibility problems (which is kind of sad given they have had 25 years or so to get it right).
+
+If you install Autotools using `build-autotools.sh` and it causes more problems then it is worth, then run `clean-autotools.sh`. `clean-autotools.sh` removes all the Autotools artifacts it can find from `/usr/local`. `clean-autotools.sh` does not remove Libtool, so you may need to reinstall Libtool to ensure it is using the correct Autotools.
+
 # Bugs
 
 If you find a bug then submit a patch or raise a bug report.
