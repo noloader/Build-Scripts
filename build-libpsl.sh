@@ -70,10 +70,15 @@ cd "$PSL_DIR"
 # Try to reconfigure. Autotools is so broken...
 #libtoolize --force && aclocal && autoheader && autoreconf --force --install
 #libtoolize -v --force
-#aclocal -v 
+#aclocal -v
 #autoheader -v
+
 # Avoid reconfiguring.
-#autoreconf -v --force --install
+if [[ -e "autogen.sh" ]]; then
+    ./autogen.sh
+elif [[ -e "configure.ac" ]]; then
+    autoreconf -v --force --install
+fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to reconfigure libpsl"
