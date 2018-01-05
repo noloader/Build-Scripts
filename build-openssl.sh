@@ -87,7 +87,7 @@ cd "$OPENSSL_DIR"
 
 # OpenSSL and enable-ec_nistp_64_gcc_128 option
 IS_X86_64=$(uname -m 2>&1 | grep -E -i -c "(amd64|x86_64)")
-if [[ "$SH_BITS" -eq "32" ]]; then IS_X86_64=0; fi
+if [[ "$BUILD_BITS" -eq "32" ]]; then IS_X86_64=0; fi
 
 # Fix LD_LIBRARY_PATH on Darwin for self-tests
 IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
@@ -109,9 +109,10 @@ fi
 CONFIG_FLAGS+=("--prefix=$INSTALL_PREFIX" "--libdir=$(basename "$INSTALL_LIBDIR")")
 
 echo "Configuring OpenSSL with ${CONFIG_FLAGS[*]}"
+echo "BUILD_BITS: $BUILD_BITS"
 echo ""
 
-KERNEL_BITS="$SH_BITS" "$CONFIG_PROG" "${CONFIG_FLAGS[@]}"
+KERNEL_BITS="$BUILD_BITS" "$CONFIG_PROG" "${CONFIG_FLAGS[@]}"
 
 # OpenSSL configuration is so broken. The dev team just makes the
 #   shit up as they go rather than following conventions.
@@ -139,7 +140,7 @@ fi
 MAKE_FLAGS=("-j" "$MAKE_JOBS" "depend")
 if ! "$MAKE" "MAKE_JOBS=$MAKE_JOBS" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build OpenSSL dependencies"
+    echo "Failed to update OpenSSL dependencies"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 

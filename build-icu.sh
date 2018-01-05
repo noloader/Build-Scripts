@@ -67,7 +67,7 @@ mv configure.fixed configure; chmod +x configure
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --enable-shared --enable-static \
     --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-library-bits="$SH_BITS" \
+    --with-library-bits="$BUILD_BITS" \
     --with-data-packaging=auto
 
 if [[ "$?" -ne "0" ]]; then

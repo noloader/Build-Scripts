@@ -71,6 +71,8 @@ cd "$IDN_DIR"
 # and it breaks Autoconf 2.61 or Automake 1.12.
 sed -e '/^AM_SILENT_RULES/d' configure.ac > configure.ac.fixed
 mv configure.ac.fixed configure.ac
+# And trick Autotools to stop regenerating everything
+touch -t 197001010000 configure.ac
 
 # Automake version problems, https://stackoverflow.com/q/47017841/608639
 autoreconf --install --force
@@ -120,6 +122,14 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+# WTF? Why try to build docs when tools are missing???
+for mfile in $(find "$PWD" -name 'Makefile'); do
+    sed -e 's/HELP2MAN =.*/HELP2MAN = true/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/MAKEINFO =.*/MAKEINFO = true/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+done
+
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
@@ -157,6 +167,8 @@ cd "$IDN2_DIR"
 # and it breaks Autoconf 2.61 or Automake 1.12.
 sed -e '/^AM_SILENT_RULES/d' configure.ac > configure.ac.fixed
 mv configure.ac.fixed configure.ac
+# And trick Autotools to stop regenerating everything
+touch -t 197001010000 configure.ac
 
 # Automake version problems, https://stackoverflow.com/q/47017841/608639
 autoreconf --install --force
@@ -182,6 +194,14 @@ if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN2"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
+
+# WTF? Why try to build docs when tools are missing???
+for mfile in $(find "$PWD" -name 'Makefile'); do
+    sed -e 's/HELP2MAN =.*/HELP2MAN = true/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/MAKEINFO =.*/MAKEINFO = true/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+done
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"

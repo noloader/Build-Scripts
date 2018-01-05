@@ -184,7 +184,7 @@ mv configure.fixed configure; chmod +x configure
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR"
 
-sed -e 's|^MAKEINFO =*|MAKEINFO = true|g' Makefile > Makefile.fixed
+sed -e 's|^MAKEINFO =.*|MAKEINFO = true|g' Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
 
 if [[ "$?" -ne "0" ]]; then
@@ -224,7 +224,7 @@ echo "**************************************************************************
 if true; then
 
     ARTIFACTS=("$M4_TAR" "$M4_DIR" "$AUTOCONF_TAR" "$AUTOCONF_DIR"
-	    "$AUTOCONF_ARCH_TAR" "$AUTOCONF_ARCH_DIR" "$AUTOMAKE_TAR" "$AUTOMAKE_DIR")
+        "$AUTOCONF_ARCH_TAR" "$AUTOCONF_ARCH_DIR" "$AUTOMAKE_TAR" "$AUTOMAKE_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
