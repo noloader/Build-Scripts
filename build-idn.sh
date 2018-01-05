@@ -67,6 +67,11 @@ rm -rf "$IDN_DIR" &>/dev/null
 gzip -d < "$IDN_TAR" | tar xf -
 cd "$IDN_DIR"
 
+# Remove AM_SILENT_RULES(<whatever>). Autotools does not honor it,
+# and it breaks Autoconf 2.61 or Automake 1.12.
+sed -e '/^AM_SILENT_RULES/d' configure.ac > configure.ac.fixed
+mv configure.ac.fixed configure.ac
+
 # Automake version problems, https://stackoverflow.com/q/47017841/608639
 autoreconf --install --force
 
@@ -147,6 +152,11 @@ fi
 rm -rf "$IDN2_DIR" &>/dev/null
 gzip -d < "$IDN2_TAR" | tar xf -
 cd "$IDN2_DIR"
+
+# Remove AM_SILENT_RULES(<whatever>). Autotools does not honor it,
+# and it breaks Autoconf 2.61 or Automake 1.12.
+sed -e '/^AM_SILENT_RULES/d' configure.ac > configure.ac.fixed
+mv configure.ac.fixed configure.ac
 
 # Automake version problems, https://stackoverflow.com/q/47017841/608639
 autoreconf --install --force
