@@ -76,8 +76,10 @@ if [[ -z "$INSTALL_LIBDIR" ]]; then
 fi
 
 if [[ "$IS_SOLARIS" -ne "0" ]]; then
+    SH_BITS=64
     SH_MARCH="64"
 elif [[ "$IS_64BIT" -ne "0" ]]; then
+    SH_BITS=64
     if [[ (-d /usr/lib) && (-d /usr/lib32) ]]; then
         SH_MARCH="64"
     elif [[ (-d /usr/lib) && (-d /usr/lib64) ]]; then
@@ -86,6 +88,7 @@ elif [[ "$IS_64BIT" -ne "0" ]]; then
         SH_MARCH="64"
     fi
 else
+    SH_BITS=32
     SH_MARCH="32"
 fi
 

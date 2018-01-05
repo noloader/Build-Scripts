@@ -85,23 +85,9 @@ rm -rf "$OPENSSL_DIR" &>/dev/null
 gzip -d < "$OPENSSL_TAR" | tar xf -
 cd "$OPENSSL_DIR"
 
-# Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
-# The Autoconf programs misdetect Solaris as x86 even though its x64. OpenBSD has
-# getconf, but it does not have LONG_BIT.
-IS_64BIT=$(getconf LONG_BIT 2>&1 | grep -i -c 64)
-if [[ "$IS_64BIT" -eq "0" ]]; then
-    IS_64BIT=$(file /bin/ls 2>&1 | grep -i -c '64-bit')
-fi
-
-if [[ "$IS_64BIT" -ne "0" ]]; then
-    SH_KBITS=64
-else
-    SH_KBITS=32
-fi
-
 # OpenSSL and enable-ec_nistp_64_gcc_128 option
 IS_X86_64=$(uname -m 2>&1 | grep -E -i -c "(amd64|x86_64)")
-if [[ "$SH_KBITS" -eq "32" ]]; then IS_X86_64=0; fi
+if [[ "$SH_BITS" -eq "32" ]]; then IS_X86_64=0; fi
 
 # Fix LD_LIBRARY_PATH on Darwin for self-tests
 IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
@@ -125,7 +111,7 @@ CONFIG_FLAGS+=("--prefix=$INSTALL_PREFIX" "--libdir=$(basename "$INSTALL_LIBDIR"
 echo "Configuring OpenSSL with ${CONFIG_FLAGS[*]}"
 echo ""
 
-KERNEL_BITS="$SH_KBITS" "$CONFIG_PROG" "${CONFIG_FLAGS[@]}"
+KERNEL_BITS="$SH_BITS" "$CONFIG_PROG" "${CONFIG_FLAGS[@]}"
 
 # OpenSSL configuration is so broken. The dev team just makes the
 #   shit up as they go rather than following conventions.
