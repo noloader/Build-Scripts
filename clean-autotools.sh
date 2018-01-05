@@ -13,76 +13,13 @@
 # Autotools files. Its non-trivial to reinstall the missing
 # Perl files because the sources must be compiled again.
 
-echo "Cleaning autom4te..."
-FILES=$(find /usr/local -name 'autom4te' 2>/dev/null)
-for file in "${FILES[*]}"; do
-    DONT_DELETE=$(echo "$file" | grep -c -e '\.pm')
-    if [[ "$DONT_DELETE" -eq "0" ]]; then
-        rm -f "$file"
-    fi
+AUTOTOOLS=(autom4te autoconf automake autopoint autoreconf autoupdate autoheader autoscan)
+for dir in "${AUTOTOOLS[@]}"; do
+    find /usr/local -type d -name "$dir*" -exec rm -rf {} \;
 done
 
-echo "Cleaning autopoint..."
-FILES=$(find /usr/local -name 'autopoint' 2>/dev/null)
-for file in "${FILES[*]}"; do
-    DONT_DELETE=$(echo "$file" | grep -c -e '\.pm')
-    if [[ "$DONT_DELETE" -eq "0" ]]; then
-        rm -f "$file"
-    fi
-done
-
-echo "Cleaning autoconf..."
-FILES=$(find /usr/local -name 'autoconf' 2>/dev/null)
-for file in "${FILES[*]}"; do
-    DONT_DELETE=$(echo "$file" | grep -c -e '\.pm')
-    if [[ "$DONT_DELETE" -eq "0" ]]; then
-        rm -f "$file"
-    fi
-done
-
-echo "Cleaning autoconf..."
-FILES=$(find /usr/local -name 'autoreconf' 2>/dev/null)
-for file in "${FILES[*]}"; do
-    DONT_DELETE=$(echo "$file" | grep -c -e '\.pm')
-    if [[ "$DONT_DELETE" -eq "0" ]]; then
-        rm -f "$file"
-    fi
-done
-
-echo "Cleaning autoheader..."
-FILES=$(find /usr/local -name 'autoheader' 2>/dev/null)
-for file in "${FILES[*]}"; do
-    DONT_DELETE=$(echo "$file" | grep -c -e '\.pm')
-    if [[ "$DONT_DELETE" -eq "0" ]]; then
-        rm -f "$file"
-    fi
-done
-
-echo "Cleaning automake..."
-FILES=$(find /usr/local -name 'automake' 2>/dev/null)
-for file in "${FILES[*]}"; do
-    DONT_DELETE=$(echo "$file" | grep -c -e '\.pm')
-    if [[ "$DONT_DELETE" -eq "0" ]]; then
-        rm -f "$file"
-    fi
-done
-
-echo "Cleaning autoupdate..."
-FILES=$(find /usr/local -name 'autoupdate' 2>/dev/null)
-for file in "${FILES[*]}"; do
-    DONT_DELETE=$(echo "$file" | grep -c -e '\.pm')
-    if [[ "$DONT_DELETE" -eq "0" ]]; then
-        rm -f "$file"
-    fi
-done
-
-echo "Cleaning aclocal..."
-FILES=$(find /usr/local -name 'aclocal*' 2>/dev/null)
-for file in "${FILES[*]}"; do
-    DONT_DELETE=$(echo "$file" | grep -c -e '\.pm')
-    if [[ "$DONT_DELETE" -eq "0" ]]; then
-        rm -f "$file"
-    fi
+for file in "${AUTOTOOLS[@]}"; do
+    find /usr/local -type f -name "$file*" -exec rm -f {} \;
 done
 
 echo "You may need to update libtool if you did so previously."
