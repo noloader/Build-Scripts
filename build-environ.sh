@@ -31,7 +31,8 @@ fi
 
 THIS_SYSTEM=$(uname -s 2>&1)
 IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
-IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
+IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c darwin)
+IS_AIX=$(echo -n "$THIS_SYSTEM" | grep -i -c 'aix')
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ -z "$MAKE" ]]; then
@@ -108,7 +109,6 @@ echo "" >> "$infile"
 BAD_MSG="fatal|error|unknown|unrecognized|not found|not exist"
 
 # Try to determine -m64, -X64, -m32, -X32, etc
-IS_AIX=$(uname -s 2>&1 | grep -i -c 'aix')
 if [[ "$SH_MARCH" = "32" ]]; then
     SH_MARCH=
     MARCH_ERROR=$($CC -m32 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
