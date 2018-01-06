@@ -74,7 +74,7 @@ mv configure.fixed configure; chmod +x configure
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --enable-shared
+    --enable-shared --disable-doc
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure xz"
