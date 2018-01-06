@@ -88,6 +88,13 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+MAKE_FLAGS=("check")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+    echo "Failed to test xz"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
@@ -107,7 +114,7 @@ echo "**************************************************************************
 ###############################################################################
 
 # Set to false to retain artifacts
-if false; then
+if true; then
 
     ARTIFACTS=("$XZ_TAR" "$XZ_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
