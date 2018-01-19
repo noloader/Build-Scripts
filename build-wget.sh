@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Wget and its dependencies from sources.
 
-WGET_TAR=wget-1.19.2.tar.gz
-WGET_DIR=wget-1.19.2
+WGET_TAR=wget-1.19.3.tar.gz
+WGET_DIR=wget-1.19.3
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
