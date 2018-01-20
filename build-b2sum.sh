@@ -58,6 +58,11 @@ rm -rf "$B2SUM_DIR" &>/dev/null
 gzip -d < "$B2SUM_TAR" | tar xf -
 cd "$B2SUM_DIR/b2sum"
 
+if [[ "$NATIVE_ERROR" -ne "0" ]]; then
+    sed "s|-march=native ||g" makefile > makefile.fixed
+	mv makefile.fixed makefile
+fi
+
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
