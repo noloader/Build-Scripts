@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Gzip from sources.
 
-GZIP_TAR=gzip-1.8.tar.gz
-GZIP_DIR=gzip-1.8
+GZIP_TAR=gzip-1.9.tar.gz
+GZIP_DIR=gzip-1.9
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
