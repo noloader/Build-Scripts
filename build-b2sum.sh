@@ -63,6 +63,9 @@ if [[ "$NATIVE_ERROR" -ne "0" ]]; then
 	mv makefile.fixed makefile
 fi
 
+sed "s|-Werror=declaration-after-statement ||g" makefile > makefile.fixed
+mv makefile.fixed makefile
+
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
