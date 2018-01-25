@@ -21,12 +21,12 @@ if [[ -z $(command -v gzip 2>/dev/null) ]]; then
 fi
 
 if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "ClamAV requires several CA roots. Please run build-cacert.sh."
+    echo "OpenSSL requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
-    echo "ClamAV requires several CA roots. Please run build-cacert.sh."
+    echo "OpenSSL requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
