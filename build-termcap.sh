@@ -68,7 +68,7 @@ sed -e "s|^CFLAGS = *|CFLAGS = @CFLAGS@ |g" Makefile.in > Makefile.in.fixed
 mv Makefile.in.fixed Makefile.in
 sed -e "s|^CXXFLAGS = *|CXXFLAGS = @CXXFLAGS@ |g" Makefile.in > Makefile.in.fixed
 mv Makefile.in.fixed Makefile.in
-sed -e "s|$(CC) -c $(CPPFLAGS)|$(CC) -c $(CPPFLAGS) $(CFLAGS) |g" Makefile.in > Makefile.in.fixed
+sed -e 's|$(CC) -c $(CPPFLAGS)|$(CC) -c $(CPPFLAGS) $(CFLAGS) |g' Makefile.in > Makefile.in.fixed
 mv Makefile.in.fixed Makefile.in
 touch -t 197001010000 Makefile.in
 
