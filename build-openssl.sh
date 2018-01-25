@@ -65,6 +65,13 @@ fi
 IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
 IS_GMAKE=$($MAKE -v 2>&1 | grep -i -c 'gnu make')
 
+# OpenSSL and enable-ec_nistp_64_gcc_128 option
+IS_X86_64=$(uname -m 2>&1 | grep -E -i -c "(amd64|x86_64)")
+if [[ "$BUILD_BITS" -eq "32" ]]; then IS_X86_64=0; fi
+
+# Fix LD_LIBRARY_PATH on Darwin for self-tests
+IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
+
 ###############################################################################
 
 echo
@@ -83,13 +90,6 @@ rm -rf "$OPENSSL_DIR" &>/dev/null
 gzip -d < "$OPENSSL_TAR" | tar xf -
 cd "$OPENSSL_DIR"
 
-# OpenSSL and enable-ec_nistp_64_gcc_128 option
-IS_X86_64=$(uname -m 2>&1 | grep -E -i -c "(amd64|x86_64)")
-if [[ "$BUILD_BITS" -eq "32" ]]; then IS_X86_64=0; fi
-
-# Fix LD_LIBRARY_PATH on Darwin for self-tests
-IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
-
 CONFIG_PROG="./config"
 CONFIG_FLAGS=("no-ssl2" "no-ssl3" "no-comp" "shared" "-DNDEBUG")
 
@@ -104,13 +104,11 @@ if [[ ! -z "$SH_DTAGS" ]]; then
     CONFIG_FLAGS+=("$SH_DTAGS")
 fi
 
-BASE_LIBDIR=$(basename "$INSTX_LIBDIR")
-CONFIG_FLAGS+=("--prefix=$INSTX_PREFIX" "--libdir=$BASE_LIBDIR")
+CONFIG_LIBDIR=$(basename "$INSTX_LIBDIR")
+CONFIG_FLAGS+=("--prefix=$INSTX_PREFIX" "--libdir=$CONFIG_LIBDIR")
 
 echo "Configuring OpenSSL with ${CONFIG_FLAGS[*]}"
 echo "BUILD_BITS: $BUILD_BITS"
-echo "DESTDIR: $DESTDIR"
-echo "BASE_LIBDIR: $BASE_LIBDIR"
 
 KERNEL_BITS="$BUILD_BITS" "$CONFIG_PROG" "${CONFIG_FLAGS[@]}"
 

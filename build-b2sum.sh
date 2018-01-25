@@ -38,6 +38,9 @@ if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
 fi
 
+# Need to fix sources on non-x86 platforms
+IS_IA32=$(uname -m 2>&1 | grep -E -i -c "(i.86|amd64|x86_64)")
+
 ###############################################################################
 
 echo
@@ -56,15 +59,29 @@ rm -rf "$B2SUM_DIR" &>/dev/null
 gzip -d < "$B2SUM_TAR" | tar xf -
 cd "$B2SUM_DIR/b2sum"
 
-if [[ "$NATIVE_ERROR" -ne "0" ]]; then
-    sed "s|-march=native ||g" makefile > makefile.fixed
-	mv makefile.fixed makefile
-fi
+B2CFLAGS="${CFLAGS[@]} -std=c99 -I. -I../sse"
 
+# Unconditionally remove OpenMP from makefile
+sed "/^NO_OPENMP/d" makefile > makefile.fixed
+mv makefile.fixed makefile
+
+# Breaks compile on some platforms
 sed "s|-Werror=declaration-after-statement||g" makefile > makefile.fixed
 mv makefile.fixed makefile
 
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
+# Add OpenMP if available
+if [[ "$OPENMP_ERROR" -eq "0" ]]; then
+    B2CFLAGS="$B2CFLAGS -fopenmp"
+fi
+
+if [[ "$IS_IA32" -eq "0" ]]; then
+    sed "/^FILES=/d" makefile > makefile.fixed
+	mv makefile.fixed makefile
+    sed "s|^#FILES=|FILES=|g" makefile > makefile.fixed
+	mv makefile.fixed makefile
+fi
+
+MAKE_FLAGS=("CFLAGS=$B2CFLAGS" "-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build b2sum"

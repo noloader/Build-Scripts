@@ -156,6 +156,11 @@ if [[ "$RPATH_ERROR" -eq "0" ]]; then
     SH_RPATH="-Wl,-R,$INSTX_LIBDIR"
 fi
 
+OPENMP_ERROR=$($CC -fopenmp -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
+if [[ "$SH_ERROR" -eq "0" ]]; then
+    SH_OPENMP="-fopenmp"
+fi
+
 SH_ERROR=$($CC -Wl,--enable-new-dtags -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
 if [[ "$SH_ERROR" -eq "0" ]]; then
     SH_DTAGS="-Wl,--enable-new-dtags"
