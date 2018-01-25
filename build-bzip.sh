@@ -35,9 +35,7 @@ LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
 ###############################################################################
 
 # Get environment if needed. We can't export it because it includes arrays.
-if [[ -z "$BUILD_OPTS" ]]; then
-    source ./build-environ.sh
-fi
+source ./build-environ.sh
 
 # The password should die when this subshell goes out of scope
 if [[ -z "$SUDO_PASSWORD" ]]; then

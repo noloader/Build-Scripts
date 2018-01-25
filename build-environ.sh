@@ -226,7 +226,7 @@ fi
 #    BUILD_LDFLAGS+=("$SH_INSTNAME")
 #fi
 
-if [[ -z "$BUILD_OPTS" ]]; then
+if [[ -z "$PRINT_ONCE" ]]; then
 
     echo ""
     echo "Common flags and options:"
@@ -251,4 +251,4 @@ if [[ -z "$BUILD_OPTS" ]]; then
     fi
 fi
 
-export BUILD_OPTS="TRUE"
+export PRINT_ONCE="TRUE"
