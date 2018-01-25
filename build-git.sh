@@ -215,10 +215,10 @@ fi
     PERL="$SH_PERL" CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="-lssl -lcrypto -lz ${BUILD_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --with-lib="$INSTALL_LIBDIR" \
-    --enable-pthreads --with-openssl="$INSTALL_PREFIX" \
-    --with-curl="$INSTALL_PREFIX" --with-libpcre="$INSTALL_PREFIX" \
-    --with-zlib="$INSTALL_PREFIX" --with-iconv="$INSTALL_PREFIX" \
+./configure --prefix="$INSTX_PREFIX" --with-lib="$INSTX_LIBDIR" \
+    --enable-pthreads --with-openssl="$INSTX_PREFIX" \
+    --with-curl="$INSTX_PREFIX" --with-libpcre="$INSTX_PREFIX" \
+    --with-zlib="$INSTX_PREFIX" --with-iconv="$INSTX_PREFIX" \
     --with-perl="$SH_PERL"
 
 if [[ "$?" -ne "0" ]]; then

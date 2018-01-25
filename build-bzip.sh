@@ -104,9 +104,9 @@ fi
 
 # Add RPATH
 if [[ ! -z "$SH_RPATH" ]]; then
-    sed -e "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTALL_LIBDIR|g" Makefile > Makefile.fixed
+    sed -e "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTX_LIBDIR|g" Makefile > Makefile.fixed
     mv Makefile.fixed Makefile
-    sed -e "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTALL_LIBDIR|g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+    sed -e "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTX_LIBDIR|g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
     mv Makefile-libbz2_so.fixed Makefile-libbz2_so
 fi
 
@@ -117,7 +117,7 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=(install "PREFIX=$INSTALL_PREFIX" "LIBDIR=$INSTALL_LIBDIR")
+MAKE_FLAGS=(install "PREFIX=$INSTX_PREFIX" "LIBDIR=$INSTX_LIBDIR")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else

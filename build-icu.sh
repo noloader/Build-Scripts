@@ -64,7 +64,7 @@ mv configure.fixed configure; chmod +x configure
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --enable-shared --enable-static \
-    --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+    --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
     --with-library-bits="$BUILD_BITS" \
     --with-data-packaging=auto
 

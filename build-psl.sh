@@ -115,11 +115,11 @@ mv configure.fixed configure; chmod +x configure
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+./configure --enable-shared --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
     --enable-runtime=libidn2 \
     --enable-builtin=libidn2 \
-    --with-libiconv-prefix="$INSTALL_PREFIX" \
-    --with-libintl-prefix="$INSTALL_PREFIX"
+    --with-libiconv-prefix="$INSTX_PREFIX" \
+    --with-libintl-prefix="$INSTX_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure libpsl"

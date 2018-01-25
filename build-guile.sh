@@ -93,15 +93,15 @@ mv configure.fixed configure; chmod +x configure
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
     --enable-shared --enable-static --with-pic \
     --disable-deprecated \
-    --with-libgmp-prefix="$INSTALL_PREFIX" \
-    --with-libunistring-prefix="$INSTALL_PREFIX" \
-    --with-libiconv-prefix="$INSTALL_PREFIX" \
-    --with-libltdl-prefix="$INSTALL_PREFIX" \
-    --with-readline-prefix="$INSTALL_PREFIX" \
-    --with-libintl-prefix="$INSTALL_PREFIX"
+    --with-libgmp-prefix="$INSTX_PREFIX" \
+    --with-libunistring-prefix="$INSTX_PREFIX" \
+    --with-libiconv-prefix="$INSTX_PREFIX" \
+    --with-libltdl-prefix="$INSTX_PREFIX" \
+    --with-readline-prefix="$INSTX_PREFIX" \
+    --with-libintl-prefix="$INSTX_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Guile"

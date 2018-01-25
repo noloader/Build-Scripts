@@ -71,7 +71,7 @@ mv configure.fixed configure; chmod +x configure
     CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" \
     LIBS="${BUILD_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
     --with-shared --with-cxx-shared --without-ada --enable-pc-files \
     --with-termlib --enable-widec --disable-root-environ \
     --with-build-cc="$CC" --with-build-cxx="$CXX" \

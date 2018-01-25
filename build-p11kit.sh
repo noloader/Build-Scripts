@@ -65,7 +65,7 @@ cd "$P11KIT_DIR"
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
 mv configure.fixed configure; chmod +x configure
 
-P11KIT_CONFIG_OPTS=("--enable-shared" "--prefix=$INSTALL_PREFIX" "--libdir=$INSTALL_LIBDIR")
+P11KIT_CONFIG_OPTS=("--enable-shared" "--prefix=$INSTX_PREFIX" "--libdir=$INSTX_LIBDIR")
 
 # Use the path if available
 if [[ ! -z "$SH_CACERT_PATH" ]]; then

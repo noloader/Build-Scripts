@@ -80,7 +80,7 @@ mv configure.fixed configure; chmod +x configure
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
-./configure --enable-install-termcap --prefix="$INSTALL_PREFIX" \
+./configure --enable-install-termcap --prefix="$INSTX_PREFIX" \
     --enable-shared
 
 if [[ "$?" -ne "0" ]]; then
@@ -92,7 +92,7 @@ sed -e '42i#include <unistd.h>' tparam.c > tparam.c.fixed
 mv tparam.c.fixed tparam.c
 sed -e "/^oldincludedir/d" Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
-sed -e "s|libdir = \$(exec_prefix)/lib|libdir = $INSTALL_LIBDIR|g" Makefile > Makefile.fixed
+sed -e "s|libdir = \$(exec_prefix)/lib|libdir = $INSTX_LIBDIR|g" Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
 
 ARFLAGS="cr"
@@ -104,8 +104,8 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-# libdir="$INSTALL_LIBDIR"
-MAKE_FLAGS=("install" "libdir=$INSTALL_LIBDIR")
+# libdir="$INSTX_LIBDIR"
+MAKE_FLAGS=("install" "libdir=$INSTX_LIBDIR")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else

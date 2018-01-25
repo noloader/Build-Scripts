@@ -143,9 +143,9 @@ CURL_CONFIG_OPTIONS=("--enable-shared" "--enable-static" "--enable-optimize" "--
                      "--enable-rtsp" "--enable-proxy" "--enable-dict" "--enable-telnet" "--enable-tftp"
                      "--enable-pop3" "--enable-imap" "--enable-smb" "--enable-smtp" "--enable-gopher"
                      "--enable-cookies" "--enable-ipv6"
-                     "--with-zlib=$INSTALL_PREFIX" "--with-ssl=$INSTALL_PREFIX" "--without-gnutls"
+                     "--with-zlib=$INSTX_PREFIX" "--with-ssl=$INSTX_PREFIX" "--without-gnutls"
                      "--without-polarssl" "--without-mbedtls" "--without-cyassl" "--without-nss"
-                     "--without-libssh2" "--with-libidn2=$INSTALL_PREFIX" "--with-nghttp2")
+                     "--without-libssh2" "--with-libidn2=$INSTX_PREFIX" "--with-nghttp2")
 
 if [[ ! -z "$SH_CACERT_BUNDLE" ]]; then
     CURL_CONFIG_OPTIONS+=("--with-ca-bundle=$SH_CACERT_BUNDLE")
@@ -161,7 +161,7 @@ fi
     CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" \
     LIBS="-lidn2 -lssl -lcrypto -lz ${BUILD_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
     "${CURL_CONFIG_OPTIONS[@]}"
 
 if [[ "$?" -ne "0" ]]; then

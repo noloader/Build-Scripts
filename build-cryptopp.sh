@@ -80,13 +80,13 @@ MAKE_FLAGS=("distclean")
 
 # Add the data directory for install
 MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
-if ! CXXFLAGS="-DNDEBUG -g2 -O2 -DCRYPTOPP_DATA_DIR='\"$INSTALL_PREFIX/share/cryptopp/\"'" "$MAKE" "${MAKE_FLAGS[@]}"
+if ! CXXFLAGS="-DNDEBUG -g2 -O2 -DCRYPTOPP_DATA_DIR='\"$INSTX_PREFIX/share/cryptopp/\"'" "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to rebuild Crypto++"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("install" "PREFIX=$INSTALL_PREFIX")
+MAKE_FLAGS=("install" "PREFIX=$INSTX_PREFIX")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else

@@ -81,9 +81,9 @@ fi
 
 MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
-    echo "$SUDO_PASSWORD" | sudo -S "PREFIX=$INSTALL_PREFIX" "$MAKE" "${MAKE_FLAGS[@]}"
+    echo "$SUDO_PASSWORD" | sudo -S "PREFIX=$INSTX_PREFIX" "$MAKE" "${MAKE_FLAGS[@]}"
 else
-    "PREFIX=$INSTALL_PREFIX" "$MAKE" "${MAKE_FLAGS[@]}"
+    "PREFIX=$INSTX_PREFIX" "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 
 cd "$CURR_DIR"

@@ -51,29 +51,29 @@ if [[ "$IS_64BIT" -eq "0" ]]; then
     IS_64BIT=$(file /bin/ls 2>&1 | grep -i -c '64-bit')
 fi
 
-# Don't override a user choice of INSTALL_PREFIX
-if [[ -z "$INSTALL_PREFIX" ]]; then
-    INSTALL_PREFIX="/usr/local"
-    export INSTALL_PREFIX
+# Don't override a user choice of INSTX_PREFIX
+if [[ -z "$INSTX_PREFIX" ]]; then
+    INSTX_PREFIX="/usr/local"
+    export INSTX_PREFIX
 fi
 
-# Don't override a user choice of INSTALL_LIBDIR
-if [[ -z "$INSTALL_LIBDIR" ]]; then
+# Don't override a user choice of INSTX_LIBDIR
+if [[ -z "$INSTX_LIBDIR" ]]; then
     if [[ "$IS_SOLARIS" -ne "0" ]]; then
-        INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
+        INSTX_LIBDIR="$INSTX_PREFIX/lib64"
     elif [[ "$IS_64BIT" -ne "0" ]]; then
         if [[ (-d /usr/lib) && (-d /usr/lib32) ]]; then
-            INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
+            INSTX_LIBDIR="$INSTX_PREFIX/lib"
         elif [[ (-d /usr/lib) && (-d /usr/lib64) ]]; then
-            INSTALL_LIBDIR="$INSTALL_PREFIX/lib64"
+            INSTX_LIBDIR="$INSTX_PREFIX/lib64"
         else
-            INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
+            INSTX_LIBDIR="$INSTX_PREFIX/lib"
         fi
     else
-        INSTALL_LIBDIR="$INSTALL_PREFIX/lib"
+        INSTX_LIBDIR="$INSTX_PREFIX/lib"
     fi
 
-    export INSTALL_LIBDIR
+    export INSTX_LIBDIR
 fi
 
 if [[ "$IS_SOLARIS" -ne "0" ]]; then
@@ -145,15 +145,15 @@ if [[ "$NATIVE_ERROR" -eq "0" ]]; then
     SH_NATIVE="-march=native"
 fi
 
-RPATH_ERROR=$($CC -Wl,-rpath,$INSTALL_LIBDIR -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
+RPATH_ERROR=$($CC -Wl,-rpath,$INSTX_LIBDIR -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
 if [[ "$RPATH_ERROR" -eq "0" ]]; then
-    SH_RPATH="-Wl,-rpath,$INSTALL_LIBDIR"
+    SH_RPATH="-Wl,-rpath,$INSTX_LIBDIR"
 fi
 
 # AIX ld uses -R for runpath when -bsvr4
-RPATH_ERROR=$($CC -Wl,-R,$INSTALL_LIBDIR -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
+RPATH_ERROR=$($CC -Wl,-R,$INSTX_LIBDIR -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
 if [[ "$RPATH_ERROR" -eq "0" ]]; then
-    SH_RPATH="-Wl,-R,$INSTALL_LIBDIR"
+    SH_RPATH="-Wl,-R,$INSTX_LIBDIR"
 fi
 
 SH_ERROR=$($CC -Wl,--enable-new-dtags -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
@@ -191,11 +191,11 @@ fi
 
 ###############################################################################
 
-BUILD_PKGCONFIG=("$INSTALL_LIBDIR/pkgconfig")
-BUILD_CPPFLAGS=("-I$INSTALL_PREFIX/include" "-DNDEBUG")
+BUILD_PKGCONFIG=("$INSTX_LIBDIR/pkgconfig")
+BUILD_CPPFLAGS=("-I$INSTX_PREFIX/include" "-DNDEBUG")
 BUILD_CFLAGS=()
 BUILD_CXXFLAGS=()
-BUILD_LDFLAGS=("-L$INSTALL_LIBDIR")
+BUILD_LDFLAGS=("-L$INSTX_LIBDIR")
 BUILD_LIBS=("-ldl" "-lpthread")
 
 if [[ ! -z "$SH_MARCH" ]]; then
@@ -231,8 +231,8 @@ if [[ -z "$PRINT_ONCE" ]]; then
     echo ""
     echo "Common flags and options:"
     echo ""
-    echo " INSTALL_PREFIX: $INSTALL_PREFIX"
-    echo " INSTALL_LIBDIR: $INSTALL_LIBDIR"
+    echo " INSTALL_PREFIX: $INSTX_PREFIX"
+    echo " INSTALL_LIBDIR: $INSTX_LIBDIR"
     echo ""
     echo "      PKGCONFIG: ${BUILD_PKGCONFIG[*]}"
     echo "       CPPFLAGS: ${BUILD_CPPFLAGS[*]}"

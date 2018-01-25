@@ -137,11 +137,11 @@ mv configure.fixed configure; chmod +x configure
     CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" \
     LIBS="${BUILD_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-ssl=openssl --with-libssl-prefix="$INSTALL_PREFIX" \
-    --with-libiconv-prefix="$INSTALL_PREFIX" \
-    --with-libunistring-prefix="$INSTALL_PREFIX" \
-    --with-libidn="$INSTALL_PREFIX"
+./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
+    --with-ssl=openssl --with-libssl-prefix="$INSTX_PREFIX" \
+    --with-libiconv-prefix="$INSTX_PREFIX" \
+    --with-libunistring-prefix="$INSTX_PREFIX" \
+    --with-libidn="$INSTX_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Wget"

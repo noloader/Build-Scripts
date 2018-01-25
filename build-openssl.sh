@@ -104,24 +104,15 @@ if [[ ! -z "$SH_DTAGS" ]]; then
     CONFIG_FLAGS+=("$SH_DTAGS")
 fi
 
-CONFIG_FLAGS+=("--prefix=$INSTALL_PREFIX" "--libdir=$(basename "$INSTALL_LIBDIR")")
+BASE_LIBDIR=$(basename "$INSTX_LIBDIR")
+CONFIG_FLAGS+=("--prefix=$INSTX_PREFIX" "--libdir=$BASE_LIBDIR")
 
 echo "Configuring OpenSSL with ${CONFIG_FLAGS[*]}"
 echo "BUILD_BITS: $BUILD_BITS"
-echo ""
+echo "DESTDIR: $DESTDIR"
+echo "BASE_LIBDIR: $BASE_LIBDIR"
 
 KERNEL_BITS="$BUILD_BITS" "$CONFIG_PROG" "${CONFIG_FLAGS[@]}"
-
-# OpenSSL configuration is so broken. The dev team just makes the
-#   shit up as they go rather than following conventions.
-for mfile in $(find "$PWD" -name 'Makefile'); do
-    sed -e 's|$(INSTALL_PREFIX)|$(DESTDIR)|g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    if [[ "$IS_GMAKE" -ne "0" ]]; then
-        sed -e 's|$(MAKE)|$(MAKE) -j $(MAKE_JOBS)|g' "$mfile" > "$mfile.fixed"
-        mv "$mfile.fixed" "$mfile"
-    fi
-done
 
 if [[ "$IS_DARWIN" -ne "0" ]]; then
     for mfile in $(find "$PWD" -name 'Makefile'); do

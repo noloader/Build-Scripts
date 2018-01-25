@@ -112,8 +112,8 @@ mv configure.fixed configure; chmod +x configure
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
-    --with-openssl-dir="$INSTALL_PREFIX" --with-zlib="$INSTALL_PREFIX"
+./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
+    --with-openssl-dir="$INSTX_PREFIX" --with-zlib="$INSTX_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure ClamAV"

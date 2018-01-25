@@ -70,7 +70,7 @@ mv configure.fixed configure; chmod +x configure
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
     --enable-shared --with-curses
 
 # Fix broken Linux dynamic linker. tinfow or tinfo from ncurses
@@ -108,10 +108,10 @@ fi
 
 MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
-    echo "$SUDO_PASSWORD" | sudo -S rm -f "$INSTALL_LIBDIR/libreadline*.*"
+    echo "$SUDO_PASSWORD" | sudo -S rm -f "$INSTX_LIBDIR/libreadline*.*"
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
 else
-    rm -rf "$INSTALL_LIBDIR/libreadline*.*"
+    rm -rf "$INSTX_LIBDIR/libreadline*.*"
     "$MAKE" "${MAKE_FLAGS[@]}"
 fi
 

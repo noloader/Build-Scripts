@@ -192,16 +192,16 @@ mv configure.fixed configure; chmod +x configure
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="-lhogweed -lnettle -lgmp ${BUILD_LIBS[*]}" \
-./configure --enable-shared --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+./configure --enable-shared --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
     --with-unbound-root-key-file --enable-seccomp-tests \
     --disable-openssl-compatibility --disable-ssl2-support --disable-ssl3-support \
     --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf \
     --with-p11-kit --with-tpm --with-libregex \
-    --with-libz-prefix="$INSTALL_PREFIX" \
-    --with-libiconv-prefix="$INSTALL_PREFIX" \
-    --with-libintl-prefix="$INSTALL_PREFIX" \
-    --with-libseccomp-prefix="$INSTALL_PREFIX" \
-    --with-libunistring-prefix="$INSTALL_PREFIX"
+    --with-libz-prefix="$INSTX_PREFIX" \
+    --with-libiconv-prefix="$INSTX_PREFIX" \
+    --with-libintl-prefix="$INSTX_PREFIX" \
+    --with-libseccomp-prefix="$INSTX_PREFIX" \
+    --with-libunistring-prefix="$INSTX_PREFIX"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure GnuTLS"

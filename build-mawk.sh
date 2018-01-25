@@ -75,7 +75,7 @@ mv configure.fixed configure; chmod +x configure
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
-./configure --prefix="$INSTALL_PREFIX" --libdir="$INSTALL_LIBDIR" \
+./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure mawk"
@@ -99,10 +99,10 @@ fi
 MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-    echo "$SUDO_PASSWORD" | sudo -S ln -s "$INSTALL_PREFIX/bin/mawk" "$INSTALL_PREFIX/bin/awk" 2>/dev/null
+    echo "$SUDO_PASSWORD" | sudo -S ln -s "$INSTX_PREFIX/bin/mawk" "$INSTX_PREFIX/bin/awk" 2>/dev/null
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
-    ln -s "$INSTALL_PREFIX/bin/mawk" "$INSTALL_PREFIX/bin/awk" 2>/dev/null
+    ln -s "$INSTX_PREFIX/bin/mawk" "$INSTX_PREFIX/bin/awk" 2>/dev/null
 fi
 
 cd "$CURR_DIR"
