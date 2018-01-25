@@ -62,6 +62,16 @@ rm -rf "$TERMCAP_DIR" &>/dev/null
 gzip -d < "$TERMCAP_TAR" | tar xf -
 cd "$TERMCAP_DIR"
 
+sed -e "s|^CPPFLAGS = *|CPPFLAGS = @CPPFLAGS@ |g" Makefile.in > Makefile.in.fixed
+mv Makefile.in.fixed Makefile.in
+sed -e "s|^CFLAGS = *|CFLAGS = @CFLAGS@ |g" Makefile.in > Makefile.in.fixed
+mv Makefile.in.fixed Makefile.in
+sed -e "s|^CXXFLAGS = *|CXXFLAGS = @CXXFLAGS@ |g" Makefile.in > Makefile.in.fixed
+mv Makefile.in.fixed Makefile.in
+sed -e "s|$(CC) -c $(CPPFLAGS)|$(CC) -c $(CPPFLAGS) $(CFLAGS) |g" Makefile.in > Makefile.in.fixed
+mv Makefile.in.fixed Makefile.in
+touch -t 197001010000 Makefile.in
+
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
 # AIX needs the execute bit reset on the file.
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
@@ -82,12 +92,6 @@ fi
 
 sed -e '42i#include <unistd.h>' tparam.c > tparam.c.fixed
 mv tparam.c.fixed tparam.c
-sed -e 's|$(CPPFLAGS)|$(CPPFLAGS) $(CFLAGS)|g' Makefile > Makefile.fixed
-mv Makefile.fixed Makefile
-sed -e 's|$(AR) rc |$(AR) $(ARFLAGS) |g' Makefile > Makefile.fixed
-mv Makefile.fixed Makefile
-sed -e "s|CFLAGS = -g|CFLAGS = -g ${BUILD_CFLAGS[*]}|g" Makefile > Makefile.fixed
-mv Makefile.fixed Makefile
 sed -e "/^oldincludedir/d" Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
 sed -e "s|libdir = \$(exec_prefix)/lib|libdir = $INSTALL_LIBDIR|g" Makefile > Makefile.fixed
