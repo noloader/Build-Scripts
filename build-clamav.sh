@@ -4,8 +4,8 @@
 # This script builds ClamAV and its dependencies from sources.
 # Also see https://bugzilla.clamav.net/show_bug.cgi?id=11929
 
-CLAMAV_TAR=clamav-0.99.3-beta1.tar.gz
-CLAMAV_DIR=clamav-0.99.3-beta1
+CLAMAV_TAR=clamav-0.99.3.tar.gz
+CLAMAV_DIR=clamav-0.99.3
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
