@@ -79,12 +79,12 @@ then
 fi
 
 # https://github.com/gzip/gzip/issues/160
-# MAKE_FLAGS=("check" "V=1")
-# if ! "$MAKE" "${MAKE_FLAGS[@]}"
-# then
-#    echo "Failed to test Gzip"
-#    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-# fi
+MAKE_FLAGS=("check" "V=1")
+if ! "$MAKE" "${MAKE_FLAGS[@]}"
+then
+   echo "Failed to test Gzip"
+   [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
 
 MAKE_FLAGS=("install")
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
