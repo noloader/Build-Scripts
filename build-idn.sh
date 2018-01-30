@@ -65,15 +65,9 @@ rm -rf "$IDN_DIR" &>/dev/null
 gzip -d < "$IDN_TAR" | tar xf -
 cd "$IDN_DIR"
 
-# Remove AM_SILENT_RULES(<whatever>). Autotools does not honor it,
-# and it breaks Autoconf 2.61 or Automake 1.12.
-sed -e '/^AM_SILENT_RULES/d' configure.ac > configure.ac.fixed
-mv configure.ac.fixed configure.ac
-# And trick Autotools to stop regenerating everything
-touch -t 197001010000 configure.ac
-
-# Automake version problems, https://stackoverflow.com/q/47017841/608639
-autoreconf --install --force
+if [[ ! -e "configure" ]]; then
+    autoreconf --install --force
+fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to reconfigure IDN"
@@ -105,6 +99,7 @@ if [[ "$IS_SOLARIS" -eq "1" ]]; then
       echo "}"
       echo ""
     } >> src/idn2.c
+    touch -t 197001010000 src/idn2.c
   fi
 fi
 
@@ -113,7 +108,7 @@ fi
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
-    --enable-shared
+    --enable-shared --disable-gtk-doc
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN"
@@ -126,6 +121,7 @@ for mfile in $(find "$PWD" -name 'Makefile'); do
     mv "$mfile.fixed" "$mfile"
     sed -e 's/MAKEINFO =.*/MAKEINFO = true/g' "$mfile" > "$mfile.fixed"
     mv "$mfile.fixed" "$mfile"
+    touch -t 197001010000 "$mfile"
 done
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
@@ -146,6 +142,15 @@ cd "$CURR_DIR"
 
 ###############################################################################
 
+AUTOMAKE_VERSION=$(automake --version 2>/dev/null | head -n 1)
+AUTOMAKE_OK=$(echo $AUTOMAKE_VERSION | grep -c -E "automake * (1\.1[5-9]\.|1\.[3-9]\.)")
+
+if [[ "$AUTOMAKE_OK" -eq "0" ]]; then
+    ./build-automake.sh
+fi
+
+###############################################################################
+
 echo
 echo "********** IDN2 **********"
 echo
@@ -161,15 +166,9 @@ rm -rf "$IDN2_DIR" &>/dev/null
 gzip -d < "$IDN2_TAR" | tar xf -
 cd "$IDN2_DIR"
 
-# Remove AM_SILENT_RULES(<whatever>). Autotools does not honor it,
-# and it breaks Autoconf 2.61 or Automake 1.12.
-sed -e '/^AM_SILENT_RULES/d' configure.ac > configure.ac.fixed
-mv configure.ac.fixed configure.ac
-# And trick Autotools to stop regenerating everything
-touch -t 197001010000 configure.ac
-
-# Automake version problems, https://stackoverflow.com/q/47017841/608639
-autoreconf --install --force
+if [[ ! -e "configure" ]]; then
+    autoreconf --install --force
+fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to reconfigure IDN2"
@@ -186,7 +185,7 @@ mv configure.fixed configure; chmod +x configure
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
-    --enable-shared
+    --enable-shared --disable-gtk-doc
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN2"
@@ -199,6 +198,7 @@ for mfile in $(find "$PWD" -name 'Makefile'); do
     mv "$mfile.fixed" "$mfile"
     sed -e 's/MAKEINFO =.*/MAKEINFO = true/g' "$mfile" > "$mfile.fixed"
     mv "$mfile.fixed" "$mfile"
+    touch -t 197001010000 "$mfile"
 done
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
