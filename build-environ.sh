@@ -37,9 +37,9 @@ IS_AIX=$(echo -n "$THIS_SYSTEM" | grep -i -c 'aix')
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ -z "$MAKE" ]]; then
     if [[ $(command -v gmake 2>/dev/null) ]]; then
-        export MAKE="gmake"
+        MAKE="gmake"
     else
-        export MAKE="make"
+        MAKE="make"
     fi
 fi
 
@@ -54,7 +54,6 @@ fi
 # Don't override a user choice of INSTX_PREFIX
 if [[ -z "$INSTX_PREFIX" ]]; then
     INSTX_PREFIX="/usr/local"
-    export INSTX_PREFIX
 fi
 
 # Don't override a user choice of INSTX_LIBDIR
@@ -72,8 +71,6 @@ if [[ -z "$INSTX_LIBDIR" ]]; then
     else
         INSTX_LIBDIR="$INSTX_PREFIX/lib"
     fi
-
-    export INSTX_LIBDIR
 fi
 
 if [[ "$IS_SOLARIS" -ne "0" ]]; then
