@@ -50,6 +50,15 @@ fi
 
 ###############################################################################
 
+AUTOMAKE_VER=$(automake --version 2>/dev/null | head -n 1)
+AUTOMAKE_OK=$(echo $AUTOMAKE_VER | grep -i -c -E "automake .* (1\.1[5-9]\.|1\.[2-9][0-9])")
+
+if [[ "$AUTOMAKE_OK" -eq "0" ]]; then
+    ./build-automake.sh
+fi
+
+###############################################################################
+
 echo
 echo "********** IDN **********"
 echo
