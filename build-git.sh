@@ -25,11 +25,6 @@ if [[ -z $(command -v gzip 2>/dev/null) ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-if [[ -z $(command -v msgfmt 2>/dev/null) ]]; then
-    echo "Git requires msgfmt. Please install msgfmt."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
 IS_DARWIN=$(uname -s | grep -i -c darwin)
 if [[ ("$IS_DARWIN" -eq "0") ]] && [[ -z $(command -v libtoolize 2>/dev/null) ]]; then
     echo "Some packages require libtool. Please install libtool or libtool-bin."
@@ -227,15 +222,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 # See INSTALL for the formats and the requirements
-MAKE_FLAGS=("-j" "$MAKE_JOBS" "all")
-if [[ $(command -v asciidoc 2>/dev/null) ]]; then
-    if [[ $(command -v makeinfo 2>/dev/null) ]]; then
-        MAKE_FLAGS+=("man")
-    fi
-    if [[ $(command -v xmlto 2>/dev/null) ]]; then
-        MAKE_FLAGS+=("info" "html")
-    fi
-fi
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
@@ -245,14 +232,6 @@ fi
 
 # See INSTALL for the formats and the requirements
 MAKE_FLAGS=("install")
-if [[ $(command -v asciidoc 2>/dev/null) ]]; then
-    if [[ $(command -v makeinfo 2>/dev/null) ]]; then
-        MAKE_FLAGS+=("install-man")
-    fi
-    if [[ $(command -v xmlto 2>/dev/null) ]]; then
-        MAKE_FLAGS+=("install-info" "install-html")
-    fi
-fi
 
 # Git builds things during install, and they end up root:root.
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
