@@ -37,6 +37,11 @@ LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
 # Get environment if needed. We can't export it because it includes arrays.
 source ./build-environ.sh
 
+# Hack to get around the array and regular expression in the sed
+TEMP_CPPFLAGS="${BUILD_CPPFLAGS[@]}"
+TEMP_CFLAGS="${BUILD_CFLAGS[@]}"
+TEMP_CXXFLAGS="${BUILD_CXXFLAGS[@]}"
+
 # The password should die when this subshell goes out of scope
 if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
@@ -78,37 +83,15 @@ mv Makefile.fixed Makefile
 sed 's|$(PREFIX)/lib|$(LIBDIR)|g' Makefile-libbz2_so > Makefile-libbz2_so.fixed
 mv Makefile-libbz2_so.fixed Makefile-libbz2_so
 
-# Fix Bzip cpu architecture
-if [[ ! -z "$SH_MARCH" ]]; then
-    sed -e "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile > Makefile.fixed
-    mv Makefile.fixed Makefile
-    sed -e "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile > Makefile.fixed
-    mv Makefile.fixed Makefile
-    sed -e "s|CFLAGS=|CFLAGS=$SH_MARCH |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
-    mv Makefile-libbz2_so.fixed Makefile-libbz2_so
-    sed -e "s|CXXFLAGS=|CXXFLAGS=$SH_MARCH |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
-    mv Makefile-libbz2_so.fixed Makefile-libbz2_so
-fi
-
-# Fix Bzip missing PIC
-if [[ ! -z "$SH_PIC" ]]; then
-    sed -e "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile > Makefile.fixed
-    mv Makefile.fixed Makefile
-    sed -e "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile > Makefile.fixed
-    mv Makefile.fixed Makefile
-    sed -e "s|CFLAGS=|CFLAGS=$SH_PIC |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
-    mv Makefile-libbz2_so.fixed Makefile-libbz2_so
-    sed -e "s|CXXFLAGS=|CXXFLAGS=$SH_PIC |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
-    mv Makefile-libbz2_so.fixed Makefile-libbz2_so
-fi
-
-# Add RPATH
-if [[ ! -z "$SH_RPATH" ]]; then
-    sed -e "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTX_LIBDIR|g" Makefile > Makefile.fixed
-    mv Makefile.fixed Makefile
-    sed -e "s|LDFLAGS=|LDFLAGS=$SH_MARCH $SH_RPATH -L$INSTX_LIBDIR|g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
-    mv Makefile-libbz2_so.fixed Makefile-libbz2_so
-fi
+# Fix flags
+sed -e "s|^CFLAGS=*|CFLAGS=$TEMP_CPPFLAGS $TEMP_CFLAGS |g" Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+sed -e "s|^CXXFLAGS=*|CFLAGS=$TEMP_CPPFLAGS $TEMP_CXXFLAGS |g" Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+sed -e "s|^CFLAGS=*|CFLAGS=$TEMP_CPPFLAGS $TEMP_CFLAGS |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+mv Makefile-libbz2_so.fixed Makefile-libbz2_so
+sed -e "s|^CXXFLAGS=*|CFLAGS=$TEMP_CPPFLAGS $TEMP_CXXFLAGS |g" Makefile-libbz2_so > Makefile-libbz2_so.fixed
+mv Makefile-libbz2_so.fixed Makefile-libbz2_so
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
@@ -136,7 +119,7 @@ echo "**************************************************************************
 ###############################################################################
 
 # Set to false to retain artifacts
-if true; then
+if false; then
 
     ARTIFACTS=("$BZIP2_TAR" "$BZIP2_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
