@@ -4,7 +4,7 @@
 # This script builds PSL from sources.
 
 PSL_TAR=libpsl-0.19.1.tar.gz
-PSL_DIR=libpsl-libpsl-0.19.1
+PSL_DIR=libpsl-0.19.1
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -31,7 +31,7 @@ if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
-DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
+CURL_CA_ZOO="$HOME/.cacert/cacert.pem"
 
 ###############################################################################
 
@@ -73,7 +73,8 @@ echo
 echo "********** libpsl **********"
 echo
 
-wget --ca-certificate="$DIGICERT_ROOT" "https://github.com/rockdaboot/libpsl/archive/$PSL_TAR" -O "$PSL_TAR"
+# https://github.com/rockdaboot/libpsl/releases/download/libpsl-0.19.1/libpsl-0.19.1.tar.gz
+wget --ca-certificate="$CURL_CA_ZOO" "https://github.com/rockdaboot/libpsl/releases/download/$PSL_DIR/$PSL_TAR" -O "$PSL_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download libpsl"
@@ -85,25 +86,12 @@ gzip -d < "$PSL_TAR" | tar xf -
 cd "$PSL_DIR"
 
 # Avoid reconfiguring.
-if [[ -e "autogen.sh" ]]; then
-    ./autogen.sh
-elif [[ -e "configure.ac" ]]; then
-    autoreconf -v --force --install
-fi
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to reconfigure libpsl"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-# Add the PSL data as a submodule
-echo "Adding Public Suffix List (PSL) data file"
-mkdir -p list
-wget --ca-certificate="$DIGICERT_ROOT" https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat -O list/public_suffix_list.dat
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to download Public Suffix List (PSL)"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+if [[ ! -e "configure" ]]; then
+    autoreconf --force --install
+    if [[ "$?" -ne "0" ]]; then
+        echo "Failed to reconfigure libpsl"
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
 fi
 
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
@@ -123,6 +111,16 @@ mv configure.fixed configure; chmod +x configure
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure libpsl"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+# Update the PSL data file
+echo "Updating Public Suffix List (PSL) data file"
+mkdir -p list
+wget --ca-certificate="$CURL_CA_ZOO" https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat -O list/public_suffix_list.dat
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to download Public Suffix List (PSL)"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 

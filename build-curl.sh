@@ -133,6 +133,15 @@ rm -rf "$CURL_DIR" &>/dev/null
 gzip -d < "$CURL_TAR" | tar xf -
 cd "$CURL_DIR"
 
+# Avoid reconfiguring.
+if [[ ! -e "configure" ]]; then
+    autoreconf --force --install
+    if [[ "$?" -ne "0" ]]; then
+        echo "Failed to reconfigure cURL"
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
+fi
+
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
 # AIX needs the execute bit reset on the file.
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
