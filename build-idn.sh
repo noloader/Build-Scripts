@@ -118,34 +118,12 @@ fi
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
-    --enable-shared
-    # --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf
+    --enable-shared \
+    --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if false; then
-for mfile in $(find "$PWD" -name 'Makefile'); do
-    sed -e 's/^ACLOCAL =.*/ACLOCAL = ${SHELL} aclocal/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^AUTOCONF =.*/AUTOCONF = ${SHELL} autoconf/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^AUTOHEADER =.*/AUTOHEADER = ${SHELL} autoheader/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^AUTOMAKE =.*/AUTOMAKE = ${SHELL} automake/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^AUTOMAKE =.*/AUTOMAKE = ${SHELL} automake/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^PERL =.*/PERL = ${SHELL}/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^HELP2MAN =.*/HELP2MAN = true/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^MAKEINFO =.*/MAKEINFO = true/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    touch -t 197001010000 "$mfile"
-done
 fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
@@ -209,32 +187,12 @@ touch -t 197001010000 configure
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
-    --enable-shared
-    # --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf
+    --enable-shared \
+    --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN2"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if false; then
-for mfile in $(find "$PWD" -name 'Makefile'); do
-    sed -e 's/^ACLOCAL =.*/ACLOCAL = ${SHELL} aclocal/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^AUTOCONF =.*/AUTOCONF = ${SHELL} autoconf/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^AUTOHEADER =.*/AUTOHEADER = ${SHELL} autoheader/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^AUTOMAKE =.*/AUTOMAKE = ${SHELL} automake/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^PERL =.*/PERL = ${SHELL}/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^HELP2MAN =.*/HELP2MAN = true/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    sed -e 's/^MAKEINFO =.*/MAKEINFO = true/g' "$mfile" > "$mfile.fixed"
-    mv "$mfile.fixed" "$mfile"
-    touch -t 197001010000 "$mfile"
-done
 fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
