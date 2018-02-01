@@ -117,13 +117,13 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
-MAKE_FLAGS+=("ACLOCAL=aclocal")
-MAKE_FLAGS+=("AUTOCONF=autoconf")
-MAKE_FLAGS+=("AUTOHEADER=autoheader")
-MAKE_FLAGS+=("AUTOMAKE=automake")
-MAKE_FLAGS+=("PERL=perl")
-MAKE_FLAGS+=("HELP2MAN=true")
-MAKE_FLAGS+=("MAKEINFO=true")
+# MAKE_FLAGS+=("ACLOCAL=aclocal")
+# MAKE_FLAGS+=("AUTOCONF=autoconf")
+# MAKE_FLAGS+=("AUTOHEADER=autoheader")
+# MAKE_FLAGS+=("AUTOMAKE=automake")
+# MAKE_FLAGS+=("PERL=perl")
+# MAKE_FLAGS+=("HELP2MAN=true")
+# MAKE_FLAGS+=("MAKEINFO=true")
 
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
@@ -185,13 +185,13 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
-MAKE_FLAGS+=("ACLOCAL=aclocal")
-MAKE_FLAGS+=("AUTOCONF=autoconf")
-MAKE_FLAGS+=("AUTOHEADER=autoheader")
-MAKE_FLAGS+=("AUTOMAKE=automake")
-MAKE_FLAGS+=("PERL=perl")
-MAKE_FLAGS+=("HELP2MAN=true")
-MAKE_FLAGS+=("MAKEINFO=true")
+# MAKE_FLAGS+=("ACLOCAL=aclocal")
+# MAKE_FLAGS+=("AUTOCONF=autoconf")
+# MAKE_FLAGS+=("AUTOHEADER=autoheader")
+# MAKE_FLAGS+=("AUTOMAKE=automake")
+# MAKE_FLAGS+=("PERL=perl")
+# MAKE_FLAGS+=("HELP2MAN=true")
+# MAKE_FLAGS+=("MAKEINFO=true")
 
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
