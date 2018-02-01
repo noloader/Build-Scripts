@@ -22,6 +22,12 @@ for file in "${AUTOTOOLS[@]}"; do
     find /usr/local -type f -name "$file*" -exec rm -f {} \; 2>/dev/null
 done
 
+###############################################################################
+
+echo ""
+echo "*****************************************************************************"
+echo "Please run Bash's 'hash -r' to update program cache in the current shell"
 echo "You may need to update libtool if you did so previously."
-echo "Please update your shell's program cache."
+echo "*****************************************************************************"
+
 [[ "$0" = "${BASH_SOURCE[0]}" ]] && hash -r
