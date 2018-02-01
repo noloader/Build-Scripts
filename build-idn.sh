@@ -74,13 +74,13 @@ rm -rf "$IDN_DIR" &>/dev/null
 gzip -d < "$IDN_TAR" | tar xf -
 cd "$IDN_DIR"
 
+# Avoid reconfiguring.
 if [[ ! -e "configure" ]]; then
-    autoreconf --install --force
-fi
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to reconfigure IDN"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    autoreconf --force --install
+    if [[ "$?" -ne "0" ]]; then
+        echo "Failed to reconfigure IDN"
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
 fi
 
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
@@ -167,13 +167,13 @@ rm -rf "$IDN2_DIR" &>/dev/null
 gzip -d < "$IDN2_TAR" | tar xf -
 cd "$IDN2_DIR"
 
+# Avoid reconfiguring.
 if [[ ! -e "configure" ]]; then
-    autoreconf --install --force
-fi
-
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to reconfigure IDN2"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    autoreconf --force --install
+    if [[ "$?" -ne "0" ]]; then
+        echo "Failed to reconfigure IDN2"
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
 fi
 
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
