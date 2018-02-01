@@ -87,6 +87,7 @@ fi
 # AIX needs the execute bit reset on the file.
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
 mv configure.fixed configure; chmod +x configure
+touch -t 197001010000 configure
 
 if [[ "$IS_SOLARIS" -eq "1" ]]; then
   if [[ (-f src/idn2.c) ]]; then
@@ -117,23 +118,45 @@ fi
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
-    --enable-shared --disable-gtk-doc
+    --enable-shared
+    # --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-# WTF? Why try to build docs when tools are missing???
+if false; then
 for mfile in $(find "$PWD" -name 'Makefile'); do
-    sed -e 's/HELP2MAN =.*/HELP2MAN = true/g' "$mfile" > "$mfile.fixed"
+    sed -e 's/^ACLOCAL =.*/ACLOCAL = ${SHELL} aclocal/g' "$mfile" > "$mfile.fixed"
     mv "$mfile.fixed" "$mfile"
-    sed -e 's/MAKEINFO =.*/MAKEINFO = true/g' "$mfile" > "$mfile.fixed"
+    sed -e 's/^AUTOCONF =.*/AUTOCONF = ${SHELL} autoconf/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/^AUTOHEADER =.*/AUTOHEADER = ${SHELL} autoheader/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/^AUTOMAKE =.*/AUTOMAKE = ${SHELL} automake/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/^AUTOMAKE =.*/AUTOMAKE = ${SHELL} automake/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/^PERL =.*/PERL = ${SHELL}/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/^HELP2MAN =.*/HELP2MAN = true/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/^MAKEINFO =.*/MAKEINFO = true/g' "$mfile" > "$mfile.fixed"
     mv "$mfile.fixed" "$mfile"
     touch -t 197001010000 "$mfile"
 done
+fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
+MAKE_FLAGS+=("ACLOCAL=aclocal")
+MAKE_FLAGS+=("AUTOCONF=autoconf")
+MAKE_FLAGS+=("AUTOHEADER=autoheader")
+MAKE_FLAGS+=("AUTOMAKE=automake")
+MAKE_FLAGS+=("PERL=perl")
+MAKE_FLAGS+=("HELP2MAN=true")
+MAKE_FLAGS+=("MAKEINFO=true")
+
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build IDN"
@@ -148,15 +171,6 @@ else
 fi
 
 cd "$CURR_DIR"
-
-###############################################################################
-
-AUTOMAKE_VERSION=$(automake --version 2>/dev/null | head -n 1)
-AUTOMAKE_OK=$(echo $AUTOMAKE_VERSION | grep -c -E "automake * (1\.1[5-9]\.|1\.[3-9]\.)")
-
-if [[ "$AUTOMAKE_OK" -eq "0" ]]; then
-    ./build-automake.sh
-fi
 
 ###############################################################################
 
@@ -188,29 +202,50 @@ fi
 # AIX needs the execute bit reset on the file.
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
 mv configure.fixed configure; chmod +x configure
+touch -t 197001010000 configure
 
     PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
-    --enable-shared --disable-gtk-doc
+    --enable-shared
+    # --disable-gtk-doc --disable-gtk-doc-html --disable-gtk-doc-pdf
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure IDN2"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-# WTF? Why try to build docs when tools are missing???
+if false; then
 for mfile in $(find "$PWD" -name 'Makefile'); do
-    sed -e 's/HELP2MAN =.*/HELP2MAN = true/g' "$mfile" > "$mfile.fixed"
+    sed -e 's/^ACLOCAL =.*/ACLOCAL = ${SHELL} aclocal/g' "$mfile" > "$mfile.fixed"
     mv "$mfile.fixed" "$mfile"
-    sed -e 's/MAKEINFO =.*/MAKEINFO = true/g' "$mfile" > "$mfile.fixed"
+    sed -e 's/^AUTOCONF =.*/AUTOCONF = ${SHELL} autoconf/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/^AUTOHEADER =.*/AUTOHEADER = ${SHELL} autoheader/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/^AUTOMAKE =.*/AUTOMAKE = ${SHELL} automake/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/^PERL =.*/PERL = ${SHELL}/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/^HELP2MAN =.*/HELP2MAN = true/g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+    sed -e 's/^MAKEINFO =.*/MAKEINFO = true/g' "$mfile" > "$mfile.fixed"
     mv "$mfile.fixed" "$mfile"
     touch -t 197001010000 "$mfile"
 done
+fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
+MAKE_FLAGS+=("ACLOCAL=aclocal")
+MAKE_FLAGS+=("AUTOCONF=autoconf")
+MAKE_FLAGS+=("AUTOHEADER=autoheader")
+MAKE_FLAGS+=("AUTOMAKE=automake")
+MAKE_FLAGS+=("PERL=perl")
+MAKE_FLAGS+=("HELP2MAN=true")
+MAKE_FLAGS+=("MAKEINFO=true")
+
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build IDN2"
