@@ -50,15 +50,6 @@ fi
 
 ###############################################################################
 
-AUTOMAKE_VER=$(automake --version 2>/dev/null | head -n 1)
-AUTOMAKE_OK=$(echo $AUTOMAKE_VER | grep -i -c -E "automake .* (1\.1[5-9]\.|1\.[2-9][0-9])")
-
-if [[ "$AUTOMAKE_OK" -eq "0" ]]; then
-    ./build-automake.sh
-fi
-
-###############################################################################
-
 echo
 echo "********** IDN **********"
 echo
@@ -76,7 +67,7 @@ cd "$IDN_DIR"
 
 # Avoid reconfiguring.
 if [[ ! -e "configure" ]]; then
-    autoreconf --force --install
+    ./bootstrap.sh
     if [[ "$?" -ne "0" ]]; then
         echo "Failed to reconfigure IDN"
         [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
@@ -169,7 +160,7 @@ cd "$IDN2_DIR"
 
 # Avoid reconfiguring.
 if [[ ! -e "configure" ]]; then
-    autoreconf --force --install
+    ./bootstrap.sh
     if [[ "$?" -ne "0" ]]; then
         echo "Failed to reconfigure IDN2"
         [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
