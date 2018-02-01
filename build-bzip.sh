@@ -119,7 +119,7 @@ echo "**************************************************************************
 ###############################################################################
 
 # Set to false to retain artifacts
-if false; then
+if true; then
 
     ARTIFACTS=("$BZIP2_TAR" "$BZIP2_DIR")
     for artifact in "${ARTIFACTS[@]}"; do

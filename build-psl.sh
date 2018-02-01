@@ -31,7 +31,7 @@ if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
-CURL_CA_ZOO="$HOME/.cacert/cacert.pem"
+CA_ZOO="$HOME/.cacert/cacert.pem"
 
 ###############################################################################
 
@@ -74,7 +74,7 @@ echo "********** libpsl **********"
 echo
 
 # https://github.com/rockdaboot/libpsl/releases/download/libpsl-0.19.1/libpsl-0.19.1.tar.gz
-wget --ca-certificate="$CURL_CA_ZOO" "https://github.com/rockdaboot/libpsl/releases/download/$PSL_DIR/$PSL_TAR" -O "$PSL_TAR"
+wget --ca-certificate="$CA_ZOO" "https://github.com/rockdaboot/libpsl/releases/download/$PSL_DIR/$PSL_TAR" -O "$PSL_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download libpsl"
@@ -117,7 +117,7 @@ fi
 # Update the PSL data file
 echo "Updating Public Suffix List (PSL) data file"
 mkdir -p list
-wget --ca-certificate="$CURL_CA_ZOO" https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat -O list/public_suffix_list.dat
+wget --ca-certificate="$CA_ZOO" https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat -O list/public_suffix_list.dat
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download Public Suffix List (PSL)"

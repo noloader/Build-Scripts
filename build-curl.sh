@@ -31,7 +31,7 @@ if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
 fi
 
 LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
-CURL_CA_ZOO="$HOME/.cacert/cacert.pem"
+CA_ZOO="$HOME/.cacert/cacert.pem"
 
 ###############################################################################
 
@@ -122,7 +122,7 @@ echo
 echo "********** cURL **********"
 echo
 
-wget --ca-certificate="$CURL_CA_ZOO" "https://curl.haxx.se/download/$CURL_TAR" -O "$CURL_TAR"
+wget --ca-certificate="$CA_ZOO" "https://curl.haxx.se/download/$CURL_TAR" -O "$CURL_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download cURL"
