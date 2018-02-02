@@ -66,6 +66,10 @@ cd "$READLN_DIR"
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
 mv configure.fixed configure; chmod +x configure
 
+if [[ "$IS_DARWIN" -ne "0" ]]; then
+    BUILD_CPPFLAGS+=("-DNEED_EXTERN_PC")
+fi
+
     PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
