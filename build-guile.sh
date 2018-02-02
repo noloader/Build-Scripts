@@ -2,11 +2,9 @@
 
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Guile from sources. Guile has a lot of issues
-# and I am not sure all of them can be worked around. See, for example,
-# https://lists.gnu.org/archive/html/guile-devel/2017-10/msg00005.html
-# https://lists.gnu.org/archive/html/guile-devel/2017-10/msg00021.html
-# https://lists.gnu.org/archive/html/guile-devel/2017-10/msg00006.html
-# https://lists.gnu.org/archive/html/guile-devel/2017-10/msg00024.html
+# and I am not sure all of them can be worked around.
+#
+# Requires libtool-ltdl-devel on Fedora.
 
 GUILE_TAR=guile-2.2.2.tar.xz
 GUILE_DIR=guile-2.2.2
@@ -59,6 +57,14 @@ source ./build-environ.sh
 # The password should die when this subshell goes out of scope
 if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
+fi
+
+###############################################################################
+
+if ! ./build-gmp.sh
+then
+    echo "Failed to build Bzip2"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 ###############################################################################
