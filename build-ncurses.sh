@@ -87,6 +87,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 # Fix Clang warning
+IS_CLANG=$("$CC" --version 2>&1 | grep -i -c -E 'clang|llvm')
 if [[ "$IS_CLANG" -ne "0" ]]; then
     for mfile in $(find "$PWD" -name 'Makefile'); do
         sed -e 's|--param max-inline-insns-single=1200||g' "$mfile" > "$mfile.fixed"

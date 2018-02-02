@@ -30,8 +30,8 @@ fi
 ###############################################################################
 
 THIS_SYSTEM=$(uname -s 2>&1)
-IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c sunos)
-IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c darwin)
+IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c 'sunos')
+IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c 'darwin')
 IS_AIX=$(echo -n "$THIS_SYSTEM" | grep -i -c 'aix')
 IS_CYGWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c 'cygwin')
 

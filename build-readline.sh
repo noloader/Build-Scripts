@@ -71,7 +71,7 @@ mv configure.fixed configure; chmod +x configure
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
-    --enable-shared --with-curses
+    --enable-shared
 
 # Fix broken Linux dynamic linker. tinfow or tinfo from ncurses
 if [[ ! -z $(find /usr/local/lib64 -name '*tinfow*') ]]; then
