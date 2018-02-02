@@ -74,6 +74,18 @@ if [[ ! -e "configure" ]]; then
     fi
 fi
 
+# Fix AM_INIT_AUTOMAKE
+sed -e 's/^AM_INIT_AUTOMAKE.*/AM_INIT_AUTOMAKE/g' configure.ac > configure.ac.fixed
+mv configure.ac.fixed configure.ac
+# Remove useless directive
+sed -e '/AM_SILENT_RULES/d' configure.ac > configure.ac.fixed
+mv configure.ac.fixed configure.ac
+# Get rid of all docs Makefiles
+sed -e '/^  doc\//d' configure.ac > configure.ac.fixed
+mv configure.ac.fixed configure.ac
+# Set time in the past to avoid re-configuration
+touch -t 197001010000 configure.ac
+
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
 # AIX needs the execute bit reset on the file.
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
@@ -116,15 +128,13 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-# MAKE_FLAGS+=("ACLOCAL=aclocal")
-# MAKE_FLAGS+=("AUTOCONF=autoconf")
-# MAKE_FLAGS+=("AUTOHEADER=autoheader")
-# MAKE_FLAGS+=("AUTOMAKE=automake")
-# MAKE_FLAGS+=("PERL=perl")
-# MAKE_FLAGS+=("HELP2MAN=true")
-# MAKE_FLAGS+=("MAKEINFO=true")
+for mfile in $(find "$PWD" -name Makefile);
+do
+    sed -e 's| doc | |g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+done
 
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build IDN"
@@ -166,6 +176,18 @@ if [[ ! -e "configure" ]]; then
     fi
 fi
 
+# Fix AM_INIT_AUTOMAKE
+sed -e 's/^AM_INIT_AUTOMAKE.*/AM_INIT_AUTOMAKE/g' configure.ac > configure.ac.fixed
+mv configure.ac.fixed configure.ac
+# Remove useless directive
+sed -e '/AM_SILENT_RULES/d' configure.ac > configure.ac.fixed
+mv configure.ac.fixed configure.ac
+# Get rid of all docs Makefiles
+sed -e '/^  doc\//d' configure.ac > configure.ac.fixed
+mv configure.ac.fixed configure.ac
+# Set time in the past to avoid re-configuration
+touch -t 197001010000 configure.ac
+
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
 # AIX needs the execute bit reset on the file.
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
@@ -184,15 +206,14 @@ if [[ "$?" -ne "0" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-MAKE_FLAGS=("-j" "$MAKE_JOBS")
-# MAKE_FLAGS+=("ACLOCAL=aclocal")
-# MAKE_FLAGS+=("AUTOCONF=autoconf")
-# MAKE_FLAGS+=("AUTOHEADER=autoheader")
-# MAKE_FLAGS+=("AUTOMAKE=automake")
-# MAKE_FLAGS+=("PERL=perl")
-# MAKE_FLAGS+=("HELP2MAN=true")
-# MAKE_FLAGS+=("MAKEINFO=true")
+for mfile in $(find "$PWD" -name Makefile);
+do
+    # Get rid of all docs directories
+    sed -e 's| doc | |g' "$mfile" > "$mfile.fixed"
+    mv "$mfile.fixed" "$mfile"
+done
 
+MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build IDN2"
