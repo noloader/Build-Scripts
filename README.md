@@ -10,22 +10,26 @@ Adding a new library script is mostly copy and paste. Start with `build-zlib.h`,
 
 ## Output Artifacts
 
-All artifacts are placed in `/usr/local` by default with runtime paths and dtags set to the proper library location. The proper library location on 32-bit machines is `/usr/local/lib`; while 64-bit systems use `/usr/local/lib` (Debian and derivatives) or `/usr/local/lib64` (Red Hat and derivatives).
+All artifacts are placed in `/usr/local` by default with runtime paths and dtags set to the proper library location. The library location on 32-bit machines is `/usr/local/lib`; while 64-bit systems use `/usr/local/lib` (Debian and derivatives) or `/usr/local/lib64` (Red Hat and derivatives).
 
-You can override the install locations with `INSTALL_PREFIX` and `INSTALL_LIBDIR`. `INSTALL_PREFIX` is passed as `--prefix` to Autotools projects, and `INSTALL_LIBDIR` is passed as `--libdir` to Autotools projects. Non-Autotools projects get patched after unpacking (see build-bzip.sh for an example). For example:
+You can override the install locations with `INSTX_PREFIX` and `INSTX_LIBDIR`. `INSTX_PREFIX` is passed as `--prefix` to Autotools projects, and `INSTX_LIBDIR` is passed as `--libdir` to Autotools projects. Non-Autotools projects get patched after unpacking (see build-bzip.sh for an example).
+
+The `INSTX_` prefix was chosen to avoid collisions with other shell variables. Previously, both the script and OpenSSL used INSTALL_LIBDIR, and OpenSSL installed libraries into into `/usr/local/lib/usr/local/lib/lib`.
+
+Examples of running the scripts and changing variables are shown below:
 
 ```
 # Build and install using the directories described above
 ./build-wget.sh
 
 # Build and install in a temp directory
-INSTALL_PREFIX="$HOME/tmp" ./build-wget.sh
+INSTX_PREFIX="$HOME/tmp" ./build-wget.sh
 
 # Build and install in a temp directory (same as the first command, but not obvious)
-INSTALL_PREFIX="$HOME/tmp" INSTALL_LIBDIR="$INSTALL_PREFIX/tmp/lib" ./build-wget.sh
+INSTX_PREFIX="$HOME/tmp" INSTX_LIBDIR="$INSTX_PREFIX/tmp/lib" ./build-wget.sh
 
 # Build and install in a temp directory and use and different library path
-INSTALL_PREFIX="$HOME/tmp" INSTALL_LIBDIR="$HOME/mylibs" ./build-wget.sh
+INSTX_PREFIX="$HOME/tmp" INSTX_LIBDIR="$HOME/mylibs" ./build-wget.sh
 ```
 
 ## Boot strapping
