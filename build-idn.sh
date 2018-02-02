@@ -130,9 +130,12 @@ fi
 
 for mfile in $(find "$PWD" -name Makefile);
 do
+    # Get rid of all doc/ directories
     sed -e 's| doc | |g' "$mfile" > "$mfile.fixed"
     mv "$mfile.fixed" "$mfile"
 done
+
+rm -rf doc/ 2>/dev/null
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
@@ -208,7 +211,7 @@ fi
 
 for mfile in $(find "$PWD" -name Makefile);
 do
-    # Get rid of all docs directories
+    # Get rid of most doc/ directories
     sed -e 's| doc | |g' "$mfile" > "$mfile.fixed"
     mv "$mfile.fixed" "$mfile"
 done
