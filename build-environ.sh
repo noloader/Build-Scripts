@@ -252,6 +252,6 @@ if [[ -z "$PRINT_ONCE" ]]; then
         echo ""
         echo " SH_CACERT_BUNDLE: $SH_CACERT_BUNDLE"
     fi
-fi
 
-export PRINT_ONCE="TRUE"
+    export PRINT_ONCE="TRUE"
+fi

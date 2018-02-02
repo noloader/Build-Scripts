@@ -94,15 +94,3 @@ Third, you can open the `build-prog.sh` script, comment the portion that runs `m
 ## Bugs
 
 If you find a bug then submit a patch or raise a bug report.
-
-If you experience a failure like `reset` failing in your shell:
-
-```
-$ reset
-reset: error while loading shared libraries: libtinfow.so.6:
-Cannot open shared object file: No such file or directory
-```
-
-Then build Ncurses again with `./build-ncurses.sh`. `reset` will work again after building and installing Ncurses a second time.
-
-The failure is unexplained at the moment, but the scripts are probably doing something wrong, like building Termcap, GetText or Ncurses in the wrong order for a program like cURL or Git.
