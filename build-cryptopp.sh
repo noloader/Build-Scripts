@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Crypto++ library from sources.
 
-CRYPTOPP_TAR=CRYPTOPP_5_6_5.tar.gz
-CRYPTOPP_DIR=CRYPTOPP_5_6_5
+CRYPTOPP_TAR=CRYPTOPP_6_0_0.tar.gz
+CRYPTOPP_DIR=CRYPTOPP_6_0_0
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
