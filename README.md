@@ -2,7 +2,7 @@
 
 This GitHub is a collection of build scripts useful when building and testing programs and libraries on downlevel and unique clients. It should result in working SSH, Wget, cURL and Git clients on systems like PowerMac G5, Fedora 10, CentOS 5 and Solaris 11. After you have a modern Git and Wget you can usually test your software as desired.
 
-The general idea of the scripts are, you want to run `./build-wget.sh`, `./build-ssh.sh`, `./build-git.sh` or some other program build script. The build script for the program will download an build the dependent libraries for the program (even if the library was previously built before). When the script complete you ahve a working tool in `/usr/local`.
+The general idea of the scripts are, you want to run `./build-wget.sh`, `./build-ssh.sh`, `./build-git.sh` or some other program build script. The build script for the program will download an build the dependent libraries for the program (even if the library was previously built before). When the script complete you have a working tool in `/usr/local`.
 
 The scripts should mostly work on AIX, Android, BSDs, Cygwin, iOS, Linux, OS X and Solaris. GnuTLS is included but it is mostly experimental/non-working at the moment due to problems with dependencies like Guile.
 
@@ -85,11 +85,9 @@ make[4]: Leaving directory `/Users/scripts/gzip-1.8/tests'
 Failed to test Gzip
 ```
 
-You have three choices on self-test failure. First, you can ignore the failure, `cd` into the program's directory, and then run `sudo make install`.
+You have three choices on self-test failure. First, you can ignore the failure, `cd` into the program's directory, and then run `sudo make install`. Second, you can fix the failure, `cd` into the program's directory, run `make`, run `make check`, and then run `sudo make install`.
 
-Second, you can fix the failure, `cd` into the program's directory, run `make`, run `make check`, and then run `sudo make install`.
-
-Third, you can open the `build-prog.sh` script, comment the portion that runs `make check`, and then rerrun the script again. Some libraries, like OpenSSL, use this strategy since the self tests are broken on several platforms.
+Third, you can open the `build-prog.sh` script, comment the portion that runs `make check`, and then run the script again. Some libraries, like OpenSSL, use this strategy since the self tests don't work as expected on several platforms.
 
 ## Bugs
 
