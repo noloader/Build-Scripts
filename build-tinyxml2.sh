@@ -103,7 +103,7 @@ cd "$CURR_DIR"
 ###############################################################################
 
 # Set to false to retain artifacts
-if false; then
+if true; then
 
     ARTIFACTS=("$TXML2_TAR" "$TXML2_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
