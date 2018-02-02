@@ -46,6 +46,16 @@ The scripts do not check signatures on tarballs with GnuPG. Its non-trivial to b
 
 It is unfortunate GNU does not run their own PKI and have their own CA. More risk could be eliminated if we only needed to trust the GNU organization and their root certificate.
 
+## Documentation
+
+The scripts avoid building documentation. If you need documentation then use the package's online documentation.
+
+Documentation is avoided for several reasons. First, the documentation adds extra dependencies, like makeinfo, html2pdf, gtk and even Perl libraries. It is not easy to satisfy some dependencies, like those on a CentOS 5, Fedora 15 or Solaris system. The older systems, CentOS 5 and Fedora 15, don't even have working repos.
+
+Second, the documentation wastes processing time. Low-end devices like ARM dev-boards can spend their compute cycles on more important things like compiling source code. Third, the documentation wastes space. Low-end devices like ARM dev-boards need to save space on their SDcards for more important things, like programs and libraires.
+
+Fourth, and most importantly, the documentation complicates package building. `libidn` and `libidn2` were especially difficult to build because the packages assumed a maintainer building for a desktop system with repos full of everything needed for a build. Configuring with `--no-gtk-doc` required a `bootstrap` or `autoreconf` which required additional steps and additional dependencies.
+
 ## Autotools
 
 Autotools is its own special kind of hell. Autotools is a place where progammers get sent when they have behaved badly.
