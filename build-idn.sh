@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds IDN from sources.
+# This script builds IDN and IDN2 from sources.
 
-# Use libidn-1.33 for Solaris and OS X... IDN2 causes too
-# many problems and too few answers on the mailing list.
 IDN_TAR=libidn-1.33.tar.gz
 IDN_DIR=libidn-1.33
 
