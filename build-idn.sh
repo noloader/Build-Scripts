@@ -213,6 +213,11 @@ do
     mv "$mfile.fixed" "$mfile"
 done
 
+sed -e 's|^am__append_2.*|am__append_2 =| g' Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+
+rm -rf doc/ >/dev/null
+
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"
 then
