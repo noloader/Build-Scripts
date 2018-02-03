@@ -33,7 +33,8 @@ fi
 # Get environment if needed. We can't export it because it includes arrays.
 source ./build-environ.sh
 
-# The password should die when this subshell goes out of scope
+# Get a sudo password as needed. The password should die when this
+# subshell goes out of scope.
 if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
 fi
@@ -233,8 +234,6 @@ else
 fi
 
 cd "$CURR_DIR"
-
-[[ "$0" = "${BASH_SOURCE[0]}" ]] && hash -r
 
 ###############################################################################
 
