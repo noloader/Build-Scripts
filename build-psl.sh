@@ -61,8 +61,14 @@ echo
 echo "********** libpsl **********"
 echo
 
-# https://github.com/rockdaboot/libpsl/releases/download/libpsl-0.19.1/libpsl-0.19.1.tar.gz
+# This fails when Wget < 1.14
 wget --ca-certificate="$CA_ZOO" "https://github.com/rockdaboot/libpsl/releases/download/$PSL_DIR/$PSL_TAR" -O "$PSL_TAR"
+
+# Dowload over insecure channel
+if [[ "$?" -ne "0" ]]; then
+    echo "Attempting download over insecure channel."
+    wget --ca-certificate="$CA_ZOO" "https://github.com/rockdaboot/libpsl/releases/download/$PSL_DIR/$PSL_TAR" -O "$PSL_TAR"
+fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download libpsl"
