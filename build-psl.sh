@@ -67,7 +67,7 @@ wget --ca-certificate="$CA_ZOO" "https://github.com/rockdaboot/libpsl/releases/d
 # Dowload over insecure channel
 if [[ "$?" -ne "0" ]]; then
     echo "Attempting download over insecure channel."
-    wget --ca-certificate="$CA_ZOO" "https://github.com/rockdaboot/libpsl/releases/download/$PSL_DIR/$PSL_TAR" -O "$PSL_TAR"
+    wget --no-check-certificate "https://github.com/rockdaboot/libpsl/releases/download/$PSL_DIR/$PSL_TAR" -O "$PSL_TAR"
 fi
 
 if [[ "$?" -ne "0" ]]; then
