@@ -34,7 +34,7 @@ INSTX_PREFIX="$HOME/tmp" INSTX_LIBDIR="$HOME/mylibs" ./build-wget.sh
 
 ## Boot strapping
 
-A basic order may need to be followed. Older systems like CentOS 5 are more sensitive than newer systems. First, run `build-cacerts.sh` to install several CAs in `$HOME/.cacerts`. Second, if needed, run `build-autotools.sh`, which should bring Autotools up to date. Third, run `build-libtool.sh` to modernize Libtool. After CA have been installed and Autotools updated you should be mostly OK.
+A basic order may need to be followed. Older systems like CentOS 5 are more sensitive than newer systems. You should run `build-cacerts.sh` to install several CAs in `$HOME/.cacerts`. The script installs approximately 6 CA's necessary to download other packages. You can delete the `.cacert` folder at anytime because the certifcates are only used by the scripts.
 
 Wget should be built next when working on older systems. CentOS 5 provides Wget 1.11, and it does not support SNI (SNI support did not arrive until Wget 1.14). The old Wget will fail to download cURL which Git needs for its build. The cURL download fails due to shared hosting and lack of SNI.
 
