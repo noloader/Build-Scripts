@@ -29,8 +29,6 @@ if [[ -e "$INSTX_CACHE/$PKG_NAME1" && -e "$INSTX_CACHE/$PKG_NAME2" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
 fi
 
-###############################################################################
-
 # The password should die when this subshell goes out of scope
 if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh

@@ -5,6 +5,7 @@
 
 NCURSES_TAR=ncurses-6.0.tar.gz
 NCURSES_DIR=ncurses-6.0
+PKG_NAME=ncurses
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -14,28 +15,15 @@ CURR_DIR="$PWD"
 
 ###############################################################################
 
-if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
-    echo "Some packages require Autotools. Please install autoconf, automake and libtool."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ -z $(command -v gzip 2>/dev/null) ]]; then
-    echo "Some packages require gzip. Please install gzip."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "Ncurses requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
-IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
-
-###############################################################################
-
 # Get environment if needed. We can't export it because it includes arrays.
 source ./build-environ.sh
+
+if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
+    # Already installed, return success
+    echo ""
+    echo "$PKG_NAME is already installed."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
+fi
 
 # The password should die when this subshell goes out of scope
 if [[ -z "$SUDO_PASSWORD" ]]; then
@@ -118,7 +106,8 @@ fi
 
 cd "$CURR_DIR"
 
-[[ "$0" = "${BASH_SOURCE[0]}" ]] && hash -r
+# Set package status to installed. Delete the file to rebuild the package.
+touch "$INSTX_CACHE/$PKG_NAME"
 
 ###############################################################################
 

@@ -5,6 +5,7 @@
 
 BZIP2_TAR=bzip2-1.0.6.tar.gz
 BZIP2_DIR=bzip2-1.0.6
+PKG_NAME=bzip2
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -96,6 +97,9 @@ else
 fi
 
 cd "$CURR_DIR"
+
+# Set package status to installed. Delete the file to rebuild the package.
+touch "$INSTX_CACHE/$PKG_NAME"
 
 ###############################################################################
 
