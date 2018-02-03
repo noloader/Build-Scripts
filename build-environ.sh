@@ -1,7 +1,30 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script creates the environment for other scripts to execute in.
+# This script verifies most prerequisites and creates 
+# an environment for other scripts to execute in.
+
+###############################################################################
+
+# Prerequisites needed for nearly all packages
+
+LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
+IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
+
+if [[ ! -f "$IDENTRUST_ROOT" ]]; then
+    echo "IDN requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
+    echo "Some packages require Autotools. Please install autoconf, automake and libtool."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+if [[ -z $(command -v gzip 2>/dev/null) ]]; then
+    echo "Some packages require gzip. Please install gzip."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
 
 ###############################################################################
 
@@ -232,7 +255,7 @@ fi
 # Used to track packages that have been built by these scripts.
 # The accounting is local to a user account. There is no harm
 # in rebuilding a package under another account.
-if [[ -z "$INSTX_PREFIX" ]]; then
+if [[ -z "$INSTX_CACHE" ]]; then
     INSTX_CACHE="$HOME/.build-scripts"
 fi
 mkdir -p "$INSTX_CACHE"
