@@ -6,6 +6,7 @@
 # OpenSSH and a few other key programs can only use OpenSSL 1.0.2 at the moment
 OPENSSL_TAR=openssl-1.0.2n.tar.gz
 OPENSSL_DIR=openssl-1.0.2n
+PKG_NAME=openssl
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -14,21 +15,6 @@ CURR_DIR="$PWD"
 : "${MAKE_JOBS:=4}"
 
 ###############################################################################
-
-if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
-    echo "Some packages require Autotools. Please install autoconf, automake and libtool."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "OpenSSL requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ ! -f "$HOME/.cacert/identrust-root-x3.pem" ]]; then
-    echo "OpenSSL requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
 
 # May be skipped if Perl is too old
 SKIP_OPENSSL_TESTS=0
@@ -49,15 +35,20 @@ then
     SKIP_OPENSSL_TESTS=1
 fi
 
-LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
-IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
-
 ###############################################################################
 
 # Get environment if needed. We can't export it because it includes arrays.
 source ./build-environ.sh
 
-# The password should die when this subshell goes out of scope
+if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
+    # Already installed, return success
+    echo ""
+    echo "$PKG_NAME is already installed."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
+fi
+
+# Get a sudo password as needed. The password should die when this
+# subshell goes out of scope.
 if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
 fi
@@ -158,14 +149,8 @@ fi
 
 cd "$CURR_DIR"
 
-[[ "$0" = "${BASH_SOURCE[0]}" ]] && hash -r
-
-###############################################################################
-
-echo ""
-echo "*****************************************************************************"
-echo "Please run Bash's 'hash -r' to update program cache in the current shell"
-echo "*****************************************************************************"
+# Set package status to installed. Delete the file to rebuild the package.
+touch "$INSTX_CACHE/$PKG_NAME"
 
 ###############################################################################
 
