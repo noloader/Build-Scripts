@@ -14,8 +14,8 @@ CURR_DIR="$PWD"
 
 ###############################################################################
 
-if [[ -z $(command -v gzip 2>/dev/null) ]]; then
-    echo "Some packages require gzip. Please install gzip."
+if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
+    echo "Some packages require Autotools. Please install autoconf, automake and libtool."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 

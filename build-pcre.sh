@@ -18,8 +18,7 @@ CURR_DIR="$PWD"
 ###############################################################################
 
 if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
-    echo "Some packages require autoreconf. Please install autoconf or automake."
-    echo "You can run build-autotools.sh and build-libtool.sh to update them."
+    echo "Some packages require Autotools. Please install autoconf, automake and libtool."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
