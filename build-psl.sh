@@ -5,6 +5,7 @@
 
 PSL_TAR=libpsl-0.19.1.tar.gz
 PSL_DIR=libpsl-0.19.1
+PKG_NAME=libpsl
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -24,6 +25,26 @@ fi
 
 # Get environment if needed. We can't export it because it includes arrays.
 source ./build-environ.sh
+
+if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
+
+    then_time=$(date -d 'now - 7 days' +%s)
+    file_time=$(date -r "$INSTX_CACHE/$PKG_NAME" +%s)
+
+    if (( file_time <= then_time ));
+    then
+        echo ""
+        echo "$PKG_NAME is older than 7 days. Rebuilding database."
+        rm -f "$INSTX_CACHE/$PKG_NAME" 2>/dev/null
+    fi
+fi
+
+if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
+    # Already installed, return success
+    echo ""
+    echo "$PKG_NAME is already installed."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
+fi
 
 # Get a sudo password as needed. The password should die when this
 # subshell goes out of scope.
@@ -142,6 +163,9 @@ else
 fi
 
 cd "$CURR_DIR"
+
+# Set package status to installed. Delete the file to rebuild the package.
+touch "$INSTX_CACHE/$PKG_NAME"
 
 ###############################################################################
 
