@@ -51,7 +51,14 @@ echo
 echo "********** PCRE **********"
 echo
 
+# This fails when Wget < 1.14
 wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.pcre.org/pub/pcre/$PCRE_TAR" -O "$PCRE_TAR"
+
+# Dowload over insecure channel
+if [[ "$?" -ne "0" ]]; then
+    echo "Attempting download over insecure channel."
+    wget --no-check-certificate "https://ftp.pcre.org/pub/pcre/$PCRE_TAR" -O "$PCRE_TAR"
+fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download PCRE"
@@ -101,7 +108,14 @@ echo
 echo "********** PCRE2 **********"
 echo
 
+# This fails when Wget < 1.14
 wget --ca-certificate="$IDENTRUST_ROOT" "https://ftp.pcre.org/pub/pcre/$PCRE2_TAR" -O "$PCRE2_TAR"
+
+# Dowload over insecure channel
+if [[ "$?" -ne "0" ]]; then
+    echo "Attempting download over insecure channel."
+    wget --no-check-certificate "https://ftp.pcre.org/pub/pcre/$PCRE2_TAR" -O "$PCRE2_TAR"
+fi
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download PCRE2"
