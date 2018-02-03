@@ -5,9 +5,11 @@
 
 IDN_TAR=libidn-1.33.tar.gz
 IDN_DIR=libidn-1.33
+PKG_NAME1=libidn
 
 IDN2_TAR=libidn2-2.0.4.tar.gz
 IDN2_DIR=libidn2-2.0.4
+PKG_NAME2=libidn2
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -19,9 +21,6 @@ CURR_DIR="$PWD"
 
 # Get environment if needed. We can't export it because it includes arrays.
 source ./build-environ.sh
-
-PKG_NAME1=libidn
-PKG_NAME2=libidn2
 
 if [[ -e "$INSTX_CACHE/$PKG_NAME1" && -e "$INSTX_CACHE/$PKG_NAME2" ]]; then
     # Already installed, return success
@@ -142,6 +141,9 @@ fi
 
 cd "$CURR_DIR"
 
+# Set package status to installed. Delete the file to rebuild the package.
+touch "$INSTX_CACHE/$PKG_NAME1"
+
 ###############################################################################
 
 echo
@@ -228,7 +230,6 @@ fi
 cd "$CURR_DIR"
 
 # Set package status to installed. Delete the file to rebuild the package.
-touch "$INSTX_CACHE/$PKG_NAME1"
 touch "$INSTX_CACHE/$PKG_NAME2"
 
 ###############################################################################
