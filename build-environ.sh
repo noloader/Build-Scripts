@@ -229,20 +229,29 @@ fi
 #    BUILD_LDFLAGS+=("$SH_INSTNAME")
 #fi
 
+# Used to track packages that have been built by these scripts.
+# The accounting is local to a user account. There is no harm
+# in rebuilding a package under another account.
+if [[ -z "$INSTX_PREFIX" ]]; then
+    INSTX_CACHE="$HOME/.build-scripts"
+fi
+mkdir -p "$INSTX_CACHE"
+
+# Print a summary once
 if [[ -z "$PRINT_ONCE" ]]; then
 
     echo ""
     echo "Common flags and options:"
     echo ""
-    echo " INSTALL_PREFIX: $INSTX_PREFIX"
-    echo " INSTALL_LIBDIR: $INSTX_LIBDIR"
+    echo " INSTX_PREFIX: $INSTX_PREFIX"
+    echo " INSTX_LIBDIR: $INSTX_LIBDIR"
     echo ""
-    echo "      PKGCONFIG: ${BUILD_PKGCONFIG[*]}"
-    echo "       CPPFLAGS: ${BUILD_CPPFLAGS[*]}"
-    echo "         CFLAGS: ${BUILD_CFLAGS[*]}"
-    echo "       CXXFLAGS: ${BUILD_CXXFLAGS[*]}"
-    echo "        LDFLAGS: ${BUILD_LDFLAGS[*]}"
-    echo "         LDLIBS: ${BUILD_LIBS[*]}"
+    echo "    PKGCONFIG: ${BUILD_PKGCONFIG[*]}"
+    echo "     CPPFLAGS: ${BUILD_CPPFLAGS[*]}"
+    echo "       CFLAGS: ${BUILD_CFLAGS[*]}"
+    echo "     CXXFLAGS: ${BUILD_CXXFLAGS[*]}"
+    echo "      LDFLAGS: ${BUILD_LDFLAGS[*]}"
+    echo "       LDLIBS: ${BUILD_LIBS[*]}"
 
     if [[ ! -z "$SH_CACERT_PATH" ]]; then
         echo ""
