@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Ncurses from sources.
 
-NCURSES_TAR=ncurses-6.0.tar.gz
-NCURSES_DIR=ncurses-6.0
+NCURSES_TAR=ncurses-6.1.tar.gz
+NCURSES_DIR=ncurses-6.1
 PKG_NAME=ncurses
 
 # Avoid shellcheck.net warning
