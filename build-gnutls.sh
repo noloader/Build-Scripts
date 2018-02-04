@@ -22,6 +22,12 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+ADDTRUST_ROOT="$HOME/.cacert/addtrust-root-ca.pem"
+if [[ ! -f "$ADDTRUST_ROOT" ]]; then
+    echo "Some packages require several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
     # Already installed, return success
     echo ""
