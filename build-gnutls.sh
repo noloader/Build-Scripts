@@ -5,6 +5,7 @@
 
 GNUTLS_TAR=gnutls-3.5.16.tar.xz
 GNUTLS_DIR=gnutls-3.5.16
+PKG_NAME=gnutls
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -19,6 +20,13 @@ if ! source ./build-environ.sh
 then
     echo "Failed to set environment"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
+    # Already installed, return success
+    echo ""
+    echo "$PKG_NAME is already installed."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
 fi
 
 # The password should die when this subshell goes out of scope
@@ -39,14 +47,6 @@ fi
 if ! ./build-bzip.sh
 then
     echo "Failed to build Bzip2"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-###############################################################################
-
-if ! ./build-libtool.sh
-then
-    echo "Failed to build Libtool"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -203,12 +203,8 @@ fi
 
 cd "$CURR_DIR"
 
-###############################################################################
-
-echo ""
-echo "*****************************************************************************"
-echo "Please run Bash's 'hash -r' to update program cache in the current shell"
-echo "*****************************************************************************"
+# Set package status to installed. Delete the file to rebuild the package.
+touch "$INSTX_CACHE/$PKG_NAME"
 
 ###############################################################################
 
