@@ -6,8 +6,8 @@
 #
 # Requires libtool-ltdl-devel on Fedora.
 
-GUILE_TAR=guile-2.2.2.tar.xz
-GUILE_DIR=guile-2.2.2
+GUILE_TAR=guile-2.2.3.tar.xz
+GUILE_DIR=guile-2.2.3
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
