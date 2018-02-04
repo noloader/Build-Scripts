@@ -32,6 +32,18 @@ then
      SKIP_WGET_TESTS=1
 fi
 
+# May be skipped if Python is too old. libpsl requires Python 2.7
+# Also see https://stackoverflow.com/a/40950971/608639
+
+SKIP_LIBPSL=1
+
+if hash python; then
+    ver=$(python -V 2>&1 | sed 's/.* \([0-9]\).\([0-9]\).*/\1\2/')
+    if [ "$ver" -ge "27" ]; then
+        SKIP_LIBPSL=0
+    fi
+fi
+
 ###############################################################################
 
 # Get environment if needed. We can't export it because it includes arrays.
@@ -93,11 +105,15 @@ fi
 
 ###############################################################################
 
+if [[ "$SKIP_LIBPSL" -eq "0" ]]; then
+
 if ! ./build-psl.sh
 then
     echo "Failed to build Public Suffix List library"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
+
+fi  # SKIP_LIBPSL
 
 ###############################################################################
 
