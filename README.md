@@ -2,7 +2,11 @@
 
 This GitHub is a collection of build scripts useful when building and testing programs and libraries on downlevel and unique clients. It should result in working SSH, Wget, cURL and Git clients on systems like PowerMac G5, Fedora 10, CentOS 5 and Solaris 11. After you have a modern Git and Wget you can usually test your software as desired.
 
-The general idea of the scripts are, you want to run `./build-wget.sh`, `./build-ssh.sh`, `./build-git.sh` or some other program build script. The build script for the program will download an build the dependent libraries for the program (even if the library was previously built before). When the script complete you have a working tool in `/usr/local`.
+The general idea of the scripts are, you want to run `./build-wget.sh`, `./build-ssh.sh`, `./build-git.sh` or some other program build script. The build script for the program will download and build the dependent libraries for the program. When the script complete you have a working tool in `/usr/local`.
+
+Dependent libraries are minimally tracked. Once a library is built a file with the library name is `touch`'d in `$HOME/.build-scripts`. If the file is older than 7 days then the library is automatically rebuilt. Automatic rebuilding ensures newer versions of a library are used when available and sidesteps problems with trying to track version numbers.
+
+Programs are not tracked. When a script like `build-git.sh` or `build-ssh.sh` is run then the program is always built or rebuilt. The dependently libraries may (or may not) be built based the age as detailed in tracking, but the program is always rebuilt.
 
 The scripts should mostly work on AIX, Android, BSDs, Cygwin, iOS, Linux, OS X and Solaris. GnuTLS is included but it is mostly experimental/non-working at the moment due to problems with dependencies like Guile.
 
