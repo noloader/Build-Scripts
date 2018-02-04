@@ -46,7 +46,15 @@ fi
 
 if ! ./build-gmp.sh
 then
-    echo "Failed to build Bzip2"
+    echo "Failed to build GMP"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+###############################################################################
+
+if ! ./build-libffi.sh
+then
+    echo "Failed to build libffi"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
