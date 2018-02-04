@@ -14,6 +14,18 @@ CURR_DIR="$PWD"
 
 ###############################################################################
 
+# Get environment if needed. We can't export it because it includes arrays.
+source ./build-environ.sh || \
+    ([[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1)
+
+# Get a sudo password as needed. The password should die when this
+# subshell goes out of scope.
+if [[ -z "$SUDO_PASSWORD" ]]; then
+    source ./build-password.sh
+fi
+
+###############################################################################
+
 # May be skipped if Perl is too old
 SKIP_WGET_TESTS=0
 
@@ -42,17 +54,6 @@ if hash python; then
     if [ "$ver" -ge "27" ]; then
         SKIP_LIBPSL=0
     fi
-fi
-
-###############################################################################
-
-# Get environment if needed. We can't export it because it includes arrays.
-source ./build-environ.sh
-
-# Get a sudo password as needed. The password should die when this
-# subshell goes out of scope.
-if [[ -z "$SUDO_PASSWORD" ]]; then
-    source ./build-password.sh
 fi
 
 ###############################################################################

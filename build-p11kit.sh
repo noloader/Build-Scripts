@@ -14,28 +14,15 @@ CURR_DIR="$PWD"
 
 ###############################################################################
 
-if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
-    echo "Some packages require Autotools. Please install autoconf, automake and libtool."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
+# Get environment if needed. We can't export it because it includes arrays.
+source ./build-environ.sh || \
+    ([[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1)
 
-if [[ -z $(command -v gzip 2>/dev/null) ]]; then
-    echo "Some packages require gzip. Please install gzip."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
+CA_ZOO="$HOME/.cacert/cacert.pem"
+if [[ ! -f "$CA_ZOO" ]]; then
     echo "P11-Kit requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
-
-LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
-P11KIT_CA_ZOO="$HOME/.cacert/cacert.pem"
-
-###############################################################################
-
-# Get environment if needed. We can't export it because it includes arrays.
-source ./build-environ.sh
 
 # The password should die when this subshell goes out of scope
 if [[ -z "$SUDO_PASSWORD" ]]; then
@@ -48,7 +35,7 @@ echo
 echo "********** p11-kit **********"
 echo
 
-wget --ca-certificate="$P11KIT_CA_ZOO" "https://p11-glue.freedesktop.org/releases/$P11KIT_TAR" -O "$P11KIT_TAR"
+wget --ca-certificate="$CA_ZOO" "https://p11-glue.freedesktop.org/releases/$P11KIT_TAR" -O "$P11KIT_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download p11-kit"

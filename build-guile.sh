@@ -17,20 +17,9 @@ CURR_DIR="$PWD"
 
 ###############################################################################
 
-if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
-    echo "Some packages require Autotools. Please install autoconf, automake and libtool."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ -z $(command -v gzip 2>/dev/null) ]]; then
-    echo "Some packages require gzip. Please install gzip."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "Guile requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
+# Get environment if needed. We can't export it because it includes arrays.
+source ./build-environ.sh || \
+    ([[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1)
 
 # Boehm garbage collector. Look in /usr/lib and /usr/lib64
 if [[ "$IS_DEBIAN" -ne "0" ]]; then
@@ -44,14 +33,6 @@ elif [[ "$IS_FEDORA" -ne "0" ]]; then
         [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
     fi
 fi
-
-LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
-IDENTRUST_ROOT="$HOME/.cacert/identrust-root-x3.pem"
-
-###############################################################################
-
-# Get environment if needed. We can't export it because it includes arrays.
-source ./build-environ.sh
 
 # The password should die when this subshell goes out of scope
 if [[ -z "$SUDO_PASSWORD" ]]; then

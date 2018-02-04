@@ -14,13 +14,9 @@ CURR_DIR="$PWD"
 
 ###############################################################################
 
-# Required
-if ! perl -MExtUtils::MakeMaker -e1 2>/dev/null
-then
-    echo "Git requires Perl's ExtUtils::MakeMaker."
-    echo "To fix this issue, please install ExtUtils-MakeMaker."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
+# Get environment if needed. We can't export it because it includes arrays.
+source ./build-environ.sh || \
+    ([[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1)
 
 DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
 if [[ ! -f "$DIGICERT_ROOT" ]]; then
@@ -28,10 +24,13 @@ if [[ ! -f "$DIGICERT_ROOT" ]]; then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-###############################################################################
-
-# Get environment if needed. We can't export it because it includes arrays.
-source ./build-environ.sh
+# Required
+if ! perl -MExtUtils::MakeMaker -e1 2>/dev/null
+then
+    echo "Git requires Perl's ExtUtils::MakeMaker."
+    echo "To fix this issue, please install ExtUtils-MakeMaker."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
 
 # Get a sudo password as needed. The password should die when this
 # subshell goes out of scope.

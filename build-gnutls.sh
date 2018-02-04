@@ -14,39 +14,9 @@ CURR_DIR="$PWD"
 
 ###############################################################################
 
-if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
-    echo "Some packages require Autotools. Please install autoconf, automake and libtool."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ -z $(command -v gzip 2>/dev/null) ]]; then
-    echo "Some packages require gzip. Please install gzip."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-IS_DARWIN=$(uname -s | grep -i -c darwin)
-if [[ ("$IS_DARWIN" -eq "0") ]] && [[ -z $(command -v libtoolize 2>/dev/null) ]]; then
-    echo "Some packages require libtool. Please install libtool or libtool-bin."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
-    echo "GnuTLS requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-if [[ ! -f "$HOME/.cacert/addtrust-root-ca.pem" ]]; then
-    echo "GnuTLS requires several CA roots. Please run build-cacert.sh."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
-ADDTRUST_ROOT="$HOME/.cacert/addtrust-root-ca.pem"
-
-###############################################################################
-
 # Get environment if needed. We can't export it because it includes arrays.
-source ./build-environ.sh
+source ./build-environ.sh || \
+    ([[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1)
 
 # The password should die when this subshell goes out of scope
 if [[ -z "$SUDO_PASSWORD" ]]; then

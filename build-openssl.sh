@@ -16,6 +16,25 @@ CURR_DIR="$PWD"
 
 ###############################################################################
 
+# Get environment if needed. We can't export it because it includes arrays.
+source ./build-environ.sh || \
+    ([[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1)
+
+if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
+    # Already installed, return success
+    echo ""
+    echo "$PKG_NAME is already installed."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
+fi
+
+# Get a sudo password as needed. The password should die when this
+# subshell goes out of scope.
+if [[ -z "$SUDO_PASSWORD" ]]; then
+    source ./build-password.sh
+fi
+
+###############################################################################
+
 # May be skipped if Perl is too old
 SKIP_OPENSSL_TESTS=0
 
@@ -33,24 +52,6 @@ then
     echo "OpenSSL requires Perl's Text::Template. Skipping OpenSSL self tests."
     echo "To fix this issue, please install Text-Template."
     SKIP_OPENSSL_TESTS=1
-fi
-
-###############################################################################
-
-# Get environment if needed. We can't export it because it includes arrays.
-source ./build-environ.sh
-
-if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
-    # Already installed, return success
-    echo ""
-    echo "$PKG_NAME is already installed."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
-fi
-
-# Get a sudo password as needed. The password should die when this
-# subshell goes out of scope.
-if [[ -z "$SUDO_PASSWORD" ]]; then
-    source ./build-password.sh
 fi
 
 IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)

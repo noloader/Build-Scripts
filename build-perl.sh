@@ -14,23 +14,15 @@ CURR_DIR="$PWD"
 
 ###############################################################################
 
-if [[ -z $(command -v autoreconf 2>/dev/null) ]]; then
-    echo "Some packages require Autotools. Please install autoconf, automake and libtool."
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
+# Get environment if needed. We can't export it because it includes arrays.
+source ./build-environ.sh || \
+    ([[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1)
 
-if [[ ! -f "$HOME/.cacert/lets-encrypt-root-x3.pem" ]]; then
+GLOBALSIGN_ROOT="$HOME/.cacert/globalsign-root-r1.pem"
+if [[ ! -f "$GLOBALSIGN_ROOT" ]]; then
     echo "Perl requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
-
-LETS_ENCRYPT_ROOT="$HOME/.cacert/lets-encrypt-root-x3.pem"
-GLOBALSIGN_ROOT="$HOME/.cacert/globalsign-root-r1.pem"
-
-###############################################################################
-
-# Get environment if needed. We can't export it because it includes arrays.
-source ./build-environ.sh
 
 # The password should die when this subshell goes out of scope
 if [[ -z "$SUDO_PASSWORD" ]]; then

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script verifies most prerequisites and creates 
+# This script verifies most prerequisites and creates
 # an environment for other scripts to execute in.
 
 ###############################################################################

@@ -17,7 +17,8 @@ CURR_DIR="$PWD"
 ###############################################################################
 
 # Get environment if needed. We can't export it because it includes arrays.
-source ./build-environ.sh
+source ./build-environ.sh || \
+    ([[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1)
 
 if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
     # Already installed, return success
