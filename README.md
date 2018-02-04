@@ -4,10 +4,6 @@ This GitHub is a collection of build scripts useful when building and testing pr
 
 The general idea of the scripts are, you want to run `./build-wget.sh`, `./build-ssh.sh`, `./build-git.sh` or some other program build script. The build script for the program will download and build the dependent libraries for the program. When the script complete you have a working tool in `/usr/local`.
 
-Dependent libraries are minimally tracked. Once a library is built a file with the library name is `touch`'d in `$HOME/.build-scripts`. If the file is older than 7 days then the library is automatically rebuilt. Automatic rebuilding ensures newer versions of a library are used when available and sidesteps problems with trying to track version numbers.
-
-Programs are not tracked. When a script like `build-git.sh` or `build-ssh.sh` is run then the program is always built or rebuilt. The dependently libraries may (or may not) be built based the age as detailed in tracking, but the program is always rebuilt.
-
 The scripts should mostly work on AIX, Android, BSDs, Cygwin, iOS, Linux, OS X and Solaris. GnuTLS is included but it is mostly experimental/non-working at the moment due to problems with dependencies like Guile.
 
 Adding a new library script is mostly copy and paste. Start with `build-zlib.h`, copy/paste it to a new file, and then add the necessary pieces for the library. Program scripts are copy and paste too, but they are also more involved because you have to include dependent libraries. See `build-ssh.sh` as an example because it is small.
@@ -49,6 +45,14 @@ A basic order may need to be followed. Older systems like CentOS 5 are more sens
 Wget should be built next when working on older systems. CentOS 5 provides Wget 1.11, and it does not support SNI (SNI support did not arrive until Wget 1.14). The old Wget will fail to download cURL which Git needs for its build. The cURL download fails due to shared hosting and lack of SNI.
 
 Be sure to run `hash -r` after installing new programs to invalidate the Bash program cache. Otherwise old programs may be used.
+
+## Dependencies
+
+Dependent libraries are minimally tracked. Once a library is built a file with the library name is `touch`'d in `$HOME/.build-scripts`. If the file is older than 7 days then the library is automatically rebuilt. Automatic rebuilding ensures newer versions of a library are used when available and sidesteps problems with trying to track version numbers.
+
+Programs are not tracked. When a script like `build-git.sh` or `build-ssh.sh` is run then the program is always built or rebuilt. The dependently libraries may (or may not) be built based the age as detailed in tracking, but the program is always rebuilt.
+
+You can delete `$HOME/.build-scripts` and all dependent libraries will be rebuilt on the next run of a build script.
 
 ## Authenticity
 
