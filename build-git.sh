@@ -30,6 +30,7 @@ fi
 # Required
 if ! perl -MExtUtils::MakeMaker -e1 2>/dev/null
 then
+    echo ""
     echo "Git requires Perl's ExtUtils::MakeMaker."
     echo "To fix this issue, please install ExtUtils-MakeMaker."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
