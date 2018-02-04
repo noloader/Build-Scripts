@@ -145,10 +145,8 @@ fi
 MAKE_FLAGS=(install_sw)
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S "$MAKE" "${MAKE_FLAGS[@]}"
-    echo "$SUDO_PASSWORD" | sudo -S rm -rf /usr/local/usr/
 else
     "$MAKE" "${MAKE_FLAGS[@]}"
-    rm -rf /usr/local/usr/
 fi
 
 cd "$CURR_DIR"
