@@ -260,6 +260,26 @@ if [[ -z "$INSTX_CACHE" ]]; then
 fi
 mkdir -p "$INSTX_CACHE"
 
+###############################################################################
+
+# If the package is older than 7 days, then rebuild it. This sidesteps the
+# problem of continually rebuilding the same package when installing a
+# program like Git and SSH. It also avoids version tracking by automatically
+# building a package after 7 days (even if it is the same version).
+for pkg in $(find "$INSTX_CACHE" -type f 2>/dev/null);
+do
+
+    limit_time=$(date -d 'now - 7 days' +%s)
+    file_time=$(date -r "$pkg" +%s)
+
+    if (( file_time <= limit_time ));
+    then
+        rm -f "$pkg" 2>/dev/null
+    fi
+done
+
+###############################################################################
+
 # Print a summary once
 if [[ -z "$PRINT_ONCE" ]]; then
 

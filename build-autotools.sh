@@ -11,7 +11,6 @@
 M4_TAR=m4-1.4.18.tar.gz
 M4_DIR=m4-1.4.18
 
-# Autoconf
 AUTOCONF_TAR=autoconf-2.69.tar.gz
 AUTOCONF_DIR=autoconf-2.69
 

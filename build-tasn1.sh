@@ -5,7 +5,7 @@
 
 TASN1_TAR=libtasn1-4.12.tar.gz
 TASN1_DIR=libtasn1-4.12
-PKG_NAME=tasn
+PKG_NAME=tasn1
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
