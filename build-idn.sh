@@ -38,8 +38,8 @@ if [[ -e "$INSTX_CACHE/$PKG_NAME1" ]]; then
     if (( file_time <= then_time ));
     then
         echo ""
-        echo "$PKG_NAME is older than 7 days. Rebuilding $PKG_NAME1."
-        rm -f "$INSTX_CACHE/$PKG_NAME" 2>/dev/null
+        echo "$PKG_NAME1 is older than 7 days. Rebuilding $PKG_NAME1."
+        rm -f "$INSTX_CACHE/$PKG_NAME1" 2>/dev/null
     fi
 fi
 
