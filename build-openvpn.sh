@@ -17,9 +17,12 @@ CURR_DIR="$PWD"
 
 ###############################################################################
 
-# Get environment if needed. We can't export it because it includes arrays.
-source ./build-environ.sh || \
-    ([[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1)
+# Get the environment as needed. We can't export it because it includes arrays.
+if ! source ./build-environ.sh
+then
+    echo "Failed to set environment"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
 
 ADDTRUST_ROOT="$HOME/.cacert/addtrust-root-ca.pem"
 if [[ ! -f "$ADDTRUST_ROOT" ]]; then

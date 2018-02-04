@@ -14,9 +14,12 @@ CURR_DIR="$PWD"
 
 ###############################################################################
 
-# Get environment if needed. We can't export it because it includes arrays.
-source ./build-environ.sh || \
-    ([[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1)
+# Get the environment as needed. We can't export it because it includes arrays.
+if ! source ./build-environ.sh
+then
+    echo "Failed to set environment"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
 
 GLOBALSIGN_ROOT="$HOME/.cacert/globalsign-root-r1.pem"
 if [[ ! -f "$GLOBALSIGN_ROOT" ]]; then
