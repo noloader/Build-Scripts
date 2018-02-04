@@ -8,6 +8,7 @@
 
 GUILE_TAR=guile-2.2.3.tar.xz
 GUILE_DIR=guile-2.2.3
+PKG_NAME=guile
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -35,6 +36,13 @@ elif [[ "$IS_FEDORA" -ne "0" ]]; then
         echo "GnuTLS requires Boehm garbage collector. Please install gc-devel."
         [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
     fi
+fi
+
+if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
+    # Already installed, return success
+    echo ""
+    echo "$PKG_NAME is already installed."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
 fi
 
 # The password should die when this subshell goes out of scope
@@ -128,6 +136,9 @@ else
 fi
 
 cd "$CURR_DIR"
+
+# Set package status to installed. Delete the file to rebuild the package.
+touch "$INSTX_CACHE/$PKG_NAME"
 
 ###############################################################################
 

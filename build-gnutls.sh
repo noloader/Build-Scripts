@@ -124,17 +124,17 @@ fi
 
 ###############################################################################
 
-if ! ./build-guile.sh
+if ! ./build-p11kit.sh
 then
-    echo "Failed to build Guile"
+    echo "Failed to build P11-Kit"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 ###############################################################################
 
-if ! ./build-p11kit.sh
+if ! ./build-guile.sh
 then
-    echo "Failed to build P11-Kit"
+    echo "Failed to build Guile"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
