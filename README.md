@@ -70,6 +70,8 @@ Second, the documentation wastes processing time. Low-end devices like ARM dev-b
 
 Fourth, and most importantly, the documentation complicates package building. `libidn` and `libidn2` were especially difficult to build because the packages assumed a maintainer building for a desktop system with repos full of everything needed for a build. Configuring with `--no-gtk-doc` required a `bootstrap` or `autoreconf` which required additional steps and additional dependencies.
 
+Some documentation is built and installed. You can run `clean-docs` to remove most of it. Use `sudo` if you installed into a privileged location.
+
 ## Autotools
 
 Autotools is its own special kind of hell. Autotools is a place where progammers get sent when they have behaved badly.
