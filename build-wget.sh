@@ -66,6 +66,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-bzip.sh
+then
+    echo "Failed to build zLib"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+###############################################################################
+
 if ! ./build-unistr.sh
 then
     echo "Failed to build Unistring"
