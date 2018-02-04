@@ -21,6 +21,30 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+# If the package is older than 7 days, then rebuild it. This sidesteps the
+# problem of continually rebuilding the same package when installing a
+# program like Git and SSH. It also avoids version tracking by automatically
+# building a package after 7 days (even if it is the same version).
+if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
+
+    then_time=$(date -d 'now - 7 days' +%s)
+    file_time=$(date -r "$INSTX_CACHE/$PKG_NAME" +%s)
+
+    if (( file_time <= then_time ));
+    then
+        echo ""
+        echo "$PKG_NAME is older than 7 days. Rebuilding $PKG_NAME."
+        rm -f "$INSTX_CACHE/$PKG_NAME" 2>/dev/null
+    fi
+fi
+
+if [[ -e "$INSTX_CACHE/$PKG_NAME" ]]; then
+    # Already installed, return success
+    echo ""
+    echo "$PKG_NAME is already installed."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
+fi
+
 # The password should die when this subshell goes out of scope
 if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
