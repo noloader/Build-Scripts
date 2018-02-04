@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds P11-Kit from sources.
 
-P11KIT_TAR=p11-kit-0.23.2.tar.gz
-P11KIT_DIR=p11-kit-0.23.2
+P11KIT_TAR=p11-kit-0.23.9.tar.gz
+P11KIT_DIR=p11-kit-0.23.9
 PKG_NAME=p11-kit
 
 # Avoid shellcheck.net warning
@@ -46,7 +46,7 @@ echo
 echo "********** p11-kit **********"
 echo
 
-wget --ca-certificate="$CA_ZOO" "https://p11-glue.freedesktop.org/releases/$P11KIT_TAR" -O "$P11KIT_TAR"
+wget --ca-certificate="$CA_ZOO" "https://github.com/p11-glue/p11-kit/releases/download/0.23.9/$P11KIT_TAR" -O "$P11KIT_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download p11-kit"
