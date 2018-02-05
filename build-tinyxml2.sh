@@ -5,6 +5,7 @@
 
 TXML2_TAR=6.0.0.tar.gz
 TXML2_DIR=tinyxml2-6.0.0
+PKG_NAME=tinyxml
 
 # Avoid shellcheck.net warning
 CURR_DIR="$PWD"
@@ -18,6 +19,12 @@ CURR_DIR="$PWD"
 if ! source ./build-environ.sh
 then
     echo "Failed to set environment"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
+if [[ ! -f "$DIGICERT_ROOT" ]]; then
+    echo "Libtool requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -78,6 +85,7 @@ then
 fi
 
 # TODO... fix this simple copy
+echo "Installing TinyXML2"
 if [[ ! (-z "$SUDO_PASSWORD") ]]; then
     echo "$SUDO_PASSWORD" | sudo -S cp tinyxml2.h "$INSTX_PREFIX/include"
     echo "$SUDO_PASSWORD" | sudo -S cp libtinyxml2.a "$INSTX_LIBDIR"
@@ -89,6 +97,9 @@ else
 fi
 
 cd "$CURR_DIR"
+
+# Set package status to installed. Delete the file to rebuild the package.
+touch "$INSTX_CACHE/$PKG_NAME"
 
 ###############################################################################
 
