@@ -36,6 +36,22 @@ fi
 
 ###############################################################################
 
+if ! ./build-iconv.sh
+then
+    echo "Failed to build iConvert"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+###############################################################################
+
+if ! ./build-gettext.sh
+then
+    echo "Failed to build GetText"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+###############################################################################
+
 echo
 echo "********** Core Utilities **********"
 echo
@@ -64,7 +80,9 @@ mv configure.fixed configure; chmod +x configure
     LDFLAGS="${BUILD_LDFLAGS[*]}" \
     LIBS="${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
-    --enable-shared
+    --with-libiconv-prefix="$INSTX_PREFIX" \
+    --with-libintl-prefix="$INSTX_PREFIX" \
+    --with-openssl=yes
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Core Utilities"
