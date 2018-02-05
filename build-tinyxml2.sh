@@ -111,9 +111,9 @@ if true; then
         rm -rf "$artifact"
     done
 
-    # ./build-expat.sh 2>&1 | tee build-expat.log
-    if [[ -e build-expat.log ]]; then
-        rm -f build-expat.log
+    # ./build-tinyxml2.sh 2>&1 | tee build-tinyxml2.log
+    if [[ -e build-tinyxml2.log ]]; then
+        rm -f build-tinyxml2.log
     fi
 fi
 
