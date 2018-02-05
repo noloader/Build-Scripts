@@ -65,6 +65,12 @@ if [[ "$IS_64BIT" -ne "0" ]]; then
     done
 fi
 
+# Symbols and optimizations
+sed 's|-O2 -g ||g' Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+sed 's|-O2 -g ||g' Makefile-libbz2_so > Makefile-libbz2_so.fixed
+mv Makefile-libbz2_so.fixed Makefile-libbz2_so
+
 # Fix Bzip install paths
 sed 's|$(PREFIX)/lib|$(LIBDIR)|g' Makefile > Makefile.fixed
 mv Makefile.fixed Makefile

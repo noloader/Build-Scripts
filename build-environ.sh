@@ -193,6 +193,26 @@ if [[ "$SH_ERROR" -eq "0" ]]; then
     SH_INSTNAME="-headerpad_max_install_names"
 fi
 
+# Debug symbols
+if [[ -z "$SH_SYM" ]]; then
+    SH_ERROR=$($CC -g2 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
+    if [[ "$SH_ERROR" -eq "0" ]]; then
+        SH_SYM="-g2"
+    else
+        SH_SYM="-g"
+    fi
+fi
+
+# Optimizations symbols
+if [[ -z "$SH_OPT" ]]; then
+    SH_ERROR=$($CC -O2 -o "$outfile" "$infile" 2>&1 | grep -i -c -E "$BAD_MSG")
+    if [[ "$SH_ERROR" -eq "0" ]]; then
+        SH_OPT="-O2"
+    else
+        SH_OPT="-O"
+    fi
+fi
+
 rm -f "$infile" 2>/dev/null
 rm -f "$outfile" 2>/dev/null
 
@@ -219,8 +239,8 @@ fi
 
 BUILD_PKGCONFIG=("$INSTX_LIBDIR/pkgconfig")
 BUILD_CPPFLAGS=("-I$INSTX_PREFIX/include" "-DNDEBUG")
-BUILD_CFLAGS=("-g")
-BUILD_CXXFLAGS=("-g")
+BUILD_CFLAGS=("$SH_SYM" "$SH_OPT")
+BUILD_CXXFLAGS=("$SH_SYM" "$SH_OPT")
 BUILD_LDFLAGS=("-L$INSTX_LIBDIR")
 BUILD_LIBS=("-ldl" "-lpthread")
 

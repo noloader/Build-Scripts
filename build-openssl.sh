@@ -86,7 +86,7 @@ gzip -d < "$OPENSSL_TAR" | tar xf -
 cd "$OPENSSL_DIR"
 
 CONFIG_PROG="./config"
-CONFIG_FLAGS=("no-ssl2" "no-ssl3" "no-comp" "shared" "-DNDEBUG" "-g")
+CONFIG_FLAGS=("no-ssl2" "no-ssl3" "no-comp" "shared" "-DNDEBUG" "$SH_SYM" "$SH_OPT")
 
 if [[ "$IS_X86_64" -eq "1" ]]; then
     CONFIG_FLAGS+=("enable-ec_nistp_64_gcc_128")
