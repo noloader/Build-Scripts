@@ -22,6 +22,12 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
+DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
+if [[ ! -f "$DIGICERT_ROOT" ]]; then
+    echo "Libtool requires several CA roots. Please run build-cacert.sh."
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
 # The password should die when this subshell goes out of scope
 if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
@@ -37,7 +43,7 @@ echo "********** b2sum **********"
 echo
 
 # Redirect to Sourceforge.
-wget --no-check-certificate "https://github.com/BLAKE2/BLAKE2/archive/$B2SUM_TAR" -O "$B2SUM_TAR"
+wget --ca-certificate="$DIGICERT_ROOT" "https://github.com/BLAKE2/BLAKE2/archive/$B2SUM_TAR" -O "$B2SUM_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download b2sum"
