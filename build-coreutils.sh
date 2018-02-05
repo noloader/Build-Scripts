@@ -44,6 +44,7 @@ fi
 
 ###############################################################################
 
+# For libint.h, https://stackoverflow.com/q/11370684/608639
 if ! ./build-gettext.sh
 then
     echo "Failed to build GetText"
