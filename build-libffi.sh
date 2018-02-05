@@ -98,7 +98,7 @@ touch "$INSTX_CACHE/$PKG_NAME"
 ###############################################################################
 
 # Set to false to retain artifacts
-if false; then
+if true; then
 
     ARTIFACTS=("$LIBFFI_TAR" "$LIBFFI_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
