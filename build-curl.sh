@@ -22,8 +22,8 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-CA_ZOO="$HOME/.cacert/cacert.pem"
-if [[ ! -f "$CA_ZOO" ]]; then
+GLOBALSIGN_ROOT="$HOME/.cacert/globalsign-root-r1.pem"
+if [[ ! -f "$GLOBALSIGN_ROOT" ]]; then
     echo "cURL requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
@@ -133,7 +133,7 @@ echo "********** cURL **********"
 echo
 
 echo "Attempting download cURL using HTTPS."
-wget --ca-certificate="$CA_ZOO" "https://curl.haxx.se/download/$CURL_TAR" -O "$CURL_TAR"
+wget --ca-certificate="$GLOBALSIGN_ROOT" "https://curl.haxx.se/download/$CURL_TAR" -O "$CURL_TAR"
 
 # Download over insecure channel
 if [[ "$?" -ne "0" ]]; then
