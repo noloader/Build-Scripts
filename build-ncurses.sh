@@ -56,6 +56,12 @@ cd "$NCURSES_DIR"
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
 mv configure.fixed configure; chmod +x configure
 
+# Ncurses fails to configure if an old version is present.
+# Configure will attempt to use old headers, which are missing symbols.
+# This seems to be the only reliable way to delete the old version
+# since we can't 'configure' and then 'make uninstall'.
+find "$INSTX_PREFIX" -name '*curse*' -exec rm -rf {} \;
+
     PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
     CFLAGS="${BUILD_CFLAGS[*]}" \
