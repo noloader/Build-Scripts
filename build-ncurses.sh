@@ -60,7 +60,11 @@ mv configure.fixed configure; chmod +x configure
 # Configure will attempt to use old headers, which are missing symbols.
 # This seems to be the only reliable way to delete the old version
 # since we can't 'configure' and then 'make uninstall'.
-find "$INSTX_PREFIX" -name '*curse*' -exec rm -rf {} \;
+if [[ ! (-z "$SUDO_PASSWORD") ]]; then
+    echo "$SUDO_PASSWORD" | sudo -S find "$INSTX_PREFIX" -name '*curse*' -exec rm -rf {} \;
+else
+    find "$INSTX_PREFIX" -name '*curse*' -exec rm -rf {} \;
+fi
 
     PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
     CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
