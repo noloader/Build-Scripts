@@ -141,6 +141,12 @@ if [[ "$?" -ne "0" ]]; then
     wget --no-check-certificate "https://curl.haxx.se/download/$CURL_TAR" -O "$CURL_TAR"
 fi
 
+# Download over insecure channel
+if [[ "$?" -ne "0" ]]; then
+    echo "Attempting download cURL using insecure channel."
+    curl --insecure --tlsv1 "https://curl.haxx.se/download/$CURL_TAR" --output "$CURL_TAR"
+fi
+
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download cURL"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
