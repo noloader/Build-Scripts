@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Expat from sources.
 
-EXPAT_TAR=R_2_2_5.tar.gz
-EXPAT_DIR=libexpat-R_2_2_5
+EXPAT_TAR=expat-2.2.5.tar.bz2
+EXPAT_DIR=expat-2.2.5
 PKG_NAME=expat
 
 # Avoid shellcheck.net warning
@@ -22,9 +22,9 @@ then
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
-DIGICERT_ROOT="$HOME/.cacert/digicert-root-ca.pem"
-if [[ ! -f "$DIGICERT_ROOT" ]]; then
-    echo "Libtool requires several CA roots. Please run build-cacert.sh."
+CA_ZOO="$HOME/.cacert/cacert.pem"
+if [[ ! -f "$CA_ZOO" ]]; then
+    echo "Expat requires several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -54,7 +54,7 @@ echo "********** libexpat **********"
 echo
 
 # https://github.com/libexpat/libexpat/releases/download/R_2_2_5/expat-2.2.5.tar.bz2
-wget --ca-certificate="$DIGICERT_ROOT" "https://github.com/libexpat/libexpat/releases/download/R_2_2_5/$EXPAT_TAR" -O "$EXPAT_TAR"
+wget --ca-certificate="$CA_ZOO" "https://github.com/libexpat/libexpat/releases/download/R_2_2_5/$EXPAT_TAR" -O "$EXPAT_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download libexpat"
@@ -62,14 +62,8 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 rm -rf "$EXPAT_DIR" &>/dev/null
-gzip -d < "$EXPAT_TAR" | tar xf -
-cd "$EXPAT_DIR/expat"
-
-if ! ./buildconf.sh
-then
-    echo "Failed to generate libexpat configure"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
+bzip2 -dk < "$EXPAT_TAR" | tar xf -
+cd "$EXPAT_DIR"
 
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
 # AIX needs the execute bit reset on the file.
