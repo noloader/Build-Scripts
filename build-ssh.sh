@@ -69,7 +69,13 @@ mv configure.fixed configure; chmod +x configure
     CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="-lz ${BUILD_LIBS[*]}" \
 ./configure --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR" \
-    --with-openssl-dir="$INSTX_PREFIX" --with-zlib="$INSTX_PREFIX"
+    --with-cppflags="${BUILD_CPPFLAGS[*]}" \
+    --with-cflags="${BUILD_CFLAGS[*]}" \
+    --with-ldflags="${BUILD_LDFLAGS[*]}" \
+    --with-libs="-lz ${BUILD_LIBS[*]}"\
+    --with-zlib="$INSTX_PREFIX" \
+    --with-ssl-dir="$INSTX_PREFIX" \
+    --disable-strip
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure SSH"
