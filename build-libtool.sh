@@ -26,9 +26,6 @@ if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
 fi
 
-IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
-IS_GMAKE=$($MAKE -v 2>&1 | grep -i -c 'gnu make')
-
 ###############################################################################
 
 echo

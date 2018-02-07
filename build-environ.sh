@@ -58,6 +58,8 @@ IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c 'darwin')
 IS_AIX=$(echo -n "$THIS_SYSTEM" | grep -i -c 'aix')
 IS_CYGWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c 'cygwin')
 
+IS_X86_64=$(uname -m 2>&1 | grep -E -i -c 'amd64|x86_64')
+
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ -z "$MAKE" ]]; then
     if [[ $(command -v gmake 2>/dev/null) ]]; then
@@ -66,6 +68,9 @@ if [[ -z "$MAKE" ]]; then
         MAKE="make"
     fi
 fi
+
+# Needed for OpenSSL and make jobs
+IS_GMAKE=$($MAKE -v 2>&1 | grep -i -c 'gnu make')
 
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32 and /usr/local/lib64
 # The Autoconf programs misdetect Solaris as x86 even though its x64. OpenBSD has
@@ -119,6 +124,9 @@ if [[ (-z "$CC" && $(command -v cc 2>/dev/null) ) ]]; then CC=$(command -v cc); 
 if [[ (-z "$CC" && $(command -v gcc 2>/dev/null) ) ]]; then CC=$(command -v gcc); fi
 if [[ (-z "$CXX" && $(command -v CC 2>/dev/null) ) ]]; then CXX=$(command -v CC); fi
 if [[ (-z "$CXX" && $(command -v g++ 2>/dev/null) ) ]]; then CXX=$(command -v g++); fi
+
+IS_GCC=$("$CC" --version 2>&1 | grep -i -c -E 'gcc')
+IS_CLANG=$("$CC" --version 2>&1 | grep -i -c -E 'clang|llvm')
 
 # `gcc ... -o /dev/null` does not work on Solaris due to LD bug.
 # `mktemp` is not available on AIX or Git Windows shell...

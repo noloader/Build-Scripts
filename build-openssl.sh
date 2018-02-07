@@ -57,15 +57,10 @@ then
     SKIP_OPENSSL_TESTS=1
 fi
 
-IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
-IS_GMAKE=$($MAKE -v 2>&1 | grep -i -c 'gnu make')
-
 # OpenSSL and enable-ec_nistp_64_gcc_128 option
-IS_X86_64=$(uname -m 2>&1 | grep -E -i -c "(amd64|x86_64)")
-if [[ "$BUILD_BITS" -eq "32" ]]; then IS_X86_64=0; fi
-
-# Fix LD_LIBRARY_PATH on Darwin for self-tests
-IS_DARWIN=$(uname -s 2>&1 | grep -i -c darwin)
+if [[ "$BUILD_BITS" -eq "32" ]]; then
+    IS_X86_64=0;
+fi
 
 ###############################################################################
 
