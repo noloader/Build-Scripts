@@ -60,6 +60,8 @@ sed -e "s|^CXXFLAGS = *|CXXFLAGS = @CXXFLAGS@ |g" Makefile.in > Makefile.in.fixe
 mv Makefile.in.fixed Makefile.in
 sed -e 's|$(CC) -c $(CPPFLAGS)|$(CC) -c $(CPPFLAGS) $(CFLAGS) |g' Makefile.in > Makefile.in.fixed
 mv Makefile.in.fixed Makefile.in
+sed -e 's|oldincludedir|includedir|g' Makefile.in > Makefile.in.fixed
+mv Makefile.in.fixed Makefile.in
 touch -t 197001010000 Makefile.in
 
 # http://pkgs.fedoraproject.org/cgit/rpms/gnutls.git/tree/gnutls.spec; thanks NM.
@@ -74,8 +76,9 @@ mv configure.fixed configure; chmod +x configure
     CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
     LDFLAGS="${BUILD_LDFLAGS[*]}" \
     LIBS="${BUILD_LIBS[*]}" \
-./configure --enable-install-termcap --prefix="$INSTX_PREFIX" \
-    --enable-shared
+./configure --prefix="$INSTX_PREFIX" \
+    --enable-shared \
+    --enable-install-termcap --with-termcap="$INSTX_PREFIX/etc"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Termcap"
@@ -86,11 +89,16 @@ sed -e '42i#include <unistd.h>' tparam.c > tparam.c.fixed
 mv tparam.c.fixed tparam.c
 sed -e "/^oldincludedir/d" Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
-sed -e "s|libdir = \$(exec_prefix)/lib|libdir = $INSTX_LIBDIR|g" Makefile > Makefile.fixed
+sed -e "s|exec_prefix =.*|exec_prefix = $INSTX_PREFIX|g" Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+sed -e "s|libdir =.*|libdir = $INSTX_LIBDIR|g" Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+sed -e "s|exec_prefix = .*|exec_prefix = $INSTX_PREFIX|g" Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+sed -e "s|includedir = .*|includedir = $INSTX_PREFIX/include|g" Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
 
 ARFLAGS="cr"
-
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! ARFLAGS="$ARFLAGS" "$MAKE" "${MAKE_FLAGS[@]}"
 then
