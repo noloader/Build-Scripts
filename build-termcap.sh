@@ -89,11 +89,11 @@ sed -e '42i#include <unistd.h>' tparam.c > tparam.c.fixed
 mv tparam.c.fixed tparam.c
 sed -e "/^oldincludedir/d" Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
-sed -e "s|exec_prefix =.*|exec_prefix = $INSTX_PREFIX|g" Makefile > Makefile.fixed
-mv Makefile.fixed Makefile
-sed -e "s|libdir =.*|libdir = $INSTX_LIBDIR|g" Makefile > Makefile.fixed
+sed -e "s|prefix =.*|prefix = $INSTX_PREFIX|g" Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
 sed -e "s|exec_prefix = .*|exec_prefix = $INSTX_PREFIX|g" Makefile > Makefile.fixed
+mv Makefile.fixed Makefile
+sed -e "s|libdir =.*|libdir = $INSTX_LIBDIR|g" Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
 sed -e "s|includedir = .*|includedir = $INSTX_PREFIX/include|g" Makefile > Makefile.fixed
 mv Makefile.fixed Makefile
