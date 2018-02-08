@@ -135,7 +135,7 @@ outfile="out.$RANDOM$RANDOM"
 echo 'int main(int argc, char* argv[]) {return 0;}' > "$infile"
 echo "" >> "$infile"
 
-BAD_MSG="fatal|error|unknown|unrecognized|not found|not exist"
+BAD_MSG="fatal|error|unknown|unrecognized|not found|not exist|cannot find"
 
 # Try to determine -m64, -X64, -m32, -X32, etc
 if [[ "$SH_MARCH" = "32" ]]; then
@@ -221,6 +221,21 @@ if [[ -z "$SH_OPT" ]]; then
     fi
 fi
 
+# OpenBSD does not have -ldl
+if [[ -z "$SH_DL" ]]; then
+    SH_ERROR=$($CC -o "$outfile" "$infile" -ldl 2>&1 | grep -i -c -E "$BAD_MSG")
+    if [[ "$SH_ERROR" -eq "0" ]]; then
+        SH_DL="-ldl"
+    fi
+fi
+
+if [[ -z "$SH_PTHREAD" ]]; then
+    SH_ERROR=$($CC -o "$outfile" "$infile" -lpthread 2>&1 | grep -i -c -E "$BAD_MSG")
+    if [[ "$SH_ERROR" -eq "0" ]]; then
+        SH_PTHREAD="-lpthread"
+    fi
+fi
+
 rm -f "$infile" 2>/dev/null
 rm -f "$outfile" 2>/dev/null
 
@@ -250,7 +265,7 @@ BUILD_CPPFLAGS=("-I$INSTX_PREFIX/include" "-DNDEBUG")
 BUILD_CFLAGS=("$SH_SYM" "$SH_OPT")
 BUILD_CXXFLAGS=("$SH_SYM" "$SH_OPT")
 BUILD_LDFLAGS=("-L$INSTX_LIBDIR")
-BUILD_LIBS=("-ldl" "-lpthread")
+BUILD_LIBS=()
 
 if [[ ! -z "$SH_MARCH" ]]; then
     BUILD_CFLAGS+=("$SH_MARCH")
@@ -274,6 +289,14 @@ fi
 
 if [[ ! -z "$SH_DTAGS" ]]; then
     BUILD_LDFLAGS+=("$SH_DTAGS")
+fi
+
+if [[ ! -z "$SH_DL" ]]; then
+    BUILD_LIBS+=("-ldl")
+fi
+
+if [[ ! -z "$SH_PTHREAD" ]]; then
+    BUILD_LIBS+=("-lpthread")
 fi
 
 #if [[ "$IS_DARWIN" -ne "0" ]] && [[ ! -z "$SH_INSTNAME" ]]; then
