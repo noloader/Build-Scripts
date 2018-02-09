@@ -57,6 +57,7 @@ IS_SOLARIS=$(echo -n "$THIS_SYSTEM" | grep -i -c 'sunos')
 IS_DARWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c 'darwin')
 IS_AIX=$(echo -n "$THIS_SYSTEM" | grep -i -c 'aix')
 IS_CYGWIN=$(echo -n "$THIS_SYSTEM" | grep -i -c 'cygwin')
+IS_OPENBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c 'openbsd')
 
 IS_X86_64=$(uname -m 2>&1 | grep -E -i -c 'amd64|x86_64')
 
@@ -317,16 +318,10 @@ mkdir -p "$INSTX_CACHE"
 # problem of continually rebuilding the same package when installing a
 # program like Git and SSH. It also avoids version tracking by automatically
 # building a package after 7 days (even if it is the same version).
-for pkg in $(find "$INSTX_CACHE" -type f 2>/dev/null);
+for pkg in $(find "$INSTX_CACHE" -type f -mtime +7 2>/dev/null);
 do
-
-    limit_time=$(date -d 'now - 7 days' +%s)
-    file_time=$(date -r "$pkg" +%s)
-
-    if (( file_time <= limit_time ));
-    then
-        rm -f "$pkg" 2>/dev/null
-    fi
+    # echo "Setting $pkg for rebuild"
+    rm -f "$pkg" 2>/dev/null
 done
 
 ###############################################################################
