@@ -75,6 +75,7 @@ mv configure.fixed configure; chmod +x configure
 CONFIG_OPTS=("--prefix=$INSTX_PREFIX")
 CONFIG_OPTS+=("--libdir=$INSTX_LIBDIR")
 CONFIG_OPTS+=("--enable-shared")
+CONFIG_OPTS+=("--disable-documentation")
 
 if [[ "$IS_IA32" -ne "0" ]]; then
     CONFIG_OPTS+=("--enable-fat")
