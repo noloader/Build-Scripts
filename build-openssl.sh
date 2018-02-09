@@ -80,7 +80,6 @@ rm -rf "$OPENSSL_DIR" &>/dev/null
 gzip -d < "$OPENSSL_TAR" | tar xf -
 cd "$OPENSSL_DIR"
 
-CONFIG_PROG="./config"
 CONFIG_FLAGS=("no-ssl2" "no-ssl3" "no-comp" "shared" "-DNDEBUG" "$SH_SYM" "$SH_OPT")
 
 if [[ "$IS_X86_64" -eq "1" ]]; then
@@ -100,7 +99,13 @@ CONFIG_FLAGS+=("--prefix=$INSTX_PREFIX" "--libdir=$CONFIG_LIBDIR")
 echo "Configuring OpenSSL with ${CONFIG_FLAGS[*]}"
 echo "BUILD_BITS: $BUILD_BITS"
 
-KERNEL_BITS="$BUILD_BITS" "$CONFIG_PROG" "${CONFIG_FLAGS[@]}"
+    KERNEL_BITS="$BUILD_BITS" \
+./config ${CONFIG_FLAGS[*]}
+
+if [[ "$?" -ne "0" ]]; then
+    echo "Failed to configure OpenSSL"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
 
 if [[ "$IS_DARWIN" -ne "0" ]]; then
     for mfile in $(find "$PWD" -name 'Makefile'); do
@@ -109,17 +114,17 @@ if [[ "$IS_DARWIN" -ne "0" ]]; then
     done
 fi
 
-if [[ "$?" -ne "0" ]]; then
-    echo "Failed to configure OpenSSL"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
+    MAKE_FLAGS=("-j" "$MAKE_JOBS" "depend")
+    if [[ "$IS_OPENBSD" -ne "0" ]]; then
+        MAKE_FLAGS+=("MAKEDEPPROG=gcc -M")
+    fi
 
-MAKE_FLAGS=("-j" "$MAKE_JOBS" "depend")
-if ! "$MAKE" "MAKE_JOBS=$MAKE_JOBS" "${MAKE_FLAGS[@]}"
-then
-    echo "Failed to update OpenSSL dependencies"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
+    if ! "$MAKE" "MAKE_JOBS=$MAKE_JOBS" "${MAKE_FLAGS[@]}"
+    then
+        echo "Failed to update OpenSSL dependencies"
+        [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
+#fi
 
 MAKE_FLAGS=("-j" "$MAKE_JOBS")
 if ! "$MAKE" "${MAKE_FLAGS[@]}"

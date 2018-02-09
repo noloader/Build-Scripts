@@ -36,6 +36,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-gmp.sh
+then
+    echo "Failed to build iConv"
+    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+###############################################################################
+
 echo
 echo "********** Nettle **********"
 echo
@@ -64,11 +72,21 @@ fi
 sed -e 's|sys_lib_dlsearch_path_spec="/lib /usr/lib|sys_lib_dlsearch_path_spec="/lib %{_libdir} /usr/lib|g' configure > configure.fixed
 mv configure.fixed configure; chmod +x configure
 
-    PKG_CONFIG_PATH="${BUILD_PKGCONFIG[*]}" \
-    CPPFLAGS="${BUILD_CPPFLAGS[*]}" \
-    CFLAGS="${BUILD_CFLAGS[*]}" CXXFLAGS="${BUILD_CXXFLAGS[*]}" \
-    LDFLAGS="${BUILD_LDFLAGS[*]}" LIBS="${BUILD_LIBS[*]}" \
-./configure --enable-shared --prefix="$INSTX_PREFIX" --libdir="$INSTX_LIBDIR"
+CONFIG_OPTS=("--prefix=$INSTX_PREFIX")
+CONFIG_OPTS+=("--libdir=$INSTX_LIBDIR")
+CONFIG_OPTS+=("--enable-shared")
+
+if [[ "$IS_IA32" -ne "0" ]]; then
+    CONFIG_OPTS+=("--enable-fat")
+fi
+
+    PKG_CONFIG_PATH="${BUILD_PKGCONFIG[@]}" \
+    CPPFLAGS="${BUILD_CPPFLAGS[@]}" \
+    CFLAGS="${BUILD_CFLAGS[@]}" \
+    CXXFLAGS="${BUILD_CXXFLAGS[@]}" \
+    LDFLAGS="${BUILD_LDFLAGS[@]}" \
+    LIBS="${BUILD_LIBS[@]}" \
+./configure ${CONFIG_OPTS[*]}
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to configure Nettle"
