@@ -33,9 +33,6 @@ if [[ -z "$SUDO_PASSWORD" ]]; then
     source ./build-password.sh
 fi
 
-# Need to fix sources on non-x86 platforms
-IS_IA32=$(uname -m 2>&1 | grep -E -i -c "(i.86|amd64|x86_64)")
-
 ###############################################################################
 
 echo
