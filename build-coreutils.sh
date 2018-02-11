@@ -28,17 +28,17 @@ fi
 
 ###############################################################################
 
-if ! ./build-pcre.sh
+if ! ./build-iconv.sh
 then
-    echo "Failed to build PCRE and PCRE2"
+    echo "Failed to build iConvert"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
 ###############################################################################
 
-if ! ./build-iconv.sh
+if ! ./build-pcre.sh
 then
-    echo "Failed to build iConvert"
+    echo "Failed to build PCRE and PCRE2"
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 

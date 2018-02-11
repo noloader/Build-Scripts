@@ -114,14 +114,6 @@ fi
 
 ###############################################################################
 
-if ! ./build-ncurses.sh
-then
-    echo "Failed to build ncurses"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-###############################################################################
-
 if ! ./build-readline.sh
 then
     echo "Failed to build Readline"
