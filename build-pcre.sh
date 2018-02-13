@@ -122,8 +122,6 @@ cd "$CURR_DIR"
 # Set package status to installed. Delete the file to rebuild the package.
 touch "$INSTX_CACHE/$PKG_NAME1"
 
-[[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
-
 ###############################################################################
 
 echo
