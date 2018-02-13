@@ -62,6 +62,7 @@ IS_OPENBSD=$(echo -n "$THIS_SYSTEM" | grep -i -c 'openbsd')
 THIS_MACHINE=$(uname -m 2>&1)
 IS_IA32=$(echo -n "$THIS_MACHINE" | grep -E -i -c 'i.86|amd64|x86_64')
 IS_X86_64=$(echo -n "$THIS_MACHINE" | grep -E -i -c 'amd64|x86_64')
+IS_MIPS=$(echo -n "$THIS_MACHINE" | grep -E -i -c 'mips')
 
 # The BSDs and Solaris should have GMake installed if its needed
 if [[ -z "$MAKE" ]]; then
