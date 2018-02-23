@@ -1,6 +1,6 @@
 # Build-Scripts
 
-This GitHub is a collection of build scripts useful when building and testing programs and libraries on downlevel and unique clients. It should result in working SSH, Wget, cURL and Git clients on systems like PowerMac G5, Fedora 10, CentOS 5 and Solaris 11. After you have a modern Git and Wget you can usually test your software as desired.
+This GitHub is a collection of build scripts useful when building and testing programs and libraries on downlevel clients and clients where program updates are not freely available. It should result in working SSH, Wget, cURL and Git clients on systems like PowerMac G5, Fedora 10, CentOS 5 and Solaris 11. After you have a modern Git and Wget you can usually test your software as desired.
 
 The general idea of the scripts are, you want to run `./build-wget.sh`, `./build-ssh.sh`, `./build-git.sh` or some other program build script. The build script for the program will download and build the dependent libraries for the program. When the script complete you have a working tool in `/usr/local`.
 
@@ -43,6 +43,8 @@ MAKE_JOBS=2 ./build-curl.sh
 A basic order may need to be followed. Older systems like CentOS 5 are more sensitive than newer systems. You should run `build-cacerts.sh` to install several CAs in `$HOME/.cacerts`. The script installs approximately 6 CA's necessary to download other packages. You can delete the `.cacert` folder at anytime because the certifcates are only used by the scripts.
 
 Wget should be built next when working on older systems. CentOS 5 provides Wget 1.11, and it does not support SNI (SNI support did not arrive until Wget 1.14). The old Wget will fail to download cURL which Git needs for its build. The cURL download fails due to shared hosting and lack of SNI.
+
+In extreme cases you may need to download Build-Scripts in ZIP format from GitHub, and then `scp` them to the target machine. You can unzip the ZIP file with `unzip -aoq master.zip -d <some dir>`. The case may become more common since GitHub moved to require TLS v1.2 (https://githubengineering.com/crypto-removal-notice/).
 
 Be sure to run `hash -r` after installing new programs to invalidate the Bash program cache. Otherwise old programs may be used.
 
