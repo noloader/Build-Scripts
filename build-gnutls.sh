@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds GnuTLS and its dependencies from sources.
 
-GNUTLS_TAR=gnutls-3.5.16.tar.xz
-GNUTLS_DIR=gnutls-3.5.16
+GNUTLS_TAR=gnutls-3.5.18.tar.xz
+GNUTLS_DIR=gnutls-3.5.18
 PKG_NAME=gnutls
 
 # Avoid shellcheck.net warning
@@ -19,12 +19,6 @@ CURR_DIR="$PWD"
 if ! source ./build-environ.sh
 then
     echo "Failed to set environment"
-    [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
-fi
-
-ADDTRUST_ROOT="$HOME/.cacert/addtrust-root-ca.pem"
-if [[ ! -f "$ADDTRUST_ROOT" ]]; then
-    echo "Some packages require several CA roots. Please run build-cacert.sh."
     [[ "$0" = "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
 fi
 
@@ -142,7 +136,7 @@ echo
 echo "********** GnuTLS **********"
 echo
 
-wget --ca-certificate="$ADDTRUST_ROOT" "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.5/$GNUTLS_TAR" -O "$GNUTLS_TAR"
+wget --ca-certificate="$IDENTRUST_ROOT" "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.5/$GNUTLS_TAR" -O "$GNUTLS_TAR"
 
 if [[ "$?" -ne "0" ]]; then
     echo "Failed to download GnuTLS"
