@@ -6,7 +6,7 @@ The general idea of the scripts are, you want to run `./build-wget.sh`, `./build
 
 The scripts should mostly work on AIX, Android, BSDs, Cygwin, iOS, Linux, OS X and Solaris. GnuTLS is included but it is mostly experimental/non-working at the moment due to problems with dependencies like Guile.
 
-Adding a new library script is mostly copy and paste. Start with `build-zlib.h`, copy/paste it to a new file, and then add the necessary pieces for the library. Program scripts are copy and paste too, but they are also more involved because you have to include dependent libraries. See `build-ssh.sh` as an example because it is small.
+Adding a new library script is mostly copy and paste. Start with `build-gzip.h`, copy/paste it to a new file, and then add the necessary pieces for the library. Program scripts are copy and paste too, but they are also more involved because you have to include dependent libraries. See `build-ssh.sh` as an example because it is small. Be sure to run `./configure --help` to look for interesting options.
 
 ## Output Artifacts
 
@@ -73,6 +73,10 @@ Second, the documentation wastes processing time. Low-end devices like ARM dev-b
 Fourth, and most importantly, the documentation complicates package building. `libidn` and `libidn2` were especially difficult to build because the packages assumed a maintainer building for a desktop system with repos full of everything needed for a build. Configuring with `--no-gtk-doc` required a `bootstrap` or `autoreconf` which required additional steps and additional dependencies.
 
 Some documentation is built and installed. You can run `clean-docs` to remove most of it. Use `sudo` if you installed into a privileged location.
+
+## Runtime Paths
+
+The build scripts attempt to set runtime paths in everything it builds. For example, on Fedora x86_64 the  options include `-L/usr/local/lib64 -m64 -Wl,-R,/usr/local/lib64 -Wl,--enable-new-dtags`. If all goes well you will not suffer the stupid Linux path problems that have existed for the last 30 years or so.
 
 ## Autotools
 
