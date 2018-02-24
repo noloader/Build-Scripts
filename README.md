@@ -4,7 +4,7 @@ This GitHub is a collection of build scripts useful when building and testing pr
 
 The general idea of the scripts are, you run `./build-wget.sh`, `./build-ssh.sh`, `./build-git.sh` or some other program build script to get a fresh tool. The build script for the program will download and build the dependent libraries for the program. When the script completes you have a working tool in `/usr/local`.
 
-Adding a new library script is mostly copy and paste. Start with `build-gzip.h`, copy/paste it to a new file, and then add the necessary pieces for the library. Program scripts are copy and paste too, but they are also more involved because you have to include dependent libraries. See `build-ssh.sh` as an example because it is small. Be sure to run `./configure --help` to look for interesting options.
+Adding a new library script is mostly copy and paste. Start with `build-gzip.sh`, copy/paste it to a new file, and then add the necessary pieces for the library. Program scripts are copy and paste too, but they are also more involved because you have to include dependent libraries. See `build-ssh.sh` as an example because it is small. Be sure to run `./configure --help` to look for interesting options.
 
 ## Output Artifacts
 
