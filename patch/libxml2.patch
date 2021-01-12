@@ -1,0 +1,19 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with libxml2.
+--- tree.c
++++ tree.c
+@@ -1276,12 +1276,13 @@
+     xmlNodePtr ret = NULL, last = NULL;
+     xmlNodePtr node;
+     xmlChar *val;
+-    const xmlChar *cur = value, *end = cur + len;
++    const xmlChar *cur, *end;
+     const xmlChar *q;
+     xmlEntityPtr ent;
+     xmlBufPtr buf;
+ 
+     if (value == NULL) return(NULL);
++    cur = value; end = len > 0 ? cur + len : cur + 0;
+ 
+     buf = xmlBufCreateSize(0);
+     if (buf == NULL) return(NULL);

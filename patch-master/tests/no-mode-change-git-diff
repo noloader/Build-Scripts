@@ -1,0 +1,34 @@
+# Copyright (C) 2010-2012 Free Software Foundation, Inc.
+#
+# Copying and distribution of this file, with or without modification,
+# in any medium, are permitted without royalty provided the copyright
+# notice and this notice are preserved.
+
+. $srcdir/test-lib.sh
+
+require cat
+require chmod
+require stat
+use_local_patch
+use_tmpdir
+
+echo 'ksplice' > f
+chmod 755 f
+
+cat > simple.diff <<EOF
+diff --git a/f b/f
+index 422a422a..736b6c7063690a 100644
+--- a/f
++++ b/f
+@@ -1 +1 @@
+-ksplice
++ksplice rocks!
+EOF
+
+check 'patch -p1 < simple.diff || echo "Status:  $?"' <<EOF
+patching file f
+EOF
+
+check 'ls -l f | sed "s,\(..........\).*,\1,"' <<EOF
+-rwxr-xr-x
+EOF

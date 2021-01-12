@@ -1,0 +1,228 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with libiconv.
+--- src/iconv.c
++++ src/iconv.c
+@@ -465,7 +465,7 @@
+ 
+ /* Auxiliary variables for subst_uc_to_mb_fallback. */
+ /* Converter from locale encoding to target encoding. */
+-static iconv_t subst_uc_to_mb_cd;
++static iconv_t subst_uc_to_mb_cd = (iconv_t)(-1);
+ /* Buffer of size ilseq_unicode_subst_size*4. */
+ static char* subst_uc_to_mb_temp_buffer;
+ 
+@@ -504,7 +504,7 @@
+ 
+ /* Auxiliary variables for subst_mb_to_wc_fallback. */
+ /* Converter from locale encoding to wchar_t. */
+-static iconv_t subst_mb_to_wc_cd;
++static iconv_t subst_mb_to_wc_cd = (iconv_t)(-1);
+ /* Buffer of size ilseq_byte_subst_size. */
+ static wchar_t* subst_mb_to_wc_temp_buffer;
+ 
+@@ -546,7 +546,7 @@
+ 
+ /* Auxiliary variables for subst_wc_to_mb_fallback. */
+ /* Converter from locale encoding to target encoding. */
+-static iconv_t subst_wc_to_mb_cd;
++static iconv_t subst_wc_to_mb_cd = (iconv_t)(-1);
+ /* Buffer of size ilseq_wchar_subst_size*4.
+    Hardcode factor 4, because MB_LEN_MAX is not reliable on some platforms. */
+ static char* subst_wc_to_mb_temp_buffer;
+@@ -591,7 +591,7 @@
+ 
+ /* Auxiliary variables for subst_mb_to_mb_fallback. */
+ /* Converter from locale encoding to target encoding. */
+-static iconv_t subst_mb_to_mb_cd;
++static iconv_t subst_mb_to_mb_cd = (iconv_t)(-1);
+ /* Buffer of size ilseq_byte_subst_size*4. */
+ static char* subst_mb_to_mb_temp_buffer;
+ 
+@@ -836,12 +836,15 @@
+ 
+ /* ========================================================================= */
+ 
++/* Be sure the handle is closed on exit when destructors are available */
++static iconv_t std_cd = (iconv_t)(-1);
++static iconv_t tmp_cd = (iconv_t)(-1);
++
+ int main (int argc, char* argv[])
+ {
+   const char* fromcode = NULL;
+   const char* tocode = NULL;
+   int do_list = 0;
+-  iconv_t cd;
+   struct iconv_fallbacks fallbacks;
+   struct iconv_hooks hooks;
+   int i;
+@@ -1015,15 +1018,15 @@
+       fromcode = "char";
+     if (tocode == NULL)
+       tocode = "char";
+-    cd = iconv_open(tocode,fromcode);
+-    if (cd == (iconv_t)(-1)) {
+-      if (iconv_open("UCS-4",fromcode) == (iconv_t)(-1))
++    std_cd = iconv_open(tocode,fromcode);
++    if (std_cd == (iconv_t)(-1)) {
++      if ((tmp_cd = iconv_open("UCS-4",fromcode)) == (iconv_t)(-1))
+         error(0,0,
+               /* TRANSLATORS: An error message.
+                  The placeholder expands to the encoding name, specified through --from-code.  */
+               _("conversion from %s unsupported"),
+               fromcode);
+-      else if (iconv_open(tocode,"UCS-4") == (iconv_t)(-1))
++      else if ((tmp_cd = iconv_open(tocode,"UCS-4")) == (iconv_t)(-1))
+         error(0,0,
+               /* TRANSLATORS: An error message.
+                  The placeholder expands to the encoding name, specified through --to-code.  */
+@@ -1085,15 +1088,15 @@
+       fallbacks.wc_to_mb_fallback =
+         (ilseq_wchar_subst != NULL ? subst_wc_to_mb_fallback : NULL);
+       fallbacks.data = NULL;
+-      iconvctl(cd, ICONV_SET_FALLBACKS, &fallbacks);
++      iconvctl(std_cd, ICONV_SET_FALLBACKS, &fallbacks);
+     }
+     /* Set up hooks for updating the line and column position. */
+     hooks.uc_hook = update_line_column;
+     hooks.wc_hook = NULL;
+     hooks.data = NULL;
+-    iconvctl(cd, ICONV_SET_HOOKS, &hooks);
++    iconvctl(std_cd, ICONV_SET_HOOKS, &hooks);
+     if (i == argc)
+-      status = convert(cd,fileno(stdin),
++      status = convert(std_cd,fileno(stdin),
+                        /* TRANSLATORS: A filename substitute denoting standard input.  */
+                        _("(stdin)"));
+     else {
+@@ -1111,12 +1114,13 @@
+                 infilename);
+           status = 1;
+         } else {
+-          status |= convert(cd,fileno(infile),infilename);
++          status |= convert(std_cd,fileno(infile),infilename);
+           fclose(infile);
+         }
+       }
+     }
+-    iconv_close(cd);
++    iconv_close(std_cd);
++    std_cd = (iconv_t)(-1);
+   }
+   if (ferror(stdout) || fclose(stdout)) {
+     error(0,0,
+@@ -1126,3 +1130,26 @@
+   }
+   exit(status);
+ }
++
++/* Leak check tooling like Valgrind and Asan */
++#if defined(__GNUC__) || defined(__clang__)
++__attribute__((destructor))
++static void
++do_cleanup (void)
++{
++  if (std_cd != (iconv_t)(-1))
++    iconv_close(std_cd);
++  if (tmp_cd != (iconv_t)(-1))
++    iconv_close(tmp_cd);
++  if (subst_mb_to_uc_cd != (iconv_t)(-1))
++    iconv_close(subst_mb_to_uc_cd);
++  if (subst_uc_to_mb_cd != (iconv_t)(-1))
++    iconv_close(subst_uc_to_mb_cd);
++  if (subst_mb_to_wc_cd != (iconv_t)(-1))
++    iconv_close(subst_mb_to_wc_cd);
++  if (subst_wc_to_mb_cd != (iconv_t)(-1))
++    iconv_close(subst_wc_to_mb_cd);
++  if (subst_mb_to_mb_cd != (iconv_t)(-1))
++    iconv_close(subst_mb_to_mb_cd);
++}
++#endif
+--- tests/test-shiftseq.c
++++ tests/test-shiftseq.c
+@@ -58,8 +58,13 @@
+     */
+     if (!(r == (size_t)(-1) && errno == EILSEQ
+           && inptr - input == 1 && outptr - buf == 0))
++    {
++      iconv_close(cd);
+       abort();
++    }
+   }
++  if (cd != (iconv_t)(-1))
++    iconv_close(cd);
+ }
+ 
+ void main2 (void)
+@@ -92,7 +97,10 @@
+     */
+     if (!(r == (size_t)(-1) && errno == EINVAL
+           && inptr - input == 1 && outptr - buf == 0))
++    {
++      iconv_close(cd);
+       abort();
++    }
+ 
+     inleft = input + 20 - inptr;
+     r = iconv (cd, (ICONV_CONST char **) &inptr, &inleft, &outptr, &outleft);
+@@ -106,8 +114,13 @@
+     */
+     if (!(r == (size_t)(-1) && errno == EILSEQ
+           && inptr - input == 1 && outptr - buf == 0))
++    {
++      iconv_close(cd);
+       abort();
++    }
+   }
++  if (cd != (iconv_t)(-1))
++    iconv_close(cd);
+ }
+ 
+ int main ()
+--- tests/test-to-wchar.c
++++ tests/test-to-wchar.c
+@@ -44,8 +44,14 @@
+                       &outptr, &outbytesleft);
+ 
+     if (!(r == (size_t)(-1) && errno == EINVAL))
++    {
++      iconv_close(cd);
+       abort ();
++    }
+   }
+ 
++  if (cd != (iconv_t)(-1))
++    iconv_close(cd);
++
+   return 0;
+ }
+ 
+--- srclib/xalloc-oversized.h
++++ srclib/xalloc-oversized.h
+@@ -27,6 +27,7 @@
+    By gnulib convention, SIZE_MAX represents overflow in size
+    calculations, so the conservative size_t-based dividend to use here
+    is SIZE_MAX - 1.  */
++#undef xalloc_oversized
+ #define __xalloc_oversized(n, s) \
+   ((size_t) (PTRDIFF_MAX < SIZE_MAX ? PTRDIFF_MAX : SIZE_MAX - 1) / (s) < (n))
+ 
+@@ -42,9 +43,11 @@
+    function, so that it works correctly even when SIZE_MAX < N.  */
+ 
+ #if 7 <= __GNUC__
++# undef xalloc_oversized
+ # define xalloc_oversized(n, s) \
+    __builtin_mul_overflow_p (n, s, (__xalloc_count_type) 1)
+ #elif 5 <= __GNUC__ && !defined __ICC && !__STRICT_ANSI__
++# undef xalloc_oversized
+ # define xalloc_oversized(n, s) \
+    (__builtin_constant_p (n) && __builtin_constant_p (s) \
+     ? __xalloc_oversized (n, s) \
+@@ -54,6 +57,7 @@
+ /* Other compilers use integer division; this may be slower but is
+    more portable.  */
+ #else
++# undef xalloc_oversized
+ # define xalloc_oversized(n, s) __xalloc_oversized (n, s)
+ #endif
+ 

@@ -1,0 +1,11 @@
+--- src/term_curses.c
++++ src/term_curses.c
+@@ -35,7 +35,7 @@
+ #else
+ #  error "SysV or X/Open-compatible Curses header file required"
+ #endif
+-#include <term.h>
++#include <ncurses/term.h>
+ #include "gl_array_list.h"
+ 
+ #include "main.h"

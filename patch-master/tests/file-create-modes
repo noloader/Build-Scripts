@@ -1,0 +1,51 @@
+# Copyright (C) 2010-2018 Free Software Foundation, Inc.
+#
+# Copying and distribution of this file, with or without modification,
+# in any medium, are permitted without royalty provided the copyright
+# notice and this notice are preserved.
+
+# Test if git diffs can create files with proper modes
+
+. $srcdir/test-lib.sh
+
+require cat
+require sed
+use_local_patch
+use_tmpdir
+
+# ==============================================================
+
+cat > f.diff <<EOF
+diff --git a/f b/f
+new file mode 100710
+index 0000000..3e75765
+--- /dev/null
++++ b/f
+@@ -0,0 +1 @@
++new
+
+diff --git a/g b/g
+new file mode 100654
+index 0000000..3e75765
+--- /dev/null
++++ b/g
+@@ -0,0 +1 @@
++new
+EOF
+
+check 'patch -p1 < f.diff' <<EOF
+patching file f
+patching file g
+EOF
+
+check 'ls -l f g | sed "s,\(..........\).*,\1,"' <<EOF
+-rwx--x---
+-rw-r-xr--
+EOF
+
+check 'patch -p1 -R < f.diff' <<EOF
+patching file f
+patching file g
+EOF
+
+ncheck '! test -e f -o -e g || echo fail'

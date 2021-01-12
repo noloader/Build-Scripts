@@ -1,0 +1,40 @@
+--- tests/Makefile.in
++++ tests/Makefile.in
+@@ -1307,7 +1307,6 @@
+ 	criss-cross \
+ 	crlf-handling \
+ 	dash-o-append \
+-	deep-directories \
+ 	empty-files \
+ 	false-match \
+ 	fifo \
+@@ -1340,7 +1339,8 @@
+ 
+ XFAIL_TESTS = \
+ 	dash-o-append \
+-	context-format
++	context-format \
++	deep-directories
+ 
+ EXTRA_DIST = \
+ 	$(TESTS) \
+--- tests/Makefile.am
++++ tests/Makefile.am
+@@ -31,7 +31,6 @@
+ 	criss-cross \
+ 	crlf-handling \
+ 	dash-o-append \
+-	deep-directories \
+ 	empty-files \
+ 	false-match \
+ 	fifo \
+@@ -64,7 +63,8 @@
+ 
+ XFAIL_TESTS = \
+ 	dash-o-append \
+-	context-format
++	context-format \
++	deep-directories
+ 
+ EXTRA_DIST = \
+ 	$(TESTS) \

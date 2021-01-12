@@ -1,0 +1,23 @@
+Description:
+Locale dependent string transformation for comparison.
+
+Files:
+lib/astrxfrm.h
+lib/astrxfrm.c
+
+Depends-on:
+
+configure.ac:
+AC_REQUIRE([AC_C_RESTRICT])
+
+Makefile.am:
+lib_SOURCES += astrxfrm.c
+
+Include:
+"astrxfrm.h"
+
+License:
+LGPL
+
+Maintainer:
+all

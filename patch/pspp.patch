@@ -1,0 +1,21 @@
+--- configure
++++ configure
+@@ -16164,7 +16164,7 @@
+ 
+ 
+ # Put a plausible default for CC_FOR_BUILD in Makefile.
+-if test -z "$CC_FOR_BUILD"; then
++if test "x$CC_FOR_BUILD" = "x"; then
+   if test "x$cross_compiling" = "xno"; then
+     CC_FOR_BUILD='$(CC)'
+   else
+@@ -16197,8 +16197,7 @@
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: $pspp_cv_build_exeext" >&5
+ $as_echo "$pspp_cv_build_exeext" >&6; }
+   EXEEXT_FOR_BUILD=""
+-  test x"${pspp_cv_build_exeext}" != xno && EXEEXT_FOR_BUILD=${pspp_cv_build_exeex
+-t}
++  test x"${pspp_cv_build_exeext}" != xno && EXEEXT_FOR_BUILD="${pspp_cv_build_exeext}"
+ fi
+ 
+ 

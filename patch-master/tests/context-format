@@ -1,0 +1,122 @@
+# Copyright (C) 2016 Free Software Foundation, Inc.
+#
+# Copying and distribution of this file, with or without modification,
+# in any medium, are permitted without royalty provided the copyright
+# notice and this notice are preserved.
+
+. $srcdir/test-lib.sh
+
+use_local_patch
+use_tmpdir
+
+# ==============================================================
+
+printf "%s\n" 1 2 4 5 > a
+cat > ab.diff <<EOF
+*** a
+--- b
+***************
+*** 1,4 ****
+--- 1,5 ----
+  1
+  2
++ 3
+  4
+  5
+EOF
+
+check 'patch < ab.diff' <<EOF
+patching file a
+EOF
+
+printf "%s\n" 1 2 3 4 5 > a
+cat > ab.diff <<EOF
+*** a
+--- b
+***************
+*** 1,5 ****
+  1
+  2
+- 3
+  4
+  5
+--- 1,4 ----
+EOF
+
+check 'patch < ab.diff' <<EOF
+patching file a
+EOF
+
+# --------------------------------------------------------------
+
+printf "%s\n" a a a a a b a a a a a > a
+
+cat > ab.diff <<EOF
+*** a
+--- b
+***************
+*** 6 ****
+- b
+--- 5 ----
+EOF
+
+check 'patch < ab.diff' <<EOF
+patching file a
+EOF
+
+check 'echo `cat a`' <<EOF
+a a a a a a a a a a
+EOF
+
+cat > ba.diff <<EOF
+*** b
+--- a
+***************
+*** 5 ****
+--- 6 ----
++ b
+EOF
+
+check 'patch < ba.diff' <<EOF
+patching file a
+EOF
+
+check 'echo `cat a`' <<EOF
+a a a a a b a a a a a
+EOF
+
+printf "%s\n" a a a a a a a a a a b > a
+
+cat > ab.diff <<EOF
+*** a
+--- b
+***************
+*** 11 ****
+- b
+--- 10 ----
+EOF
+
+check 'patch < ab.diff' <<EOF
+patching file a
+EOF
+
+check 'echo `cat a`' <<EOF
+a a a a a a a a a a
+EOF
+
+cat > ba.diff <<EOF
+*** b
+--- a
+***************
+*** 10 ****
+--- 11 ----
++ b
+EOF
+
+check 'patch < ba.diff' <<EOF
+patching file a
+EOF
+
+check 'echo `cat a`' <<EOF
+a a a a a a a a a a b
+EOF

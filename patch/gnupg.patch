@@ -1,0 +1,44 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with GnuPG.
+--- g10/keylist.c
++++ g10/keylist.c
+@@ -1636,8 +1636,8 @@
+           char *issuer_fpr = NULL;
+           char *reason_text = NULL;
+           char *reason_comment = NULL;
+-          size_t reason_commentlen;
+-          int reason_code;
++          size_t reason_commentlen = 0;
++          int reason_code = 0;
+ 
+ 	  if (sig->sig_class == 0x20 || sig->sig_class == 0x28
+ 	      || sig->sig_class == 0x30)
+--- tests/gpgscm/scheme.c
++++ tests/gpgscm/scheme.c
+@@ -172,6 +172,7 @@
+      case T_FRAME: return "frame";
+      }
+      assert (! "not reached");
++     return "unknown";
+ }
+ 
+ /* ADJ is enough slack to align cells in a TYPE_BITS-bit boundary */
+--- sm/certdump.c
++++ sm/certdump.c
+@@ -695,9 +695,13 @@
+       gpg_err_set_errno (c->error);
+       return -1;
+     }
+-  memcpy (p + c->len, buffer, size);
+-  c->len += size;
+-  p[c->len] = 0; /* Terminate string. */
++
++  if (p && buffer)
++    {
++      memcpy (p + c->len, buffer, size);
++      c->len += size;
++    }
++    p[c->len] = 0; /* Terminate string. */
+ 
+   return (gpgrt_ssize_t)size;
+ }

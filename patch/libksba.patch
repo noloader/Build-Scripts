@@ -1,0 +1,13 @@
+--- tests/Makefile.in
++++ tests/Makefile.in
+@@ -628,6 +628,10 @@
+ check-TESTS: $(TESTS)
+ 	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
+ 	srcdir=$(srcdir); export srcdir; \
++	libksba_libdir=`dirname $$PWD`/src/.libs; \
++	LD_LIBRARY_PATH=`echo "$$libksba_libdir:$$LD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
++	DYLD_LIBRARY_PATH=`echo "$$libksba_libdir:$$DYLD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
++	export LD_LIBRARY_PATH; export DYLD_LIBRARY_PATH; \
+ 	list=' $(TESTS) '; \
+ 	$(am__tty_colors); \
+ 	if test -n "$$list"; then \

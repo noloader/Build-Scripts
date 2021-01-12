@@ -1,0 +1,42 @@
+--- Makefile
++++ Makefile
+@@ -21,13 +21,13 @@
+ HIREDIS_SONAME=$(shell grep HIREDIS_SONAME hiredis.h | awk '{print $$3}')
+ 
+ # Installation related variables and target
+-PREFIX?=/usr/local
+-INCLUDE_PATH?=include/hiredis
+-LIBRARY_PATH?=lib
+-PKGCONF_PATH?=pkgconfig
+-INSTALL_INCLUDE_PATH= $(DESTDIR)$(PREFIX)/$(INCLUDE_PATH)
+-INSTALL_LIBRARY_PATH= $(DESTDIR)$(PREFIX)/$(LIBRARY_PATH)
+-INSTALL_PKGCONF_PATH= $(INSTALL_LIBRARY_PATH)/$(PKGCONF_PATH)
++PREFIX ?= /usr/local
++INCLUDE_PATH ?= $(PREFIX)/include
++LIBRARY_PATH ?= $(PREFIX)/lib
++PKGCONF_PATH ?= $(LIBRARY_PATH)/pkgconfig
++INSTALL_INCLUDE_PATH = $(DESTDIR)$(INCLUDE_PATH)/hiredis
++INSTALL_LIBRARY_PATH = $(DESTDIR)$(LIBRARY_PATH)
++INSTALL_PKGCONF_PATH = $(DESTDIR)$(PKGCONF_PATH)
+ 
+ # redis-server configuration used for testing
+ REDIS_PORT=56379
+@@ -41,9 +41,6 @@
+ endef
+ export REDIS_TEST_CONFIG
+ 
+-# Fallback to gcc when $CC is not in $PATH.
+-CC:=$(shell sh -c 'type $${CC%% *} >/dev/null 2>/dev/null && echo $(CC) || echo gcc')
+-CXX:=$(shell sh -c 'type $${CXX%% *} >/dev/null 2>/dev/null && echo $(CXX) || echo g++')
+ OPTIMIZATION?=-O3
+ WARNINGS=-Wall -W -Wstrict-prototypes -Wwrite-strings -Wno-missing-field-initializers
+ DEBUG_FLAGS?= -g -ggdb
+@@ -297,7 +294,7 @@
+ 	$(MAKE) CFLAGS="-fprofile-arcs -ftest-coverage" LDFLAGS="-fprofile-arcs"
+ 
+ coverage: gcov
+-	make check
++	$(MAKE) check
+ 	mkdir -p tmp/lcov
+ 	lcov -d . -c -o tmp/lcov/hiredis.info
+ 	genhtml --legend -o tmp/lcov/report tmp/lcov/hiredis.info

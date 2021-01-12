@@ -1,0 +1,25 @@
+# Copyright (C) 2015 Free Software Foundation, Inc.
+#
+# Copying and distribution of this file, with or without modification,
+# in any medium, are permitted without royalty provided the copyright
+# notice and this notice are preserved.
+
+. $srcdir/test-lib.sh
+
+require cat
+use_local_patch
+use_tmpdir
+
+# ==============================================================
+
+cat > bad.diff <<EOF
+ ***************
+*** 0 ****
+--- 1 ----
++ foo
+EOF
+
+check 'patch foo -i bad.diff || echo "Status: $?"' <<EOF
+$PATCH: **** Only garbage was found in the patch input.
+Status: 2
+EOF

@@ -1,0 +1,24 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with BLAKE2-20190724
+--- sse/blake2b-load-sse2.h
++++ sse/blake2b-load-sse2.h
+@@ -15,6 +15,8 @@
+ #ifndef BLAKE2B_LOAD_SSE2_H
+ #define BLAKE2B_LOAD_SSE2_H
+ 
++#include <emmintrin.h>
++
+ #define LOAD_MSG_0_1(b0, b1) b0 = _mm_set_epi64x(m2, m0); b1 = _mm_set_epi64x(m6, m4)
+ #define LOAD_MSG_0_2(b0, b1) b0 = _mm_set_epi64x(m3, m1); b1 = _mm_set_epi64x(m7, m5)
+ #define LOAD_MSG_0_3(b0, b1) b0 = _mm_set_epi64x(m10, m8); b1 = _mm_set_epi64x(m14, m12)
+--- sse/blake2s-load-sse2.h
++++ sse/blake2s-load-sse2.h
+@@ -15,6 +15,8 @@
+ #ifndef BLAKE2S_LOAD_SSE2_H
+ #define BLAKE2S_LOAD_SSE2_H
+ 
++#include <emmintrin.h>
++
+ #define LOAD_MSG_0_1(buf) buf = _mm_set_epi32(m6,m4,m2,m0)
+ #define LOAD_MSG_0_2(buf) buf = _mm_set_epi32(m7,m5,m3,m1)
+ #define LOAD_MSG_0_3(buf) buf = _mm_set_epi32(m12,m10,m8,m14)

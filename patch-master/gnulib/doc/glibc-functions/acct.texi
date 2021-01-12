@@ -1,0 +1,18 @@
+@node acct
+@subsection @code{acct}
+@findex acct
+
+Documentation:@* @uref{https://www.kernel.org/doc/man-pages/online/pages/man2/acct.2.html,,man acct}
+
+Gnulib module: ---
+
+Portability problems fixed by Gnulib:
+@itemize
+@end itemize
+
+Portability problems not fixed by Gnulib:
+@itemize
+@item
+This function is missing on some platforms:
+Minix 3.1.8, AIX 5.1, Cygwin, mingw, MSVC 14.
+@end itemize

@@ -1,0 +1,15 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with OpenVPN.
+--- src/openvpn/tun.c
++++ src/openvpn/tun.c
+@@ -2054,6 +2054,10 @@
+ 
+ #ifdef ENABLE_FEATURE_TUN_PERSIST
+ 
++#ifndef TUNSETGROUP
++# define TUNSETGROUP  _IOW('T', 206, int)
++#endif
++
+ void
+ tuncfg(const char *dev, const char *dev_type, const char *dev_node, int persist_mode, const char *username, const char *groupname, const struct tuntap_options *options)
+ {

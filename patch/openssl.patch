@@ -1,0 +1,17 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with OpenSSL 1.1.1g.
+--- crypto/threads_pthread.c
++++ crypto/threads_pthread.c
+@@ -7,6 +7,12 @@
+  * https://www.openssl.org/source/license.html
+  */
+ 
++/* https://github.com/openssl/openssl/issues/10966 */
++#ifndef _XOPEN_SOURCE || _XOPEN_SOURCE < 500
++# undef _XOPEN_SOURCE
++# define _XOPEN_SOURCE 500
++#endif
++
+ #include <openssl/crypto.h>
+ #include "internal/cryptlib.h"
+ 

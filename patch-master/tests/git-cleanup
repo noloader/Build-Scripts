@@ -1,0 +1,75 @@
+# Copyright (C) 2009, 2011-2016 Free Software Foundation, Inc.
+#
+# Copying and distribution of this file, with or without modification,
+# in any medium, are permitted without royalty provided the copyright
+# notice and this notice are preserved.
+
+. $srcdir/test-lib.sh
+
+require cat
+use_local_patch
+use_tmpdir
+
+# ==============================================================
+
+cat > 1.diff <<EOF
+diff --git a/f b/f
+--- f
++++ f
+@@ -1 +1 @@
+-1
++1a
+@@ -5 +5 @@
+-out
++in
+diff --git a/g b/g
+--- g
++++ g
+@@ -1 +1 @@
+-out
++in
+diff --git a/h b/h
+--- h
++++ h
+@@ -1 +1 @@
+BAD PATCH
+EOF
+
+echo 1 > f
+printf '' > g
+printf '' > h
+
+check 'patch -f -i 1.diff || echo status: $?' <<EOF
+patching file f
+Hunk #2 FAILED at 5.
+1 out of 2 hunks FAILED -- saving rejects to file f.rej
+patching file g
+Hunk #1 FAILED at 1.
+1 out of 1 hunk FAILED -- saving rejects to file g.rej
+patching file h
+$PATCH: **** malformed patch at line 20: BAD PATCH
+
+status: 2
+EOF
+
+check 'cat f' <<EOF
+1a
+EOF
+
+check 'cat f.rej' <<EOF
+--- f
++++ f
+@@ -5 +5 @@
+-out
++in
+EOF
+
+ncheck 'cat g'
+
+check 'cat g.rej' <<EOF
+--- g
++++ g
+@@ -1 +1 @@
+-out
++in
+EOF

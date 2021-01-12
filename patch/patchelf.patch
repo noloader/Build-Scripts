@@ -1,0 +1,20 @@
+--- src/patchelf.cc
++++ src/patchelf.cc
+@@ -40,6 +40,9 @@
+ 
+ #include "elf.h"
+ 
++#ifndef PATCHELF_UNUSED
++# define PATCHELF_UNUSED(x) ((void)(x))
++#endif
+ 
+ static bool debugMode = false;
+ 
+@@ -382,6 +385,7 @@
+ {
+     unsigned char * q = (unsigned char *) p;
+     assert(q >= contents->data() && q + size <= contents->data() + contents->size());
++    PATCHELF_UNUSED(q);
+ }
+ 
+ 

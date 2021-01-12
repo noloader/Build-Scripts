@@ -1,0 +1,36 @@
+--- spmatrix/test_complex_source.c.orig	2020-08-28 23:30:41.817232247 -0400
++++ spmatrix/test_complex_source.c	2020-08-28 23:32:22.794874295 -0400
+@@ -490,9 +490,13 @@
+                       GSL_REAL(aij)*GSL_REAL(xj) - GSL_IMAG(aij)*GSL_IMAG(xj),
+                       GSL_IMAG(aij)*GSL_REAL(xj) + GSL_REAL(aij)*GSL_IMAG(xj));
+ 
+-      if (GSL_REAL(bij) != GSL_REAL(cij) ||
+-          GSL_IMAG(bij) != GSL_IMAG(cij))
+-        status = 1;
++      gsl_test_rel(GSL_REAL(bij), GSL_REAL(cij), 10.0 * GSL_DBL_EPSILON,
++                   NAME (gsl_spmatrix) "_scale_columns[%zu,%zu](%s) real",
++                   M, N, FUNCTION (gsl_spmatrix, type) (B));
++
++      gsl_test_rel(GSL_IMAG(bij), GSL_IMAG(cij), 10.0 * GSL_DBL_EPSILON,
++                   NAME (gsl_spmatrix) "_scale_columns[%zu,%zu](%s) imag",
++                   M, N, FUNCTION (gsl_spmatrix, type) (B));
+     }
+ 
+   gsl_test (status, NAME (gsl_spmatrix) "_scale_columns[%zu,%zu](%s)",
+@@ -522,9 +526,13 @@
+                       GSL_REAL(aij)*GSL_REAL(xi) - GSL_IMAG(aij)*GSL_IMAG(xi),
+                       GSL_IMAG(aij)*GSL_REAL(xi) + GSL_REAL(aij)*GSL_IMAG(xi));
+ 
+-      if (GSL_REAL(bij) != GSL_REAL(cij) ||
+-          GSL_IMAG(bij) != GSL_IMAG(cij))
+-        status = 1;
++      gsl_test_rel(GSL_REAL(bij), GSL_REAL(cij), 10.0 * GSL_DBL_EPSILON,
++                   NAME (gsl_spmatrix) "_scale_rows[%zu,%zu](%s) real",
++                   M, N, FUNCTION (gsl_spmatrix, type) (B));
++
++      gsl_test_rel(GSL_IMAG(bij), GSL_IMAG(cij), 10.0 * GSL_DBL_EPSILON,
++                   NAME (gsl_spmatrix) "_scale_rows[%zu,%zu](%s) imag",
++                   M, N, FUNCTION (gsl_spmatrix, type) (B));
+     }
+ 
+   gsl_test (status, NAME (gsl_spmatrix) "_scale_rows[%zu,%zu](%s)",

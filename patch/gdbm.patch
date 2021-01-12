@@ -1,0 +1,22 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with GDBM.
+--- src/hash.c
++++ src/hash.c
+@@ -31,14 +31,14 @@
+ _gdbm_hash (datum key)
+ {
+   unsigned int value;	/* Used to compute the hash value.  */
+-  int   index;		/* Used to cycle through random values. */
++  size_t  index;	/* Used to cycle through random values. */
+ 
+   /* Set the initial value from key. */
+-  value = 0x238F13AF * key.dsize;
++  value = 0x238F13AFu * key.dsize;
+   for (index = 0; index < key.dsize; index++)
+     value = (value + (key.dptr[index] << (index*5 % 24))) & 0x7FFFFFFF;
+ 
+-  value = (1103515243 * value + 12345) & 0x7FFFFFFF;  
++  value = (1103515243u * value + 12345) & 0x7FFFFFFF;  
+ 
+   /* Return the value. */
+   return((int) value);

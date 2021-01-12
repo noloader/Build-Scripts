@@ -1,0 +1,55 @@
+# Copyright (C) 2017 Free Software Foundation, Inc.
+#
+# Copying and distribution of this file, with or without modification,
+# in any medium, are permitted without royalty provided the copyright
+# notice and this notice are preserved.
+
+. $srcdir/test-lib.sh
+
+require cat
+use_local_patch
+use_tmpdir
+
+# ==============================================================
+
+# Check if patch incorrectly applies overlapping hunks: after the
+# first hunk is applied, the second hunk should not apply
+# anymore.  Older versions of patch didn't recognize that and did
+# apply the second hunk on top of the first one, leading to the
+# following incorrect result, with no information about hunk 2:
+#
+# Hunk #1 succeeded at 7 (offset 6 lines).
+#
+# printf '%s\n' x x x x x x 1 2 3 a a 4 5 6
+
+cat > a.diff <<EOF
+--- a
++++ a
+@@ -1,6 +1,7 @@
+ 1
+ 2
+ 3
++a
+ 4
+ 5
+ 6
+@@ -7,6 +8,7 @@
+ 1
+ 2
+ 3
++a
+ 4
+ 5
+ 6
+EOF
+
+printf "%s\n" x x x x x x > a
+seq 1 6 >> a
+
+check 'patch < a.diff || echo status: $?' <<EOF
+patching file a
+Hunk #1 succeeded at 7 (offset 6 lines).
+Hunk #2 FAILED at 8.
+1 out of 2 hunks FAILED -- saving rejects to file a.rej
+status: 1
+EOF

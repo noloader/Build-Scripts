@@ -1,0 +1,33 @@
+# Copyright (C) 2015 Free Software Foundation, Inc.
+#
+# Copying and distribution of this file, with or without modification,
+# in any medium, are permitted without royalty provided the copyright
+# notice and this notice are preserved.
+
+. $srcdir/test-lib.sh
+
+require cat
+use_local_patch
+use_tmpdir
+
+# ==============================================================
+
+# Patch missing the traditional "--- old\n+++ new\n" header
+
+cat > test.diff <<EOF
+diff --git a/test b/test
+index 8e139fc..4c03766 100644
+@@ -1 +1 @@
+-a
++b
+EOF
+
+echo a > test
+
+check 'patch -p1 -i test.diff' <<EOF
+patching file test
+EOF
+
+check 'cat test' <<EOF
+b
+EOF

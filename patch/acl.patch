@@ -1,0 +1,12 @@
+--- test/runwrapper
++++ test/runwrapper
+@@ -1,7 +1,8 @@
+ #!/bin/bash
+ 
+ if [ -e "$PWD/.libs/libtestlookup.so" ]; then
+-	export LD_PRELOAD="$PWD/.libs/libtestlookup.so"
++    export LD_LIBRARY_PATH="$PWD/.libs:$LD_LIBRARY_PATH"
++    export DYLD_LIBRARY_PATH="$PWD/.libs:$DYLD_LIBRARY_PATH"
+ fi
+ 
+ "${srcdir:-${PWD}}"/test/run "$@"
