@@ -58,14 +58,18 @@ if [[ "$INSTX_DISABLE_PKGCONFIG_CHECK" -ne 1 ]]; then
     fi
 fi
 
-if [[ -z $(command -v gzip 2>/dev/null) ]]; then
-    printf "%s\n" "Some packages require Gzip. Please install Gzip."
-    [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+if [[ "$INSTX_DISABLE_GZIP_CHECK" -ne 1 ]]; then
+    if [[ -z $(command -v gzip 2>/dev/null) ]]; then
+        printf "%s\n" "Some packages require Gzip. Please install Gzip."
+        [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
 fi
 
-if [[ -z $(command -v tar 2>/dev/null) ]]; then
-    printf "%s\n" "Some packages require Tar. Please install Tar."
-    [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+if [[ "$INSTX_DISABLE_TAR_CHECK" -ne 1 ]]; then
+    if [[ -z $(command -v tar 2>/dev/null) ]]; then
+        printf "%s\n" "Some packages require Tar. Please install Tar."
+        [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+    fi
 fi
 
 ###############################################################################
