@@ -250,7 +250,7 @@ AUTOCONF_VERSION=* AUTOMAKE_VERSION=* ./build-package.sh
 
 Perl is a constant source of problems, but it is needed by OpenSSL 1.1.x. Perl's build system does not honor our flags, removes hardening flags, does not handle runpaths properly, uses incorrect directories in its configuration, builds packages as root during `make install`, and fails to run due to missing `libperl.so`. Perl is mostly a lost cause.
 
-Note to future maintainers: never build shit during `make install`.
+Note to future maintainers: honor the user's flags. never build shit during `make install`.
 
 ## Bugs
 
