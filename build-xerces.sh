@@ -59,6 +59,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-gettext-final.sh
+then
+    echo echo "Failed to build GetText final"
+    exit 1
+fi
+
+###############################################################################
+
 if ! ./build-curl.sh
 then
     echo "Failed to build cURL"

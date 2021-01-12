@@ -54,10 +54,10 @@ fi
 
 ###############################################################################
 
-if ! ./build-ncurses-readline.sh
+if ! ./build-gettext-final.sh
 then
-	echo "Failed to build Ncurses and Readline"
-	exit 1
+    echo echo "Failed to build GetText final"
+    exit 1
 fi
 
 ###############################################################################

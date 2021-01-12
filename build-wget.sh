@@ -79,6 +79,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-gettext-final.sh
+then
+    echo echo "Failed to build GetText final"
+    exit 1
+fi
+
+###############################################################################
+
 if ! ./build-unistr.sh
 then
     echo "Failed to build Unistring"
@@ -135,14 +143,6 @@ then
             exit 1
         fi
     fi
-fi
-
-###############################################################################
-
-if ! ./build-gettext-final.sh
-then
-    echo "Failed to build GetText final"
-    exit 1
 fi
 
 ###############################################################################

@@ -69,6 +69,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-gettext-final.sh
+then
+    echo echo "Failed to build GetText final"
+    exit 1
+fi
+
+###############################################################################
+
 if ! ./build-idn2.sh
 then
     echo "Failed to build IDN2"
@@ -88,14 +96,6 @@ fi
 if ! ./build-openssl.sh
 then
     echo "Failed to build OpenSSL"
-    exit 1
-fi
-
-###############################################################################
-
-if ! ./build-gettext-final.sh
-then
-    echo "Failed to build GetText final"
     exit 1
 fi
 

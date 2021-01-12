@@ -77,6 +77,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-gettext-final.sh
+then
+    echo echo "Failed to build GetText final"
+    exit 1
+fi
+
+###############################################################################
+
 if ! ./build-idn2.sh
 then
     echo "Failed to build IDN2"
@@ -122,14 +130,6 @@ then
     echo ""
     echo "datefudge not found. Some tests will be skipped."
     echo "To fix this issue, please install datefudge."
-fi
-
-###############################################################################
-
-if ! ./build-gettext-final.sh
-then
-    echo "Failed to build GetText final"
-    exit 1
 fi
 
 ###############################################################################

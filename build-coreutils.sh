@@ -52,10 +52,17 @@ fi
 
 ###############################################################################
 
-# For libint.h, https://stackoverflow.com/q/11370684/608639
 if ! ./build-iconv-gettext.sh
 then
     echo "Failed to build GetText"
+    exit 1
+fi
+
+###############################################################################
+
+if ! ./build-gettext-final.sh
+then
+    echo echo "Failed to build GetText final"
     exit 1
 fi
 

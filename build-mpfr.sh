@@ -44,22 +44,6 @@ fi
 
 ###############################################################################
 
-if ! ./build-ncurses-readline.sh
-then
-    echo "Failed to build Ncurses and Readline"
-    exit 1
-fi
-
-###############################################################################
-
-if ! ./build-iconv-gettext.sh
-then
-    echo "Failed to build iConv and GetText"
-    exit 1
-fi
-
-###############################################################################
-
 if ! ./build-gmp.sh
 then
     echo "Failed to build GMP"
