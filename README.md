@@ -161,7 +161,7 @@ and have 1338 and 1 different commits each, respectively.
 fatal: refusing to merge unrelated histories
 ```
 
-If you encounter it, then perform the following.
+If you encounter it, then run `reset-repo.sh` or perform the following.
 
 ```
 $ git fetch
