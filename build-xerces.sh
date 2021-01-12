@@ -114,8 +114,8 @@ echo "**********************"
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
-    --with-pic \
     --enable-shared --enable-static \
+    --with-pic \
     --enable-netaccessor-curl \
     --enable-transcoder-iconv
     # --enable-msgloader-iconv

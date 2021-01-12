@@ -20,13 +20,14 @@
 # The 'command' command is Posix, and the option -v is Posix.
 # https://pubs.opengroup.org/onlinepubs/9699919799/utilities/command.html
 #
-# The 'awk' command is Posix.
+# The 'awk' command is Posix, and printing fields using NR is Posix.
 # https://pubs.opengroup.org/onlinepubs/9699919799/utilities/awk.html
 
 ###############################################################################
 
 # SC2034: XXX appears unused. Verify use (or export if used externally).
-# shellcheck disable=SC2034
+# SC2086: Double quote to prevent globbing and word splitting.
+# shellcheck disable=SC2034,SC2086
 
 ###############################################################################
 
@@ -38,7 +39,7 @@ cp programs/test-stdc.c "$infile"
 
 ###############################################################################
 
-export CURR_DIR=$(pwd)
+CURR_DIR=$(pwd); export CURR_DIR
 function finish {
   rm  -f "$CURR_DIR/$infile" 2>/dev/null
   rm  -f "$CURR_DIR/$outfile" 2>/dev/null
@@ -72,16 +73,16 @@ fi
 # Command line tools, like sed and awk, need this on OS X.
 if [[ $(uname -s | grep -i -c 'darwin') -ne 0 ]]; then
     if [[ -z "$LC_ALL" ]]; then
-        if [[ $(locale -a | grep en_US.UTF-8) ]]; then
+        if locale -a 2>/dev/null | grep -q en_US.UTF-8; then
             export LC_ALL="en_US.UTF-8"
-        elif [[ $(locale -a | grep '^C') ]]; then
+        elif locale -a 2>/dev/null | grep -q '^C'; then
             export LC_ALL="C"
         fi
     fi
     if [[ -z "$LANG" ]]; then
-        if [[ $(locale -a | grep en_US.UTF-8) ]]; then
+        if locale -a 2>/dev/null | grep -q en_US.UTF-8; then
             export LANG="en_US.UTF-8"
-        elif [[ $(locale -a | grep '^C') ]]; then
+        elif locale -a 2>/dev/null | grep -q '^C'; then
             export LANG="C"
         fi
     fi
