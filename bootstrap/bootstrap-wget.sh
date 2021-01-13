@@ -117,6 +117,9 @@ if [[ "$IS_AMD64" -ne 0 && "$HAVE_INT128" -ne 0 ]]; then
     OPT_INT128="enable-ec_nistp_64_gcc_128"
 fi
 
+# OpenSSL does not honor no-dso. Needed by Unistring and Wget.
+OPENSSL_LIBS="$LIBDIR/libssl.a $LIBDIR/libcrypto.a"
+
 ############################## CA Certs ##############################
 
 echo
@@ -178,11 +181,6 @@ fi
 
 } > "$PREFIX/openssl.cnf"
 
-############################ OpenSSL libs #############################
-
-# OpenSSL does not honor no-dso. Needed by Unistring and Wget.
-OPENSSL_LIBS="$LIBDIR/libssl.a $LIBDIR/libcrypto.a"
-
 ############################## Unistring ##############################
 
 cd "$BOOTSTRAP_DIR" || exit 1
@@ -205,7 +203,9 @@ cd "$BOOTSTRAP_DIR/$UNISTR_DIR" || exit 1
 ./configure \
     --prefix="$PREFIX" \
     --sysconfdir="$PREFIX/etc" \
-    --disable-shared
+    --disable-shared \
+    --without-libiconv \
+    --without-libpth
 
 if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Unistring"
@@ -285,6 +285,9 @@ if ! make -j "$INSTX_JOBS" V=1; then
     echo "Failed to build Wget"
     exit 1
 fi
+
+# Remove old rc file.
+rm -f "$PREFIX/etc/wgetrc"
 
 if ! make install; then
     echo "Failed to install Wget"
