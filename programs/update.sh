@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+if [[ -z "${WGET}" ]]; then
+    WGET=$(command -v wget 2>/dev/null)
+fi
+
 ca_zoo='../bootstrap/cacert.pem'
 if [[ ! -f "${ca_zoo}" ]]; then
     echo "CA Zoo does not exist. Run this script from the program/ directory"
@@ -7,7 +11,7 @@ if [[ ! -f "${ca_zoo}" ]]; then
 fi
 
 echo "Updating config.sub"
-wget -q -O config.sub --ca-certificate="${ca_zoo}" 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'
+${WGET} -q -O config.sub --ca-certificate="${ca_zoo}" 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'
 
 if [[ $(wc -c < config.sub) -eq 0 ]]; then
     echo "config.sub download failed"
@@ -19,7 +23,7 @@ chmod +x config.sub
 xattr -d com.apple.quarantine config.sub 2>/dev/null
 
 echo "Updating config.guess"
-wget -q -O config.guess --ca-certificate="${ca_zoo}" 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
+${WGET} -q -O config.guess --ca-certificate="${ca_zoo}" 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
 
 if [[ $(wc -c < config.guess) -eq 0 ]]; then
     echo "config.sub download failed"
@@ -31,7 +35,7 @@ chmod +x config.guess
 xattr -d com.apple.quarantine config.guess 2>/dev/null
 
 echo "Updating bootstrap cacert.pem"
-wget -q -O ../bootstrap/cacert.pem --ca-certificate="${ca_zoo}" 'https://curl.se/ca/cacert.pem'
+${WGET} -q -L -O ../bootstrap/cacert.pem --ca-certificate="${ca_zoo}" 'https://curl.se/ca/cacert.pem'
 
 if [[ $(wc -c < ../bootstrap/cacert.pem) -eq 0 ]]; then
     echo "cacert.pem download failed"
@@ -39,7 +43,7 @@ if [[ $(wc -c < ../bootstrap/cacert.pem) -eq 0 ]]; then
 fi
 
 echo "Updating bootstrap icannbundle.pem"
-wget -q -O ../bootstrap/icannbundle.pem --ca-certificate="${ca_zoo}" 'https://data.iana.org/root-anchors/icannbundle.pem'
+${WGET} -q -O ../bootstrap/icannbundle.pem --ca-certificate="${ca_zoo}" 'https://data.iana.org/root-anchors/icannbundle.pem'
 
 if [[ $(wc -c < ../bootstrap/icannbundle.pem) -eq 0 ]]; then
     echo "icannbundle.pem download failed"
