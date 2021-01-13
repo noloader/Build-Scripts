@@ -44,8 +44,8 @@ fi
 ###############################################################################
 
 # Rebuild them as a pair
-rm -rf "$INSTX_PKG_CACHE/iconv"
-rm -rf "$INSTX_PKG_CACHE/gettext"
+rm -f "$INSTX_PKG_CACHE/iconv"
+rm -f "$INSTX_PKG_CACHE/gettext"
 
 ###############################################################################
 

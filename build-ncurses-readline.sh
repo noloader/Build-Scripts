@@ -35,8 +35,8 @@ fi
 ###############################################################################
 
 # Rebuild them as a pair
-rm -rf "$INSTX_PKG_CACHE/ncurses"
-rm -rf "$INSTX_PKG_CACHE/readline"
+rm -f "$INSTX_PKG_CACHE/ncurses"
+rm -f "$INSTX_PKG_CACHE/readline"
 
 ###############################################################################
 
