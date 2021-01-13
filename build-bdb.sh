@@ -184,7 +184,13 @@ fi
 
 cd "$CURR_DIR" || exit 1
 
-# Set package status to installed. Delete the file to rebuild the package.
+###############################################################################
+
+# Delete the file to rebuild the package.
+echo "****************************"
+echo "Marking package as installed"
+echo "****************************"
+echo "PKG_NAME: $PKG_NAME"
 touch "$INSTX_PKG_CACHE/$PKG_NAME"
 
 ###############################################################################
