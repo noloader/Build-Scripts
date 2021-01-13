@@ -73,13 +73,13 @@ if [[ -e ../patch/db.patch ]]; then
     echo ""
 fi
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 cd "$BDB_DIR/dist" || exit 1
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../../fix-configure.sh
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 cd "$BDB_DIR" || exit 1
 
 echo "**********************"
@@ -186,7 +186,7 @@ fi
 
 touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 ###############################################################################
 

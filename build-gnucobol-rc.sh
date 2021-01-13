@@ -183,7 +183,7 @@ bash ../collect-logs.sh "${PKG_NAME}"
 
 touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 ###############################################################################
 

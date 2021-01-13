@@ -129,7 +129,7 @@ else
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
 fi
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 # Test from install directory
 if ! "${INSTX_PREFIX}/bin/cryptest.exe" v
@@ -149,7 +149,7 @@ echo "**************************************************************************
 
 touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 ###############################################################################
 

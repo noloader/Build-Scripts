@@ -11,7 +11,7 @@ SIPW_DIR=sipwitch-${SIPW_VER}
 
 CURR_DIR=$(pwd)
 function finish {
-    cd "$CURR_DIR" || exit 1
+    cd "${CURR_DIR}" || exit 1
 }
 trap finish EXIT INT
 
@@ -188,7 +188,7 @@ echo "**************************************************************************
 
 touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 ###############################################################################
 

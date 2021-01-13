@@ -133,7 +133,7 @@ else
     "${MAKE}" "${MAKE_FLAGS[@]}"
 fi
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 fi  # Solaris
 
@@ -235,7 +235,7 @@ echo "**************************************************************************
 
 touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 ###############################################################################
 

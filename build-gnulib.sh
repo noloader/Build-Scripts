@@ -89,7 +89,7 @@ then
     exit 1
 fi
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 cd "$GNULIB_TEST_DIR" || exit 1
 
 # Fix sys_lib_dlsearch_path_spec
@@ -151,7 +151,7 @@ fi
 
 touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 ###############################################################################
 

@@ -131,7 +131,7 @@ else
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
 fi
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 # Update program cache
 hash -r &>/dev/null
@@ -219,7 +219,7 @@ else
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
 fi
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 # Update program cache
 hash -r &>/dev/null
@@ -306,7 +306,7 @@ else
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
 fi
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 # Update program cache
 hash -r &>/dev/null
@@ -322,7 +322,7 @@ echo "**************************************************************************
 
 touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 ###############################################################################
 

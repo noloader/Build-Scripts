@@ -244,7 +244,7 @@ export BUILD_ZLIB=0 BUILD_BZIP2=0
     -Alibs="${opt_libm} ${INSTX_LDLIBS}" \
     -Duseshrplib \
     -Dusethreads \
-    -Dextras="FindBin Text Util Term Test HTTP"
+    -Dextras="FindBin Text::* Util::* ExtUtils::* Term::* Test::* HTTP::*"
     # -Dextras="FindBin Text::Template Test::More HTTP::Daemon HTTP::Request"
 
 if [[ "$?" -ne 0 ]]; then
@@ -252,7 +252,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Perl"
     echo "************************"
 
-    bash ../collect-logs.sh perl
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -322,7 +322,7 @@ then
     echo "Failed to build Perl"
     echo "************************"
 
-    bash ../collect-logs.sh perl
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -343,7 +343,7 @@ then
     echo "Failed to test Perl"
     echo "************************"
 
-    bash ../collect-logs.sh perl
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -383,7 +383,7 @@ echo "**************************************************************************
 
 touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
-cd "$CURR_DIR" || exit 1
+cd "${CURR_DIR}" || exit 1
 
 ###############################################################################
 
