@@ -67,11 +67,17 @@ fi
 
 ###############################################################################
 
+# GetText will be checked in build-gettext-final.sh
+
+export INSTX_DISABLE_GETTEXT_CHECK=1
+
 if ! ./build-iconv-gettext.sh
 then
     echo "Failed to build iConv and GetText"
     exit 1
 fi
+
+unset INSTX_DISABLE_GETTEXT_CHECK
 
 ###############################################################################
 

@@ -191,27 +191,31 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
-echo "***************************"
-echo "Testing package"
-echo "***************************"
-
-MAKE_FLAGS=("check")
-if ! "${MAKE}" "${MAKE_FLAGS[@]}"
+if [[ "$INSTX_DISABLE_GETTEXT_CHECK" -ne 1 ]];
 then
+
     echo "***************************"
-    echo "Failed to test GetText"
+    echo "Testing package"
     echo "***************************"
 
-    bash ../collect-logs.sh
+    MAKE_FLAGS=("check")
+    if ! "${MAKE}" "${MAKE_FLAGS[@]}"
+    then
+        echo "***************************"
+        echo "Failed to test GetText"
+        echo "***************************"
 
-    # Solaris and some friends fail lang-gawk
-    # Darwin fails copy-acl-2.sh
-    # https://lists.gnu.org/archive/html/bug-gawk/2018-01/msg00026.html
-    # exit 1
+        bash ../collect-logs.sh
+
+        # Solaris and some friends fail lang-gawk
+        # Darwin fails copy-acl-2.sh
+        # https://lists.gnu.org/archive/html/bug-gawk/2018-01/msg00026.html
+        # exit 1
+    fi
+
+    # Fix runpaths again
+    bash ../fix-runpath.sh
 fi
-
-# Fix runpaths again
-bash ../fix-runpath.sh
 
 echo "***************************"
 echo "Installing package"
