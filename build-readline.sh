@@ -163,23 +163,18 @@ echo "**********************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
-    #printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S rm -f "${INSTX_LIBDIR}/libreadline*.*"
-    #printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S rm -f "${INSTX_LIBDIR}/libhistory*.*"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
-    #printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S rm -f "${INSTX_LIBDIR}/.*.old"
 else
-    #rm -f "${INSTX_LIBDIR}/libreadline*.*"
-    #rm -f "${INSTX_LIBDIR}/libhistory*.*"
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
-    #rm -rf "${INSTX_LIBDIR}/.*.old"
 fi
 
-cd "$CURR_DIR" || exit 1
+###############################################################################
 
-# Set package status to installed. Delete the file to rebuild the package.
 touch "$INSTX_PKG_CACHE/$PKG_NAME"
+
+cd "$CURR_DIR" || exit 1
 
 ###############################################################################
 

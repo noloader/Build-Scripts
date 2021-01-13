@@ -87,18 +87,6 @@ fi
 
 ###############################################################################
 
-# Problem with paths on NetBSD???
-
-LD_LIBRARY_PATH="${INSTX_LIBDIR}:$LD_LIBRARY_PATH"
-LD_LIBRARY_PATH=$(printf "%s" "$LD_LIBRARY_PATH" | sed 's|:$||')
-export LD_LIBRARY_PATH
-
-DYLD_LIBRARY_PATH="${INSTX_LIBDIR}:$DYLD_LIBRARY_PATH"
-DYLD_LIBRARY_PATH=$(printf "%s" "$DYLD_LIBRARY_PATH" | sed 's|:$||')
-export DYLD_LIBRARY_PATH
-
-###############################################################################
-
 echo ""
 echo "========================================"
 echo "=============== OpenLDAP ==============="
@@ -216,15 +204,14 @@ else
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
 fi
 
-cd "$CURR_DIR" || exit 1
+###############################################################################
 
-# Set package status to installed. Delete the file to rebuild the package.
 touch "$INSTX_PKG_CACHE/$PKG_NAME"
+
+cd "$CURR_DIR" || exit 1
 
 ###############################################################################
 
-OLD_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
-OLD_DYLD_LIBRARY_PATH="$OLD_DYLD_LIBRARY_PATH"
 
 # Set to false to retain artifacts
 if true;

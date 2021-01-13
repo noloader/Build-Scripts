@@ -123,10 +123,11 @@ else
     echo ""
 fi
 
-cd "$CURR_DIR" || exit 1
+###############################################################################
 
-# Set package status to installed. Delete the file to rebuild the package.
 touch "$INSTX_PKG_CACHE/$PKG_NAME"
+
+cd "$CURR_DIR" || exit 1
 
 ###############################################################################
 
