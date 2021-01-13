@@ -11,7 +11,12 @@ if [[ ! -f "${ca_zoo}" ]]; then
 fi
 
 echo "Updating config.sub"
-${WGET} -q -O config.sub --ca-certificate="${ca_zoo}" 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD'
+if ! ${WGET} -q -O config.sub --ca-certificate="${ca_zoo}" \
+    'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD';
+then
+    echo "config.sub download failed"
+    exit 1
+fi
 
 if [[ $(wc -c < config.sub) -eq 0 ]]; then
     echo "config.sub download failed"
@@ -23,7 +28,12 @@ chmod +x config.sub
 xattr -d com.apple.quarantine config.sub 2>/dev/null
 
 echo "Updating config.guess"
-${WGET} -q -O config.guess --ca-certificate="${ca_zoo}" 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD'
+if ! ${WGET} -q -O config.guess --ca-certificate="${ca_zoo}" \
+    'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD';
+then
+    echo "config.sub download failed"
+    exit 1
+fi
 
 if [[ $(wc -c < config.guess) -eq 0 ]]; then
     echo "config.sub download failed"
@@ -35,7 +45,12 @@ chmod +x config.guess
 xattr -d com.apple.quarantine config.guess 2>/dev/null
 
 echo "Updating bootstrap cacert.pem"
-${WGET} -q -L -O ../bootstrap/cacert.pem --ca-certificate="${ca_zoo}" 'https://curl.se/ca/cacert.pem'
+if ! ${WGET} -q -O ../bootstrap/cacert.pem --ca-certificate="${ca_zoo}" \
+    'https://curl.se/ca/cacert.pem';
+then
+    echo "cacert.pem download failed"
+    exit 1
+fi
 
 if [[ $(wc -c < ../bootstrap/cacert.pem) -eq 0 ]]; then
     echo "cacert.pem download failed"
@@ -43,7 +58,12 @@ if [[ $(wc -c < ../bootstrap/cacert.pem) -eq 0 ]]; then
 fi
 
 echo "Updating bootstrap icannbundle.pem"
-${WGET} -q -O ../bootstrap/icannbundle.pem --ca-certificate="${ca_zoo}" 'https://data.iana.org/root-anchors/icannbundle.pem'
+if ! ${WGET} -q -O ../bootstrap/icannbundle.pem --ca-certificate="${ca_zoo}" \
+    'https://data.iana.org/root-anchors/icannbundle.pem';
+then
+    echo "icannbundle.pem download failed"
+    exit 1
+fi
 
 if [[ $(wc -c < ../bootstrap/icannbundle.pem) -eq 0 ]]; then
     echo "icannbundle.pem download failed"
