@@ -47,14 +47,6 @@ fi
 
 ###############################################################################
 
-if ! ./build-base.sh
-then
-    echo "Failed to build GNU base packages"
-    exit 1
-fi
-
-###############################################################################
-
 if ! ./build-openssl.sh
 then
     echo "Failed to build OpenSSL"
