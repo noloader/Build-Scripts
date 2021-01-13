@@ -19,6 +19,7 @@ SSL_DIR=openssl-1.0.2u
 PREFIX="$HOME/.build-scripts/wget"
 LIBDIR="$PREFIX/lib"
 CACERTDIR="$PREFIX/cacert"
+CACERTFILE="$CACERTDIR/cacert.pem"
 
 ###############################################################################
 
@@ -107,9 +108,9 @@ echo
 
 # Copy our copy of cacerts to bootstrap
 mkdir -p "$CACERTDIR"
-cp cacert.pem "$CACERTDIR/cacert.pem"
+cp cacert.pem "$CACERTDIR"
 
-echo "Copy cacert.pem to $CACERTDIR/cacert.pem"
+echo "Copy cacert.pem to $CACERTFILE"
 echo "Done."
 
 ############################## OpenSSL ##############################
@@ -180,6 +181,7 @@ cd "$BOOTSTRAP_DIR/$UNISTR_DIR" || exit 1
     OPENSSL_LIBS="$OPENSSL_LIBS" \
 ./configure \
     --prefix="$PREFIX" \
+    --sysconfdir="$PREFIX/etc" \
     --disable-shared
 
 if [[ "$?" -ne 0 ]]; then
@@ -221,8 +223,8 @@ fi
     PKG_CONFIG_PATH="$LIBDIR/pkgconfig/" \
     OPENSSL_LIBS="$OPENSSL_LIBS" \
 ./configure \
-    --sysconfdir="$PREFIX/etc" \
     --prefix="$PREFIX" \
+    --sysconfdir="$PREFIX/etc" \
     --with-ssl=openssl \
     --with-openssl=yes \
     --with-libunistring-prefix="${PREFIX}" \
@@ -245,7 +247,7 @@ if [[ "$?" -ne "0" ]]; then
 fi
 
 # Fix makefiles. No shared objects.
-(IFS="" find "$PWD" -iname 'Makefile' -print | while read -r file
+IFS= find "$PWD" -iname 'Makefile' -print | while read -r file
 do
     sed "s|-lssl|$LIBDIR/libssl.a|g" "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
@@ -253,7 +255,7 @@ do
     mv "$file.fixed" "$file"
     sed "s|-lunistring|$LIBDIR/libunistring.a|g" "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
-done)
+done
 
 if ! make -j "$INSTX_JOBS" V=1; then
     echo "Failed to build Wget"
@@ -272,7 +274,7 @@ fi
     echo "ca_directory = $PREFIX/cacert/"
     echo "ca_certificate = $PREFIX/cacert/cacert.pem"
     echo ""
-} > "$PREFIX/etc/wgetrc"
+} >> "$PREFIX/etc/wgetrc"
 
 # Cleanup
 if true; then
