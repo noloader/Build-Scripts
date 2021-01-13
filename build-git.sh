@@ -317,7 +317,7 @@ if [[ -z $(git config --get http.sslCAInfo) ]];
 then
     echo ""
     echo "*****************************************************************************"
-    echo "Configuring Git to use CA store at $INSTX_CACERT_PATH/cacert.pem"
+    echo "Configuring Git to use CA store at $INSTX_CACERT_FILE"
     echo "*****************************************************************************"
 
     git config --global http.sslCAInfo "$INSTX_CACERT_FILE"

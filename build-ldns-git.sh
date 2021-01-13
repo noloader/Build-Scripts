@@ -119,9 +119,9 @@ echo "**********************"
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
     --with-ssl="${INSTX_PREFIX}" \
-    --with-ca-file="$INSTX_UNBOUND_ICANN_FILE" \
-    --with-ca-path="$INSTX_UNBOUND_ICANN_PATH" \
-    --with-trust-anchor="$INSTX_UNBOUND_ROOTKEY_FILE" \
+    --with-ca-file="$INSTX_ICANN_FILE" \
+    --with-ca-path="$INSTX_ICANN_PATH" \
+    --with-trust-anchor="$INSTX_ROOTKEY_FILE" \
     --disable-dane-ta-usage
 
 if [[ "$?" -ne 0 ]]; then

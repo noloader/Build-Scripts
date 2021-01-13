@@ -213,7 +213,7 @@ fi
     --with-libintl-prefix="${INSTX_PREFIX}" \
     --with-libseccomp-prefix="${INSTX_PREFIX}" \
     --with-libcrypto-prefix="${INSTX_PREFIX}" \
-    --with-unbound-root-key-file="$INSTX_UNBOUND_ROOTKEY_FILE" \
+    --with-unbound-root-key-file="$INSTX_ROOTKEY_FILE" \
     --with-default-trust-store-file="$INSTX_CACERT_FILE" \
     --with-default-trust-store-dir="$INSTX_CACERT_PATH"
 
