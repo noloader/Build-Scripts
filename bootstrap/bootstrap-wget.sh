@@ -17,20 +17,16 @@ SSL_DIR=openssl-1.0.2u
 
 # Install location
 PREFIX="$HOME/.build-scripts/wget"
+BINDIR="$PREFIX/bin"
 LIBDIR="$PREFIX/lib"
 CACERTDIR="$PREFIX/cacert"
 CACERTFILE="$CACERTDIR/cacert.pem"
 
-###############################################################################
-
-CURR_DIR=$(pwd)
-function finish {
-    cd "$CURR_DIR" || exit 1
-}
-trap finish EXIT
-
 # Sets the number of make jobs if not set in environment
 : "${INSTX_JOBS:=2}"
+
+# Make the directories
+mkdir -p "$PREFIX" "$LIBDIR" "$CACERTDIR"
 
 ###############################################################################
 
@@ -169,17 +165,22 @@ if ! make -j "$INSTX_JOBS"; then
     exit 1
 fi
 
+rm -f "$PREFIX/openssl.cnf"
+
 if ! make install_sw; then
     echo "Failed to install OpenSSL"
     exit 1
 fi
+
+# OpenSSL does not honor no-engines
+rm -rf "$LIBDIR/engines"
 
 # Write essential values
 {
     echo "RANDFILE = \$ENV::HOME/.rand"
     echo "certificate = $CACERTDIR/cacert.pem"
 
-} > "$PREFIX/openssl.cnf"
+} >> "$PREFIX/openssl.cnf"
 
 ############################## Unistring ##############################
 
@@ -203,9 +204,7 @@ cd "$BOOTSTRAP_DIR/$UNISTR_DIR" || exit 1
 ./configure \
     --prefix="$PREFIX" \
     --sysconfdir="$PREFIX/etc" \
-    --disable-shared \
-    --without-libiconv \
-    --without-libpth
+    --disable-shared
 
 if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Unistring"
