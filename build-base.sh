@@ -17,6 +17,16 @@ PKG_NAME=gnu-base
 
 ###############################################################################
 
+# PKG_NAME trick does not work here...
+if [[ "$INSTX_BASE_RECURSION_GUARD" == "yes" ]]; then
+	exit 0
+else
+	INSTX_BASE_RECURSION_GUARD=yes
+	export INSTX_BASE_RECURSION_GUARD
+fi
+
+###############################################################################
+
 # Get the environment as needed.
 if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     if ! source ./setup-environ.sh
@@ -130,5 +140,6 @@ fi
 ###############################################################################
 
 touch "$INSTX_PKG_CACHE/$PKG_NAME"
+unset INSTX_BASE_RECURSION_GUARD
 
 exit 0

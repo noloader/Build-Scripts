@@ -278,23 +278,18 @@ else
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
 fi
 
-cd "$CURR_DIR" || exit 1
-
-###############################################################################
-
-# Delete the file to rebuild the package.
-echo "****************************"
-echo "Marking package as installed"
-echo "****************************"
-echo "PKG_NAME: $PKG_NAME"
-touch "$INSTX_PKG_CACHE/$PKG_NAME"
-
 ###############################################################################
 
 echo ""
 echo "*****************************************************************************"
 echo "Please run Bash's 'hash -r' to update program cache in the current shell"
 echo "*****************************************************************************"
+
+###############################################################################
+
+touch "$INSTX_PKG_CACHE/$PKG_NAME"
+
+cd "$CURR_DIR" || exit 1
 
 ###############################################################################
 
