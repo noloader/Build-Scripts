@@ -46,6 +46,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-pcre2.sh
+then
+    echo "Failed to build PCRE2"
+    exit 1
+fi
+
+###############################################################################
+
 echo ""
 echo "========================================"
 echo "================= Tar =================="
@@ -89,7 +97,8 @@ echo "**********************"
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
     --with-libiconv-prefix="${INSTX_PREFIX}" \
-    --with-libintl-prefix="${INSTX_PREFIX}"
+    --with-libintl-prefix="${INSTX_PREFIX}" \
+    --with-libpcre2-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Tar"
