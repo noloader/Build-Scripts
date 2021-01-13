@@ -81,9 +81,28 @@ elif $CC $CFLAGS comptest.c -kPIC -o /dev/null &>/dev/null; then
     OPT_PIC=-kPIC
 fi
 
+# Needed for Solaris
+if $CC $CFLAGS comptest.c -lresolv -lsocket -lnsl -o /dev/null &>/dev/null; then
+    OPT_SOCKET="-lresolv -lsocket -lnsl"
+elif $CC $CFLAGS comptest.c -lsocket -lnsl -o /dev/null &>/dev/null; then
+    OPT_SOCKET="-lsocket -lnsl"
+elif $CC $CFLAGS comptest.c -lsocket -o /dev/null &>/dev/null; then
+    OPT_SOCKET="-lsocket"
+fi
+
+# Needed for some BSDs
 if $CC $CFLAGS comptest.c -ldl -o /dev/null &>/dev/null; then
     OPT_LDL=-ldl
 fi
+
+echo
+echo "*************************************************"
+echo Bootstrap options:
+echo "  OPT_BITS: $OPT_BITS"
+echo "  OPT_PIC: $OPT_PIC"
+echo "  OPT_LDL: $OPT_LDL"
+echo "  OPT_SOCKET: $OPT_SOCKET"
+echo "*************************************************"
 
 IS_DARWIN=$(echo -n "$(uname -s 2>&1)" | grep -i -c 'darwin')
 IS_LINUX=$(echo -n "$(uname -s 2>&1)" | grep -i -c 'linux')
@@ -162,7 +181,7 @@ fi
 ############################ OpenSSL libs #############################
 
 # OpenSSL does not honor no-dso. Needed by Unistring and Wget.
-OPENSSL_LIBS="$LIBDIR/libssl.a $LIBDIR/libcrypto.a $OPT_LDL"
+OPENSSL_LIBS="$LIBDIR/libssl.a $LIBDIR/libcrypto.a"
 
 ############################## Unistring ##############################
 
@@ -182,6 +201,7 @@ cd "$BOOTSTRAP_DIR/$UNISTR_DIR" || exit 1
     LDFLAGS="$LDFLAGS" \
     PKG_CONFIG_PATH="$LIBDIR/pkgconfig/" \
     OPENSSL_LIBS="$OPENSSL_LIBS" \
+    LIBS="$OPT_SOCKET $OPT_LDL" \
 ./configure \
     --prefix="$PREFIX" \
     --sysconfdir="$PREFIX/etc" \
@@ -225,13 +245,14 @@ fi
     LDFLAGS="$LDFLAGS" \
     PKG_CONFIG_PATH="$LIBDIR/pkgconfig/" \
     OPENSSL_LIBS="$OPENSSL_LIBS" \
+    LIBS="$OPT_SOCKET $OPT_LDL" \
 ./configure \
     --prefix="$PREFIX" \
     --sysconfdir="$PREFIX/etc" \
-    --with-ssl=openssl \
-    --with-openssl=yes \
     --with-libunistring-prefix="${PREFIX}" \
     --with-libssl-prefix="${PREFIX}" \
+    --with-ssl=openssl \
+    --with-openssl=yes \
     --without-zlib \
     --without-libpsl \
     --without-libuuid \
