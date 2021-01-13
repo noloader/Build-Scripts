@@ -107,7 +107,7 @@ fi
 
 # Trigger a rebuild of PCRE2
 
-rm "$INSTX_PKG_CACHE/pcre2"
+rm -f "$INSTX_PKG_CACHE/pcre2"
 
 if ! ./build-pcre2.sh
 then
@@ -119,7 +119,7 @@ fi
 
 # Trigger a rebuild of IDN2
 
-rm "$INSTX_PKG_CACHE/idn2"
+rm -f "$INSTX_PKG_CACHE/idn2"
 
 if ! ./build-idn2.sh
 then
