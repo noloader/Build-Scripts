@@ -39,7 +39,7 @@ if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     fi
 fi
 
-if [[ -e "$INSTX_PKG_CACHE/$PKG_NAME" ]]; then
+if [[ -e "${INSTX_PKG_CACHE}/${PKG_NAME}" ]]; then
     echo ""
     echo "$PKG_NAME is already installed."
     exit 0
@@ -120,7 +120,7 @@ fi
 
 # Trigger a rebuild of PCRE2
 
-rm -f "$INSTX_PKG_CACHE/pcre2"
+rm -f "${INSTX_PKG_CACHE}/pcre2"
 
 if ! ./build-pcre2.sh
 then
@@ -132,7 +132,7 @@ fi
 
 # Trigger a rebuild of IDN2
 
-rm -f "$INSTX_PKG_CACHE/idn2"
+rm -f "${INSTX_PKG_CACHE}/idn2"
 
 if ! ./build-idn2.sh
 then
@@ -142,6 +142,6 @@ fi
 
 ###############################################################################
 
-touch "$INSTX_PKG_CACHE/$PKG_NAME"
+touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
 exit 0

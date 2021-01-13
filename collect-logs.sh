@@ -13,7 +13,7 @@ fi
 # be bison-config.log.zip, bison-test-suite.log.zip, etc.
 if [[ -n "$1" ]]; then
     PKG_PREFIX="$1-"
-elif [[ -n "$PKG_NAME" ]]; then
+elif [[ -n "${PKG_NAME}" ]]; then
     PKG_PREFIX="$PKG_NAME-"
 else
     PKG_PREFIX=

@@ -17,7 +17,7 @@ if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     fi
 fi
 
-if [[ -e "$INSTX_PKG_CACHE/ncurses" ]] && [[ -e "$INSTX_PKG_CACHE/readline" ]]; then
+if [[ -e "${INSTX_PKG_CACHE}/ncurses" ]] && [[ -e "${INSTX_PKG_CACHE}/readline" ]]; then
     echo ""
     echo "Ncurses and Readline are already installed."
     exit 0
@@ -35,8 +35,8 @@ fi
 ###############################################################################
 
 # Rebuild them as a pair
-rm -f "$INSTX_PKG_CACHE/ncurses"
-rm -f "$INSTX_PKG_CACHE/readline"
+rm -f "${INSTX_PKG_CACHE}/ncurses"
+rm -f "${INSTX_PKG_CACHE}/readline"
 
 ###############################################################################
 

@@ -18,7 +18,7 @@ if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     fi
 fi
 
-if [[ -e "$INSTX_PKG_CACHE/$PKG_NAME" ]]; then
+if [[ -e "${INSTX_PKG_CACHE}/${PKG_NAME}" ]]; then
     echo ""
     echo "$PKG_NAME is already installed."
     exit 0
@@ -112,7 +112,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Unistring"
     echo "*****************************"
 
-    bash ../collect-logs "$PKG_NAME"
+    bash ../collect-logs "${PKG_NAME}"
     exit 1
 fi
 
@@ -131,7 +131,7 @@ then
     echo "Failed to build Unistring"
     echo "*****************************"
 
-    bash ../collect-logs "$PKG_NAME"
+    bash ../collect-logs "${PKG_NAME}"
     exit 1
 fi
 
@@ -154,7 +154,7 @@ then
     echo "Failed to test Unistring"
     echo "*****************************"
 
-    bash ../collect-logs "$PKG_NAME"
+    bash ../collect-logs "${PKG_NAME}"
     exit 1
 fi
 
@@ -176,7 +176,7 @@ fi
 
 ###############################################################################
 
-touch "$INSTX_PKG_CACHE/$PKG_NAME"
+touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
 cd "$CURR_DIR" || exit 1
 

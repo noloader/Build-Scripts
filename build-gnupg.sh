@@ -246,7 +246,7 @@ fi
 
 ###############################################################################
 
-touch "$INSTX_PKG_CACHE/$PKG_NAME"
+touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
 cd "$CURR_DIR" || exit 1
 

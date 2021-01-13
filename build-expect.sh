@@ -19,7 +19,7 @@ if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     fi
 fi
 
-if [[ -e "$INSTX_PKG_CACHE/$PKG_NAME" ]]; then
+if [[ -e "${INSTX_PKG_CACHE}/${PKG_NAME}" ]]; then
     echo ""
     echo "$PKG_NAME is already installed."
     exit 0
@@ -140,7 +140,7 @@ echo "**************************************************************************
 
 ###############################################################################
 
-touch "$INSTX_PKG_CACHE/$PKG_NAME"
+touch "${INSTX_PKG_CACHE}/${PKG_NAME}"
 
 cd "$CURR_DIR" || exit 1
 

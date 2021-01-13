@@ -35,7 +35,7 @@ if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     fi
 fi
 
-if [[ -e "$INSTX_PKG_CACHE/iconv" ]] && [[ -e "$INSTX_PKG_CACHE/gettext" ]]; then
+if [[ -e "${INSTX_PKG_CACHE}/iconv" ]] && [[ -e "${INSTX_PKG_CACHE}/gettext" ]]; then
     echo ""
     echo "iConv and GetText are already installed."
     exit 0
@@ -44,8 +44,8 @@ fi
 ###############################################################################
 
 # Rebuild them as a pair
-rm -f "$INSTX_PKG_CACHE/iconv"
-rm -f "$INSTX_PKG_CACHE/gettext"
+rm -f "${INSTX_PKG_CACHE}/iconv"
+rm -f "${INSTX_PKG_CACHE}/gettext"
 
 ###############################################################################
 
@@ -81,7 +81,7 @@ fi
 
 # Due to circular dependency. Once GetText is built, we need
 # to build iConvert again so it picks up the new GetText.
-rm "$INSTX_PKG_CACHE/iconv"
+rm "${INSTX_PKG_CACHE}/iconv"
 
 if [[ "$IS_DARWIN" -ne 0 || "$IS_LINUX" -ne 0 ]]
 then
