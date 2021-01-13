@@ -137,14 +137,18 @@ else
     "${MAKE}" "${MAKE_FLAGS[@]}"
 fi
 
-cd "$CURR_DIR" || exit 1
-
 ###############################################################################
 
 echo ""
 echo "*****************************************************************************"
 echo "Please run Bash's 'hash -r' to update program cache in the current shell"
 echo "*****************************************************************************"
+
+###############################################################################
+
+touch "$INSTX_PKG_CACHE/$PKG_NAME"
+
+cd "$CURR_DIR" || exit 1
 
 ###############################################################################
 
@@ -155,11 +159,6 @@ if true; then
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
-
-    # ./build-ghidra.sh 2>&1 | tee build-ghidra.log
-    if [[ -e build-ghidra.log ]]; then
-        rm -f build-ghidra.log
-    fi
 fi
 
 exit 0

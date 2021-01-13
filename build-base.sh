@@ -6,8 +6,8 @@
 # The packages built by this script are Patchelf, Ncurses, Readline, iConvert
 # and GetText.
 #
-# GetText is built in two stages. First, the iConv/GetText pair is built for
-# its circular dependency. Second, the final GetText is build which includes
+# GetText is built in two stages. First, the iConv/GetText pair is built due
+# to circular dependency. Second, the final GetText is build which includes
 # libunistring and libxml2.
 #
 # Most GNU packages will just call build-base.sh to get the common packages
@@ -17,7 +17,10 @@ PKG_NAME=gnu-base
 
 ###############################################################################
 
-# PKG_NAME trick does not work here...
+# PKG_NAME trick does not work here... Export INSTX_BASE_RECURSION_GUARD
+# to avoid reentering this script for recipes like IDN2 and PCRE2.
+# INSTX_BASE_RECURSION_GUARD goes out of scope when this shell dies.
+
 if [[ "$INSTX_BASE_RECURSION_GUARD" == "yes" ]]; then
 	exit 0
 else
@@ -140,6 +143,5 @@ fi
 ###############################################################################
 
 touch "$INSTX_PKG_CACHE/$PKG_NAME"
-unset INSTX_BASE_RECURSION_GUARD
 
 exit 0

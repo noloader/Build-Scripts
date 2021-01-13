@@ -138,15 +138,18 @@ then
     exit 1
 fi
 
-# Set package status to installed. Delete the file to rebuild the package.
-touch "$INSTX_PKG_CACHE/$PKG_NAME"
-
 ###############################################################################
 
 echo ""
 echo "*****************************************************************************"
 echo "Please run Bash's 'hash -r' to update program cache in the current shell"
 echo "*****************************************************************************"
+
+###############################################################################
+
+touch "$INSTX_PKG_CACHE/$PKG_NAME"
+
+cd "$CURR_DIR" || exit 1
 
 ###############################################################################
 
