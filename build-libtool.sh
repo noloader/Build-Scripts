@@ -5,6 +5,7 @@
 
 LIBTOOL_TAR=libtool-2.4.6.tar.gz
 LIBTOOL_DIR=libtool-2.4.6
+PKG_NAME=libtool
 
 ###############################################################################
 

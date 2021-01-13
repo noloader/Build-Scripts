@@ -6,6 +6,7 @@
 B2SUM_VER=20190724
 B2SUM_TAR=${B2SUM_VER}.tar.gz
 B2SUM_DIR=BLAKE2-${B2SUM_VER}
+PKG_NAME=blake2
 
 ###############################################################################
 

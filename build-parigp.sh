@@ -6,6 +6,7 @@
 PARI_VER=2.13.0
 PARI_TAR=pari-${PARI_VER}.tar.gz
 PARI_DIR=pari-${PARI_VER}
+PKG_NAME=pari
 
 ###############################################################################
 

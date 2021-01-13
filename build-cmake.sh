@@ -6,6 +6,7 @@
 CMAKE_VER="3.14.3"
 CMAKE_TAR=cmake-"$CMAKE_VER".tar.gz
 CMAKE_DIR=cmake-"$CMAKE_VER"
+PKG_NAME=cmake
 
 ###############################################################################
 

@@ -6,6 +6,7 @@
 AUTOGEN_VER=5.18.16
 AUTOGEN_TAR="autogen-${AUTOGEN_VER}.tar.gz"
 AUTOGEN_DIR="autogen-${AUTOGEN_VER}"
+PKG_NAME=autogen
 
 ###############################################################################
 

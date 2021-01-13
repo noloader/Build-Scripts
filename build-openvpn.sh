@@ -10,6 +10,7 @@ TUNTAP_DIR=tuntap-${TUNTAP_VER}
 OPENVPN_VER=2.5.0
 OPENVPN_TAR=openvpn-${OPENVPN_VER}.tar.gz
 OPENVPN_DIR=openvpn-${OPENVPN_VER}
+PKG_NAME=openvpn
 
 ###############################################################################
 

@@ -6,6 +6,7 @@
 WGET_VER=1.21.1
 WGET_TAR=wget-${WGET_VER}.tar.gz
 WGET_DIR=wget-${WGET_VER}
+PKG_NAME=wget
 
 ###############################################################################
 

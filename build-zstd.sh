@@ -6,6 +6,7 @@
 ZSTD_VER=v1.4.5
 ZSTD_TAR="zstd-${ZSTD_VER}.tar.gz"
 ZSTD_DIR="zstd-${ZSTD_VER}"
+PKG_NAME=zstd
 
 ###############################################################################
 

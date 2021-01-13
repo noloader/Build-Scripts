@@ -7,6 +7,7 @@
 PYTHON_VER=2.7.18
 PYTHON_TAR=Python-${PYTHON_VER}.tgz
 PYTHON_DIR=Python-${PYTHON_VER}
+PKG_NAME=python27
 
 ###############################################################################
 

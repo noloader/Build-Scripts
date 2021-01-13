@@ -6,6 +6,7 @@
 
 OPENSSH_TAR=openssh-8.4p1.tar.gz
 OPENSSH_DIR=openssh-8.4p1
+PKG_NAME=openssh
 
 ###############################################################################
 

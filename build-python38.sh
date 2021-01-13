@@ -6,6 +6,7 @@
 PYTHON_VER=3.8.7
 PYTHON_TAR=Python-${PYTHON_VER}.tgz
 PYTHON_DIR=Python-${PYTHON_VER}
+PKG_NAME=python38
 
 ###############################################################################
 

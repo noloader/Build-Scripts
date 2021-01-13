@@ -9,7 +9,7 @@
 COBOL_VER=3.1
 COBOL_TAR=gnucobol-${COBOL_VER}-rc1.tar.gz
 COBOL_DIR=gnucobol-${COBOL_VER}-rc1
-PKG_NAME=gnucobol
+PKG_NAME=gnucobol-rc
 
 ###############################################################################
 

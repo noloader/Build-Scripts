@@ -7,6 +7,7 @@ FIND_VER=4.7.0
 FIND_XZ=findutils-${FIND_VER}.tar.xz
 FIND_TAR=findutils-${FIND_VER}.tar
 FIND_DIR=findutils-${FIND_VER}
+PKG_NAME=findutils
 
 ###############################################################################
 

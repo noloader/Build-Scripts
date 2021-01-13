@@ -6,6 +6,7 @@
 GDB_VER=9.2
 GDB_TAR=gdb-${GDB_VER}.tar.gz
 GDB_DIR=gdb-${GDB_VER}
+PKG_NAME=gdb
 
 ###############################################################################
 

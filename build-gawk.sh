@@ -6,6 +6,7 @@
 GAWK_VER=5.1.0
 GAWK_TAR=gawk-${GAWK_VER}.tar.gz
 GAWK_DIR=gawk-${GAWK_VER}
+PKG_NAME=gawk
 
 ###############################################################################
 

@@ -6,6 +6,7 @@
 NSD_VER=4.3.3
 NSD_TAR=nsd-${NSD_VER}.tar.gz
 NSD_DIR=nsd-${NSD_VER}
+PKG_NAME=nsd
 
 ###############################################################################
 

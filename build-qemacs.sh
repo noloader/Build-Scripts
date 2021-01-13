@@ -8,6 +8,7 @@
 # http://cvs.savannah.nongnu.org/viewvc/qemacs/qemacs/
 
 QEMACS_DIR=qemacs
+PKG_NAME=qemacs
 
 ###############################################################################
 

@@ -6,6 +6,7 @@
 DOS2UNIX_VER=7.4.1
 DOS2UNIX_TAR=dos2unix-${DOS2UNIX_VER}.tar.gz
 DOS2UNIX_DIR=dos2unix-${DOS2UNIX_VER}
+PKG_NAME=dos2unix
 
 ###############################################################################
 

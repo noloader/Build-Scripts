@@ -6,6 +6,7 @@
 SIPW_VER=1.9.15
 SIPW_TAR=sipwitch-${SIPW_VER}.tar.gz
 SIPW_DIR=sipwitch-${SIPW_VER}
+PKG_NAME=sipwitch
 
 ###############################################################################
 

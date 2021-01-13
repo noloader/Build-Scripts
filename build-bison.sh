@@ -10,6 +10,7 @@
 BISON_VER=3.7.4
 BISON_TAR=bison-${BISON_VER}.tar.gz
 BISON_DIR=bison-${BISON_VER}
+PKG_NAME=bison
 
 ###############################################################################
 

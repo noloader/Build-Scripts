@@ -7,6 +7,7 @@
 CLAMAV_VER=0.103.0
 CLAMAV_TAR=clamav-${CLAMAV_VER}.tar.gz
 CLAMAV_DIR=clamav-${CLAMAV_VER}
+PKG_NAME=clamav
 
 ###############################################################################
 

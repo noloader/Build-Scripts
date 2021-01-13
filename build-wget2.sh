@@ -6,6 +6,7 @@
 # Per TR, the tarballs are pre-release. We should clone Master.
 
 WGET_DIR=wget2
+PKG_NAME=wget2
 
 ###############################################################################
 

@@ -9,6 +9,7 @@
 PKGCONFIG_VER=0.29.2
 PKGCONFIG_TAR=pkg-config-${PKGCONFIG_VER}.tar.gz
 PKGCONFIG_DIR=pkg-config-${PKGCONFIG_VER}
+PKG_NAME=pkg-config
 
 ###############################################################################
 

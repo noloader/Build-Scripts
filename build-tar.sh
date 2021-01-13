@@ -6,6 +6,7 @@
 TAR_VER=1.32
 TAR_TAR=tar-${TAR_VER}.tar.gz
 TAR_DIR=tar-${TAR_VER}
+PKG_NAME=tar
 
 ###############################################################################
 

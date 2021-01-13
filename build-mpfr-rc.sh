@@ -5,7 +5,7 @@
 
 MPFR_TAR=mpfr-4.1.0-rc1.tar.gz
 MPFR_DIR=mpfr-4.1.0-rc1
-PKG_NAME=mpfr
+PKG_NAME=mpfr-rc
 
 ###############################################################################
 

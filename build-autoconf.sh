@@ -7,6 +7,7 @@
 AUTOCONF_VER=2.70
 AUTOCONF_TAR="autoconf-${AUTOCONF_VER}.tar.gz"
 AUTOCONF_DIR="autoconf-${AUTOCONF_VER}"
+PKG_NAME=autoconf
 
 ###############################################################################
 

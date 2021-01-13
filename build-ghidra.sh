@@ -5,6 +5,7 @@
 
 GHIDRA_TAR=Ghidra_9.1.2_build.tar.gz
 GHIDRA_DIR=ghidra-Ghidra_9.1.2_build
+PKG_NAME=ghidra
 
 ###############################################################################
 

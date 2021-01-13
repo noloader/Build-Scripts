@@ -10,6 +10,7 @@
 BISON_VER=3.7.4.254
 BISON_TAR=bison-${BISON_VER}-a0905.tar.gz
 BISON_DIR=bison-${BISON_VER}-a0905
+PKG_NAME=bison-rc
 
 ###############################################################################
 

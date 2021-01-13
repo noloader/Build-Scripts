@@ -5,7 +5,7 @@
 
 LDNS_DIR=ldns-master
 LDNS_TAG=release-1.7.0
-PKG_NAME=ldns
+PKG_NAME=ldns-rc
 
 ###############################################################################
 

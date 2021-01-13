@@ -5,6 +5,7 @@
 
 FROLLER_TAR=file-roller-3.36.3.tar.gz
 FROLLER_DIR=file-roller-3.36.3
+PKG_NAME=file-roller
 
 ###############################################################################
 

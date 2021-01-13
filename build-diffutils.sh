@@ -7,6 +7,7 @@ DIFFUTILS_VER=3.7
 DIFFUTILS_XZ=diffutils-${DIFFUTILS_VER}.tar.xz
 DIFFUTILS_TAR=diffutils-${DIFFUTILS_VER}.tar
 DIFFUTILS_DIR=diffutils-${DIFFUTILS_VER}
+PKG_NAME=diffutils
 
 ###############################################################################
 

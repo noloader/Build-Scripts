@@ -7,6 +7,7 @@
 AUTOMAKE_VER=1.16.3
 AUTOMAKE_TAR="automake-${AUTOMAKE_VER}.tar.gz"
 AUTOMAKE_DIR="automake-${AUTOMAKE_VER}"
+PKG_NAME=automake
 
 ###############################################################################
 

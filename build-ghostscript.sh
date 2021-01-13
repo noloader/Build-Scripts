@@ -7,6 +7,7 @@ GS_VER=9.53.3
 GS_VER_DL=gs9533
 GS_TAR=ghostpdl-${GS_VER}.tar.gz
 GS_DIR=ghostpdl-${GS_VER}
+PKG_NAME=ghostpdl
 
 ###############################################################################
 

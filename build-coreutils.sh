@@ -5,6 +5,7 @@
 
 CORE_TAR=coreutils-8.32.tar
 CORE_DIR=coreutils-8.32
+PKG_NAME=coreutils
 
 ###############################################################################
 
