@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Tar from sources.
 
-TAR_VER=1.32
+TAR_VER=1.33
 TAR_TAR=tar-${TAR_VER}.tar.gz
 TAR_DIR=tar-${TAR_VER}
 PKG_NAME=tar
