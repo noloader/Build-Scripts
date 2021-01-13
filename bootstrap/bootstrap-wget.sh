@@ -60,11 +60,11 @@ fi
 
 if [[ -z "$CC" ]]
 then
-    if [[ -n $(command -v cc 2>/dev/null) ]]; then
+    if [[ -n "$(command -v cc 2>/dev/null)" ]]; then
         CC=cc; CXX=CC
-    elif [[ -n $(command -v gcc 2>/dev/null) ]]; then
+    elif [[ -n "$(command -v gcc 2>/dev/null)" ]]; then
         CC=gcc; CXX=g++
-    elif [[ -n $(command -v clang 2>/dev/null) ]]; then
+    elif [[ -n "$(command -v clang 2>/dev/null)" ]]; then
         CC=clang; CXX=clang++
     fi
 fi
@@ -108,7 +108,10 @@ echo
 
 # Copy our copy of cacerts to bootstrap
 mkdir -p "$CACERTDIR"
-cp cacert.pem "$CACERTDIR"
+if ! cp cacert.pem "$CACERTDIR"; then
+    echo "Failed to install cacert.pem"
+    exit 1
+fi
 
 echo "Copy cacert.pem to $CACERTFILE"
 echo "Done."
