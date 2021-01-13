@@ -118,7 +118,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "*****************************"
     echo "Failed to configure libgcrypt"
     echo "*****************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -156,7 +156,7 @@ then
     echo "*****************************"
     echo "Failed to test libgcrypt (1)"
     echo "*****************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -166,7 +166,7 @@ then
     echo "*****************************"
     echo "Failed to test libgcrypt (2)"
     echo "*****************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

@@ -248,7 +248,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Wget"
     echo "************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -267,7 +267,7 @@ then
     echo "Failed to build Wget"
     echo "************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -299,7 +299,7 @@ then
         echo "Installing anyway..."
         echo "************************"
 
-        bash ../collect-logs.sh
+        bash ../collect-logs.sh "${PKG_NAME}"
         # exit 1
     fi
 else

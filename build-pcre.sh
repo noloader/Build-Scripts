@@ -131,7 +131,7 @@ then
     echo "**********************"
     echo "Failed to build pcre"
     echo "**********************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -152,7 +152,7 @@ if [[ "$IS_LINUX" -ne 0 ]]; then
         echo "**********************"
         echo "Failed to test pcre"
         echo "**********************"
-        bash ../collect-logs.sh
+        bash ../collect-logs.sh "${PKG_NAME}"
         exit 1
     fi
 fi

@@ -186,7 +186,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "***************************"
     echo "Failed to configure GnuPG"
     echo "***************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -204,7 +204,7 @@ then
     echo "***************************"
     echo "Failed to build GnuPG"
     echo "***************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -224,7 +224,7 @@ then
     echo "***************************"
     echo "Failed to test GnuPG"
     echo "***************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

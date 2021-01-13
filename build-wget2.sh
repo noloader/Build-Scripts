@@ -297,7 +297,7 @@ then
         echo "Failed to test Wget2"
         echo "**********************"
 
-        bash ../collect-logs.sh
+        bash ../collect-logs.sh "${PKG_NAME}"
         exit 1
     fi
 else

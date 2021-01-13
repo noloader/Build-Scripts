@@ -176,7 +176,7 @@ MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
    echo "Failed to test Emacs"
-   bash ../collect-logs.sh
+   bash ../collect-logs.sh "${PKG_NAME}"
    # exit 1
 fi
 

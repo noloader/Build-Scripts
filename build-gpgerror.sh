@@ -101,7 +101,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "********************************"
     echo "Failed to configure libgpg-error"
     echo "********************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -119,7 +119,7 @@ then
     echo "********************************"
     echo "Failed to build libgpg-error"
     echo "********************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -139,7 +139,7 @@ then
     echo "********************************"
     echo "Failed to test libgpg-error"
     echo "********************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

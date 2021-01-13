@@ -133,7 +133,7 @@ then
     echo "Failed to build IDN2"
     echo "**********************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -153,7 +153,7 @@ then
     echo "**********************"
     echo "Failed to test IDN2"
     echo "**********************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
 
     echo "Installing IDN2 anyways..."
     #exit 1

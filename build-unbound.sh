@@ -147,7 +147,7 @@ then
     echo "Failed to configure Unbound"
     echo "***************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -166,7 +166,7 @@ then
     echo "Failed to build Unbound"
     echo "***************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -184,7 +184,7 @@ then
     echo "Failed to test Unbound"
     echo "***************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

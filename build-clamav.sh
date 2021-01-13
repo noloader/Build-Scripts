@@ -116,7 +116,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "**************************"
     echo "Failed to configure ClamAV"
     echo "**************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
 fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
@@ -133,7 +133,7 @@ then
     echo "**************************"
     echo "Failed to build ClamAV"
     echo "**************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -150,7 +150,7 @@ then
     echo "**************************"
     echo "Failed to test ClamAV"
     echo "**************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

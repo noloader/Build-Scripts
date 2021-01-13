@@ -151,7 +151,7 @@ MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build Zile"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -168,7 +168,7 @@ echo "**********************"
 #    echo "**********************"
 #    echo "Failed to test Zile"
 #    echo "**********************"
-#    bash ../collect-logs.sh
+#    bash ../collect-logs.sh "${PKG_NAME}"
 #    exit 1
 #fi
 

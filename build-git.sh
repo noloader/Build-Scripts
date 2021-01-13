@@ -156,7 +156,7 @@ then
     echo "Failed to bootstrap Git"
     echo "***********************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -221,7 +221,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Git"
     echo "***********************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -250,7 +250,7 @@ then
     echo "Failed to build Git"
     echo "***********************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -271,7 +271,7 @@ then
     echo "Failed to test Git"
     echo "***********************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

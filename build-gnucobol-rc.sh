@@ -177,7 +177,7 @@ else
 fi
 
 # Collect test logs for error reporting
-bash ../collect-logs.sh
+bash ../collect-logs.sh "${PKG_NAME}"
 
 ###############################################################################
 

@@ -127,7 +127,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure GDBM"
     echo "************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -146,7 +146,7 @@ then
     echo "Failed to build GDBM"
     echo "************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -164,7 +164,7 @@ then
     echo "Failed to test GDBM"
     echo "************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

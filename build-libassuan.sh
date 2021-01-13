@@ -107,7 +107,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "*****************************"
     echo "Failed to configure libassuan"
     echo "*****************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -125,7 +125,7 @@ then
     echo "*****************************"
     echo "Failed to build libassuan"
     echo "*****************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -145,7 +145,7 @@ then
     echo "*****************************"
     echo "Failed to test libassuan"
     echo "*****************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

@@ -125,7 +125,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "**************************"
     echo "Failed to configure ntbTLS"
     echo "**************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -143,7 +143,7 @@ then
     echo "**************************"
     echo "Failed to build ntbTLS"
     echo "**************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -163,7 +163,7 @@ then
     echo "**************************"
     echo "Failed to test ntbTLS"
     echo "**************************"
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

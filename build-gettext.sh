@@ -162,7 +162,7 @@ then
     echo "Failed to configure GetText"
     echo "***************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -181,7 +181,7 @@ then
     echo "Failed to build GetText"
     echo "***************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -205,7 +205,7 @@ then
         echo "Failed to test GetText"
         echo "***************************"
 
-        bash ../collect-logs.sh
+        bash ../collect-logs.sh "${PKG_NAME}"
 
         # Solaris and some friends fail lang-gawk
         # Darwin fails copy-acl-2.sh

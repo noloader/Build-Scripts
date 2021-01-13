@@ -116,7 +116,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Bison"
     echo "*************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -135,7 +135,7 @@ then
     echo "Failed to build Bison"
     echo "*************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -153,7 +153,7 @@ then
     echo "Failed to test Bison"
     echo "*************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
