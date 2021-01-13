@@ -225,8 +225,8 @@ export BUILD_ZLIB=0 BUILD_BZIP2=0
     CFLAGS="${INSTX_CFLAGS}" \
     CXXFLAGS="${INSTX_CXXFLAGS}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
-    LDLIBS="${INSTX_LDLIBS}" \
-    LIBS="${INSTX_LDLIBS}" \
+    LDLIBS="${opt_libm} ${INSTX_LDLIBS}" \
+    LIBS="${opt_libm} ${INSTX_LDLIBS}" \
 ./Configure -des \
     -Dprefix="${INSTX_PREFIX}" \
     -Dlibdir="${INSTX_LIBDIR}" \
@@ -240,8 +240,8 @@ export BUILD_ZLIB=0 BUILD_BZIP2=0
     -Accflags="${INSTX_CPPFLAGS} ${INSTX_CFLAGS}" \
     -Acxxflags="${INSTX_CPPFLAGS} ${INSTX_CXXFLAGS}" \
     -Aldflags="${INSTX_LDFLAGS}" \
-    -Aldlibs="${INSTX_LDLIBS}" \
-    -Alibs="${INSTX_LDLIBS}" \
+    -Aldlibs="${opt_libm} ${INSTX_LDLIBS}" \
+    -Alibs="${opt_libm} ${INSTX_LDLIBS}" \
     -Duseshrplib \
     -Dusethreads \
     -Dextras="FindBin Text Util ExtUtils Term Test HTTP"

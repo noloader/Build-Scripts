@@ -571,6 +571,14 @@ if [[ -z "$opt_optimize" ]]; then
     fi
 fi
 
+# Perl does not add -lm when needed
+if [[ -z "$opt_libm" ]]; then
+    cc_result=$(${TEST_CC} -o "$outfile" "$infile" -lm 2>&1 | wc -w)
+    if [[ "$cc_result" -eq 0 ]]; then
+        opt_libm="-lm"
+    fi
+fi
+
 # OpenBSD does not have -ldl
 if [[ -z "$opt_dl" ]]; then
     cc_result=$(${TEST_CC} -o "$outfile" "$infile" -ldl 2>&1 | wc -w)
