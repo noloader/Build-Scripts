@@ -249,11 +249,13 @@ export BUILD_ZLIB=0 BUILD_BZIP2=0
     CFLAGS="${INSTX_CFLAGS}" \
     CXXFLAGS="${INSTX_CXXFLAGS}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
-    LDLIBS="-lintl -lm ${INSTX_LDLIBS}" \
-    LIBS="-lintl -lm ${INSTX_LDLIBS}" \
+    LDLIBS="${INSTX_LDLIBS}" \
+    LIBS="${INSTX_LDLIBS}" \
 ./Configure -des \
     -Dprefix="${INSTX_PREFIX}" \
     -Dlibdir="${INSTX_LIBDIR}" \
+    -Dlocincpth="${INSTX_PREFIX}/include" \
+    -Dloclibpth="${INSTX_LIBDIR}" \
     -Dpkgconfig="${INSTX_PKGCONFIG}" \
     -Dcc="${CC}" \
     -Dcxx="${CXX}" \
@@ -262,8 +264,8 @@ export BUILD_ZLIB=0 BUILD_BZIP2=0
     -Accflags="${INSTX_CPPFLAGS} ${INSTX_CFLAGS}" \
     -Acxxflags="${INSTX_CPPFLAGS} ${INSTX_CXXFLAGS}" \
     -Aldflags="${INSTX_LDFLAGS}" \
-    -Aldlibs="-lintl -lm ${INSTX_LDLIBS}" \
-    -Alibs="-lintl -lm ${INSTX_LDLIBS}" \
+    -Aldlibs="${INSTX_LDLIBS}" \
+    -Alibs="${INSTX_LDLIBS}" \
     -Duseshrplib \
     -Dusethreads \
     -Dextras="FindBin Text Util ExtUtils Term Test HTTP"
@@ -289,7 +291,7 @@ echo "******************************"
 origin_good=$(echo '$$ORIGIN/' | sed -e 's/[\/&]/\\&/g')
 origin_fake=$(echo 'ABCDE_ORIGIN_WXYZ/' | sed -e 's/[\/&]/\\&/g')
 
-miniperl_good=$(echo '$(miniperl_objs) -lintl -lm $(libs)')
+miniperl_good=$(echo '$(miniperl_objs) $(libs)')
 miniperl_bad=$(echo '$(miniperl_objs) $(libs)')
 
 IFS= find "./" \( -name 'config.sh' -o -name 'Makefile' \) -print | while read -r file

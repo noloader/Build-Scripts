@@ -103,7 +103,7 @@ if ! CPPFLAGS="${CPPFLAGS}" \
      CFLAGS="${CFLAGS}" \
      CXXFLAGS="${CXXFLAGS}" \
      LDFLAGS="${LDFLAGS}" \
-     LIBS="-lintl -liconv ${LIBS}" \
+     LIBS="-liconv ${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build dos2unix"
