@@ -133,7 +133,7 @@ cd "$BOOTSTRAP_DIR/$SSL_DIR" || exit 1
     --prefix="$PREFIX" \
     --openssldir="$PREFIX" \
     "$OPT_INT128" "$OPT_PIC" -DPEDANTIC \
-    no-asm no-ssl2 no-ssl3 no-comp no-zlib no-zlib-dynamic \
+    no-ssl2 no-ssl3 no-comp no-zlib no-zlib-dynamic \
     no-threads no-shared no-dso no-engine
 
 # This will need to be fixed for BSDs and PowerMac
