@@ -60,7 +60,7 @@ fi
 
 if [[ -z "$CC" ]]
 then
-    if [[ -n "$(command -v cc 2>/dev/null)" ]]; then
+    if [[ -n "$(command -v cc 2>/dev/null)" && -n "$(command -v CC 2>/dev/null)" ]]; then
         CC=cc; CXX=CC
     elif [[ -n "$(command -v gcc 2>/dev/null)" ]]; then
         CC=gcc; CXX=g++
