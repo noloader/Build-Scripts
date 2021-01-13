@@ -20,7 +20,7 @@ else
 fi
 
 config_log_zip="${PKG_PREFIX}config.log.zip"
-test_suite_log_zip="${PKG_PREFIX}config.log.zip"
+test_suite_log_zip="${PKG_PREFIX}test-suite.log.zip"
 
 echo ""
 echo "**********************"

@@ -146,6 +146,11 @@ echo "**************************"
 echo "Testing package"
 echo "**************************"
 
+# Musl workaround. Musl does not load warez with a
+# non-working rpath or runpath. Of course the runpath
+# is not correct before install! Derp...
+mkdir -p "$(echo ${INSTX_OPATH} | sed 's/\$ORIGIN\///g')"
+
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
