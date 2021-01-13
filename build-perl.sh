@@ -265,7 +265,7 @@ echo "******************************"
 # https://github.com/Perl/perl5/issues/18466
 
 origin_good=$(echo '$$ORIGIN/' | sed -e 's/[\/&]/\\&/g')
-origin_fake=$(echo 'ABCDE_ORIGIN_WXYZ/' | sed -e 's/[\/&]/\\&/g')
+origin_bad=$(echo 'ABCDE_ORIGIN_WXYZ/' | sed -e 's/[\/&]/\\&/g')
 
 miniperl_good=$(echo '$(miniperl_objs) $(libs)')
 miniperl_bad=$(echo '$(miniperl_objs) $(libs)')
@@ -278,7 +278,7 @@ do
     touch -a -m -r "$file" "$file.timestamp"
     chmod a+w "$file"
 
-    sed -e "s/$origin_fake/$origin_good/g" \
+    sed -e "s/$origin_bad/$origin_good/g" \
         -e "s/$miniperl_bad/$miniperl_good/g" \
         "$file" > "$file.fixed" && \
     mv "$file.fixed" "$file"
