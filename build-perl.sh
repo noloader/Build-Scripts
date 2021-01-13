@@ -244,7 +244,7 @@ export BUILD_ZLIB=0 BUILD_BZIP2=0
     -Alibs="${opt_libm} ${INSTX_LDLIBS}" \
     -Duseshrplib \
     -Dusethreads \
-    -Dextras="FindBin Text Util ExtUtils Term Test HTTP"
+    -Dextras="FindBin Text Util Term Test HTTP"
     # -Dextras="FindBin Text::Template Test::More HTTP::Daemon HTTP::Request"
 
 if [[ "$?" -ne 0 ]]; then
