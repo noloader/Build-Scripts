@@ -56,10 +56,10 @@ if [ -z "$UNBOUND_ANCHOR" ]; then UNBOUND_ANCHOR=/sbin/unbound-anchor; fi
 
 if [[ $(ls "$UNBOUND_ANCHOR" 2>/dev/null) ]]
 then
-    echo "Updating bootstrap rootkey.pem"
-    "${UNBOUND_ANCHOR}" -a ../bootstrap/rootkey.pem -u data.iana.org
+    echo "Updating bootstrap dnsroot.key"
+    "${UNBOUND_ANCHOR}" -a ../bootstrap/dnsroot.key -u data.iana.org
 else
-    echo "Failed to update bootstrap rootkey.pem. Install unbound-anchor"
+    echo "Failed to update bootstrap dnsroot.key. Install unbound-anchor"
     exit 1
 fi
 

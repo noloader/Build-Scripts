@@ -646,7 +646,7 @@ fi
 INSTX_CACERT_PATH="${INSTX_PREFIX}/etc/pki"
 INSTX_CACERT_FILE="${INSTX_PREFIX}/etc/pki/cacert.pem"
 INSTX_ROOTKEY_PATH="${INSTX_PREFIX}/etc/unbound"
-INSTX_ROOTKEY_FILE="${INSTX_PREFIX}/etc/unbound/root.key"
+INSTX_ROOTKEY_FILE="${INSTX_PREFIX}/etc/unbound/dnsroot.key"
 INSTX_ICANN_PATH="${INSTX_PREFIX}/etc/unbound"
 INSTX_ICANN_FILE="${INSTX_PREFIX}/etc/unbound/icannbundle.pem"
 
