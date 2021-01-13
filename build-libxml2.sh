@@ -44,14 +44,6 @@ fi
 
 ###############################################################################
 
-if ! ./build-patchelf.sh
-then
-    echo "Failed to build patchelf"
-    exit 1
-fi
-
-###############################################################################
-
 if ! ./build-zlib.sh
 then
     echo "Failed to build zLib"
@@ -60,29 +52,13 @@ fi
 
 ###############################################################################
 
-if ! ./build-ncurses-readline.sh
-then
-    echo "Failed to build Ncurses and Readline"
-    exit 1
-fi
-
-###############################################################################
+# libxml2 only uses iConvert
 
 if ! ./build-iconv-gettext.sh
 then
     echo "Failed to build iConv and GetText"
     exit 1
 fi
-
-###############################################################################
-
-# build-gettext-final.sh calls build-libxml2.sh
-
-#if ! ./build-gettext-final.sh
-#then
-#    echo echo "Failed to build GetText final"
-#    exit 1
-#fi
 
 ###############################################################################
 
@@ -134,9 +110,9 @@ echo "**********************"
     --enable-static --enable-shared \
     --with-fexceptions \
     --with-iconv="${INSTX_PREFIX}" \
+    --with-zlib="${INSTX_PREFIX}" \
     --without-legacy \
-    --without-python \
-    --with-zlib="${INSTX_PREFIX}"
+    --without-python
 
 if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure libxml2"

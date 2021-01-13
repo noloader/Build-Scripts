@@ -53,33 +53,17 @@ fi
 
 ###############################################################################
 
+if ! ./build-base.sh
+then
+    echo "Failed to build GNU base packages"
+    exit 1
+fi
+
+###############################################################################
+
 if ! ./build-tasn1.sh
 then
     echo "Failed to build libtasn1"
-    exit 1
-fi
-
-###############################################################################
-
-if ! ./build-ncurses-readline.sh
-then
-    echo "Failed to build Ncurses and Readline"
-    exit 1
-fi
-
-###############################################################################
-
-if ! ./build-iconv-gettext.sh
-then
-    echo "Failed to build iConv and GetText"
-    exit 1
-fi
-
-###############################################################################
-
-if ! ./build-gettext-final.sh
-then
-    echo echo "Failed to build GetText final"
     exit 1
 fi
 

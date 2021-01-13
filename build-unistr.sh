@@ -43,29 +43,13 @@ fi
 
 ###############################################################################
 
-if ! ./build-ncurses-readline.sh
-then
-    echo "Failed to build Ncurses and Readline"
-    exit 1
-fi
-
-###############################################################################
+# libunistring only needs iConvert
 
 if ! ./build-iconv-gettext.sh
 then
     echo "Failed to build iConv and GetText"
     exit 1
 fi
-
-###############################################################################
-
-# build-gettext-final.sh calls build-unistr.sh
-
-#if ! ./build-gettext-final.sh
-#then
-#    echo echo "Failed to build GetText final"
-#    exit 1
-#fi
 
 ###############################################################################
 

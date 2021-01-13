@@ -107,7 +107,7 @@ echo "iConv ${ICONV_VER}..."
 if ! "$WGET" -q -O "$ICONV_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/pub/gnu/libiconv/$ICONV_TAR"
 then
-    echo echo "Failed to download iConv"
+    echo "Failed to download iConv"
     exit 1
 fi
 

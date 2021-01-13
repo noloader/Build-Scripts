@@ -52,9 +52,9 @@ fi
 
 ###############################################################################
 
-if ! ./build-ncurses-readline.sh
+if ! ./build-base.sh
 then
-    echo "Failed to build Ncurses and Readline"
+    echo "Failed to build GNU base packages"
     exit 1
 fi
 
