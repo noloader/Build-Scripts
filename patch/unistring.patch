@@ -62,7 +62,7 @@
          }
  
 -      memcpy ((char *) result, src, srclen);
-+      if (srclen > 0)
++      if (result && src)
 +        memcpy ((char *) result, src, srclen);
        *lengthp = srclen;
        return result;
@@ -74,7 +74,7 @@
          }
  
 -      memcpy (result, (const char *) src, srclen);
-+      if (srclen > 0)
++      if (result && src)
 +        memcpy (result, (const char *) src, srclen);
        *lengthp = srclen;
        return result;
@@ -86,7 +86,7 @@
          *destptr++ = *s++;
  #else
 -      memcpy ((char *) dest, (const char *) s, n * sizeof (UNIT));
-+      if (n > 0)
++      if (dest && s)
 +        memcpy ((char *) dest, (const char *) s, n * sizeof (UNIT));
  #endif
      }
@@ -98,7 +98,7 @@
      *destptr++ = *src++;
  #else
 -  memcpy ((char *) dest, (const char *) src, n * sizeof (UNIT));
-+  if (n > 0)
++  if (dest && src)
 +    memcpy ((char *) dest, (const char *) src, n * sizeof (UNIT));
  #endif
    return dest;
