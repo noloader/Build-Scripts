@@ -12,15 +12,15 @@ fi
 # If available, add a prefix to the log names. The names will
 # be bison-config.log.zip, bison-test-suite.log.zip, etc.
 if [[ -n "$1" ]]; then
-    PKG_PREFIX="$1-"
+    pkg_prefix="$1-"
 elif [[ -n "${PKG_NAME}" ]]; then
-    PKG_PREFIX="$PKG_NAME-"
+    pkg_prefix="$PKG_NAME-"
 else
-    PKG_PREFIX=
+    pkg_prefix=
 fi
 
-config_log_zip="${PKG_PREFIX}config.log.zip"
-test_suite_log_zip="${PKG_PREFIX}test-suite.log.zip"
+config_log_zip="${pkg_prefix}config.log.zip"
+test_suite_log_zip="${pkg_prefix}test-suite.log.zip"
 
 echo ""
 echo "**********************"
