@@ -252,7 +252,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Perl"
     echo "************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh perl
     exit 1
 fi
 
@@ -322,7 +322,7 @@ then
     echo "Failed to build Perl"
     echo "************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh perl
     exit 1
 fi
 
@@ -343,7 +343,7 @@ then
     echo "Failed to test Perl"
     echo "************************"
 
-    bash ../collect-logs.sh
+    bash ../collect-logs.sh perl
     exit 1
 fi
 
