@@ -8,16 +8,6 @@ GHIDRA_DIR=ghidra-Ghidra_9.1.2_build
 
 ###############################################################################
 
-CURR_DIR=$(pwd)
-function finish {
-    cd "${CURR_DIR}" || exit 1
-}
-trap finish EXIT INT
-
-INSTX_JOBS="${INSTX_JOBS:-2}"
-
-###############################################################################
-
 # Get the environment as needed.
 if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     if ! source ./setup-environ.sh
