@@ -38,6 +38,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-base.sh
+then
+    echo "Failed to build GNU base packages"
+    exit 1
+fi
+
+###############################################################################
+
 echo ""
 echo "========================================"
 echo "================= Tar =================="
@@ -79,7 +87,9 @@ echo "**********************"
 ./configure \
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
-    --libdir="${INSTX_LIBDIR}"
+    --libdir="${INSTX_LIBDIR}" \
+    --with-libiconv-prefix="${INSTX_PREFIX}" \
+    --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Tar"
