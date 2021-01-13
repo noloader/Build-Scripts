@@ -105,7 +105,9 @@ fi
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
-    --enable-shared
+    --enable-static --enable-shared \
+    --enable-threads \
+    --with-libiconv-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
     echo "*****************************"
