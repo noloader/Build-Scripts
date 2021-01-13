@@ -99,6 +99,30 @@ fi
 
 ###############################################################################
 
+# Trigger a rebuild of PCRE2
+
+rm "$INSTX_PKG_CACHE/pcre2"
+
+if ! ./build-pcre2.sh
+then
+    echo "Failed to build PCRE2"
+    exit 1
+fi
+
+###############################################################################
+
+# Trigger a rebuild of IDN2
+
+rm "$INSTX_PKG_CACHE/idn2"
+
+if ! ./build-idn2.sh
+then
+    echo "Failed to build IDN2"
+    exit 1
+fi
+
+###############################################################################
+
 touch "$INSTX_PKG_CACHE/$PKG_NAME"
 
 exit 0
