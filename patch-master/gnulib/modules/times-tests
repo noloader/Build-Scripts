@@ -1,7 +1,0 @@
-Files:
-tests/signature.h
-tests/test-times.c
-
-Makefile.am:
-TESTS += test-times
-check_PROGRAMS += test-times

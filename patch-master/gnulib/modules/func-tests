@@ -1,9 +1,0 @@
-Files:
-tests/test-func.c
-tests/macros.h
-
-configure.ac:
-
-Makefile.am:
-TESTS += test-func
-check_PROGRAMS += test-func
