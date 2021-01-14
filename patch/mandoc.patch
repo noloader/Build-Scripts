@@ -1,3 +1,6 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with Mandoc. Also see
+# https://git.alpinelinux.org/aports/tree/main/mandoc/mandoc_configure.patch
 --- configure
 +++ configure
 @@ -41,7 +41,7 @@
