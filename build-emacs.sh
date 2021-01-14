@@ -120,8 +120,6 @@ if [[ -e ../patch/emacs.patch ]]; then
     echo ""
 fi
 
-exit 1
-
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
