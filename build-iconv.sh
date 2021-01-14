@@ -83,14 +83,6 @@ fi
 
 ###############################################################################
 
-if ! ./build-ncurses-readline.sh
-then
-    echo "Failed to build Ncurses and Readline"
-    exit 1
-fi
-
-###############################################################################
-
 echo ""
 echo "========================================"
 echo "================ iConv ================="
@@ -140,7 +132,7 @@ echo "*************************"
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
-    --enable-shared \
+    --enable-static --enable-shared \
     --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]

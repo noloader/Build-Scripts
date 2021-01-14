@@ -61,9 +61,9 @@ fi
 
 ###############################################################################
 
-if ! ./build-ncurses-readline.sh
+if ! ./build-patchelf.sh
 then
-    echo "Failed to build Ncurses and Readline"
+    echo "Failed to build patchelf"
     exit 1
 fi
 
@@ -126,7 +126,7 @@ echo "*************************"
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
-    --enable-shared \
+    --enable-static --enable-shared \
     --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]
