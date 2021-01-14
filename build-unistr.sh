@@ -157,7 +157,7 @@ then
     echo "*****************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
-    exit 1
+    # exit 1
 fi
 
 # Fix runpaths again
