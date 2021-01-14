@@ -241,9 +241,9 @@ if [[ -f "$PREFIX/etc/wgetrc" ]]; then
     rm "$PREFIX/etc/wgetrc"
 fi
 
-sed -e 's/-lcrypto/-l:libcrypto.a/g'
-    -e 's/-lssl/-l:libssl.a/g'
-    -e 's/-lunistring/-l:libunistring.a/g'
+sed -e 's/-lcrypto/-l:libcrypto.a/g' \
+    -e 's/-lssl/-l:libssl.a/g' \
+    -e 's/-lunistring/-l:libunistring.a/g' \
     configure > configure.fixed
 mv configure.fixed configure && chmod +x configure
 
