@@ -241,11 +241,17 @@ if [[ -f "$PREFIX/etc/wgetrc" ]]; then
     rm "$PREFIX/etc/wgetrc"
 fi
 
+sed -e 's/-lcrypto/-l:libcrypto.a/g'
+    -e 's/-lssl/-l:libssl.a/g'
+    -e 's/-lunistring/-l:libunistring.a/g'
+    configure > configure.fixed
+mv configure.fixed configure && chmod +x configure
+
     CFLAGS="$CFLAGS" \
     LDFLAGS="$LDFLAGS" \
     PKG_CONFIG_PATH="$LIBDIR/pkgconfig/" \
     OPENSSL_LIBS="$OPENSSL_LIBS" \
-    LIBS="$UNISTRING_LIBS $OPENSSL_LIBS $OPT_SOCKET $OPT_LDL" \
+    LIBS="$OPT_SOCKET $OPT_LDL" \
 ./configure \
     --prefix="$PREFIX" \
     --sysconfdir="$PREFIX/etc" \
