@@ -154,7 +154,13 @@ echo "***************************"
     --enable-shared \
     --with-pic \
     --with-libiconv-prefix="${INSTX_PREFIX}" \
-    --with-libncurses-prefix="${INSTX_PREFIX}"
+    --with-libncurses-prefix="${INSTX_PREFIX}" \
+    --with-libunistring-prefix="${INSTX_PREFIX}" \
+    --with-libxml2-prefix="${INSTX_PREFIX}"
+
+    # --with-libintl-prefix="${INSTX_PREFIX}" \
+    # --with-libtextstyle-prefix="${INSTX_PREFIX}" \
+    # --with-bison-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]
 then
