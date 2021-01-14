@@ -149,6 +149,7 @@ echo "*****************************"
 
 # Unistring fails one self test on older systems, like Fedora 1
 # and Ubuntu 4. Allow the failure but print the result.
+# https://lists.gnu.org/archive/html/bug-libunistring/2021-01/msg00000.html
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
