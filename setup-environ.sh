@@ -922,6 +922,7 @@ fi
 # Too many GNU programs and libraries leak.
 # The world must lower its standards to GNU.
 if [[ -n "$INSTX_ASAN" ]]; then
+    echo ""
     echo "*****************************"
     echo "Disabling ASAN leak detection"
     echo "*****************************"
