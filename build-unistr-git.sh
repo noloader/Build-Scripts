@@ -3,9 +3,6 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Unistring from sources.
 
-#UNISTR_TAR=libunistring-0.9.10.tar.gz
-#UNISTR_DIR=libunistring-0.9.10
-
 UNISTR_DIR=libunistring-master
 PKG_NAME=unistring-git
 
@@ -18,6 +15,11 @@ if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
         echo "Failed to set environment"
         exit 1
     fi
+fi
+
+if [[ -z "$(command -v makeinfo 2>/dev/null)" ]]; then
+    echo "Please install makeinfo or texinfo package."
+    exit 1
 fi
 
 if [[ -e "${INSTX_PKG_CACHE}/${PKG_NAME}" ]]; then
@@ -62,19 +64,10 @@ echo "========================================"
 
 echo ""
 echo "**********************"
-echo "Downloading package"
+echo "Cloning package"
 echo "**********************"
 
-#if ! "$WGET" -q -O "$UNISTR_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
-#     "https://ftp.gnu.org/gnu/libunistring/$UNISTR_TAR"
-#then
-#    echo "Failed to download Unistring"
-#    exit 1
-#fi
-
 rm -rf "$UNISTR_DIR" &>/dev/null
-#gzip -d < "$UNISTR_TAR" | tar xf -
-#cd "$UNISTR_DIR"
 
 if ! git clone https://git.savannah.gnu.org/git/libunistring.git "${UNISTR_DIR}";
 then
