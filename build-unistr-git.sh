@@ -213,7 +213,7 @@ cd "${CURR_DIR}" || exit 1
 # Set to false to retain artifacts
 if true;
 then
-    ARTIFACTS=("$UNISTR_TAR" "$UNISTR_DIR")
+    ARTIFACTS=("$UNISTR_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
