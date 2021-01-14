@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds Flex from sources. Flex is treated
-# like a library rather then a program to avoid rebuilding
-# it in other recipes like Curl and Wget.
+# This script builds Flex from sources.
 
 FLEX_VER=2.6.4
 FLEX_TAR="flex-${FLEX_VER}.tar.gz"
@@ -21,12 +19,6 @@ if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     fi
 fi
 
-if [[ -e "${INSTX_PKG_CACHE}/${PKG_NAME}" ]]; then
-    echo ""
-    echo "$PKG_NAME is already installed."
-    exit 0
-fi
-
 # The password should die when this subshell goes out of scope
 if [[ "${SUDO_PASSWORD_DONE}" != "yes" ]]; then
     if ! source ./setup-password.sh
@@ -41,14 +33,6 @@ fi
 if ! ./build-cacert.sh
 then
     echo "Failed to install CA Certs"
-    exit 1
-fi
-
-###############################################################################
-
-if ! ./build-base.sh
-then
-    echo "Failed to build GNU base packages"
     exit 1
 fi
 
