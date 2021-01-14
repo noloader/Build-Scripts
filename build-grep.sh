@@ -53,9 +53,9 @@ fi
 
 ###############################################################################
 
-if ! ./build-pcre2.sh
+if ! ./build-pcre.sh
 then
-    echo "Failed to build PCRE2"
+    echo "Failed to build PCRE"
     exit 1
 fi
 
@@ -104,7 +104,8 @@ echo "**********************"
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
     --with-libiconv-prefix="${INSTX_PREFIX}" \
-    --with-libintl-prefix="${INSTX_PREFIX}"
+    --with-libintl-prefix="${INSTX_PREFIX}" \
+    --with-libpcre-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Grep"
