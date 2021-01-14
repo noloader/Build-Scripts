@@ -284,12 +284,11 @@ fi
 # Fix makefiles. No shared objects.
 IFS= find "$PWD" -iname 'Makefile' -print | while read -r file
 do
-    sed "s|-lssl|$LIBDIR/libssl.a|g" "$file" > "$file.fixed"
-    mv "$file.fixed" "$file"
-    sed "s|-lcrypto|$LIBDIR/libcrypto.a|g" "$file" > "$file.fixed"
-    mv "$file.fixed" "$file"
-    sed "s|-lunistring|$LIBDIR/libunistring.a|g" "$file" > "$file.fixed"
-    mv "$file.fixed" "$file"
+    sed -e "s/-lcrypto/$lib_crypto/g" \
+        -e "s/-lssl/$lib_ssl/g" \
+        -e "s/-lunistring/$lib_unistring/g" \
+        "${file}" > "${file}.fixed"
+    mv "${file}.fixed" "${file}"
 done
 
 if ! make -j "$INSTX_JOBS" V=1; then
