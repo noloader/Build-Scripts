@@ -114,6 +114,14 @@ rm -rf "$EMACS_DIR" &>/dev/null
 gzip -d < "$EMACS_TAR" | tar xf -
 cd "$EMACS_DIR"
 
+# Patches are created with 'diff -u' from the pkg root directory.
+if [[ -e ../patch/emacs.patch ]]; then
+    patch -u -p0 < ../patch/emacs.patch
+    echo ""
+fi
+
+exit 1
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
