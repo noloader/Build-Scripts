@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Emacs and its dependencies from sources.
 
-EMACS_TAR=emacs-26.3.tar.gz
-EMACS_DIR=emacs-26.3
+EMACS_TAR=emacs-27.1.tar.gz
+EMACS_DIR=emacs-27.1
 PKG_NAME=emacs
 
 ###############################################################################
