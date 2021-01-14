@@ -66,6 +66,8 @@ rm -rf "$MANDOC_DIR" &>/dev/null
 gzip -d < "$MANDOC_TAR" | tar xf -
 cd "$MANDOC_DIR" || exit 1
 
+# cp configure configure.orig
+
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/mandoc.patch ]]; then
     patch -u -p0 < ../patch/mandoc.patch
