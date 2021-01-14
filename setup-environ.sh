@@ -797,16 +797,6 @@ fi
 
 ###############################################################################
 
-# Too many GNU programs and libraries leak
-# The world must lower its standards to GNU
-if [[ -n "$INSTX_ASAN" ]]; then
-    echo "Disabling ASAN leak detection"
-    ASAN_OPTIONS=detect_leaks=0
-    export ASAN_OPTIONS
-fi
-
-###############################################################################
-
 # Used to track packages that have been built by these scripts.
 # The accounting is local to a user account. There is no harm
 # in rebuilding a package under another account. In April 2019
@@ -925,6 +915,18 @@ if [[ -n "$INSTX_CACERT_PATH" ]]; then
 fi
 if [[ -n "$INSTX_CACERT_FILE" ]]; then
     printf " INSTX_CACERT_FILE: %s\n" "$INSTX_CACERT_FILE"
+fi
+
+###############################################################################
+
+# Too many GNU programs and libraries leak.
+# The world must lower its standards to GNU.
+if [[ -n "$INSTX_ASAN" ]]; then
+    echo "*****************************"
+    echo "Disabling ASAN leak detection"
+    echo "*****************************"
+    ASAN_OPTIONS=detect_leaks=0
+    export ASAN_OPTIONS
 fi
 
 ###############################################################################
