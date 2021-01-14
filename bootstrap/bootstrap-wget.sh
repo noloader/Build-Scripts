@@ -242,9 +242,9 @@ if [[ -f "$PREFIX/etc/wgetrc" ]]; then
 fi
 
 # Alpine Linux loader sucks...
-lib_crypto=$(echo "$LIBDIR/libcrypto.a" | sed 's/\$/\$\$/g')
-lib_ssl=$(echo "$LIBDIR/libssl.a" | sed 's/\$/\$\$/g')
-lib_unistring=$(echo "$LIBDIR/libunistring.a" | sed 's/\$/\$\$/g')
+lib_crypto=$(echo "$LIBDIR/libcrypto.a" | sed 's/\//\\\//g')
+lib_ssl=$(echo "$LIBDIR/libssl.a" | sed 's/\//\\\//g')
+lib_unistring=$(echo "$LIBDIR/libunistring.a" | sed 's/\//\\\//g')
 
 sed -e "s/-lcrypto/$lib_crypto/g" \
     -e "s/-lssl/$lib_ssl/g" \
