@@ -110,7 +110,9 @@ echo "*************************"
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
     --with-libiconv-prefix="${INSTX_PREFIX}" \
-    --with-libintl-prefix="${INSTX_PREFIX}"
+    --with-libintl-prefix="${INSTX_PREFIX}" \
+    --with-libncurses-prefix="${INSTX_PREFIX}" \
+    --with-libtextstyle-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
     echo "*************************"
