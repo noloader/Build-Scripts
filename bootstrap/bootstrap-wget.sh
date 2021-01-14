@@ -115,6 +115,7 @@ fi
 
 # OpenSSL does not honor no-dso. Needed by Unistring and Wget.
 OPENSSL_LIBS="$LIBDIR/libssl.a $LIBDIR/libcrypto.a"
+UNISTRING_LIBS="$LIBDIR/libunistring.a"
 
 ############################## CA Certs ##############################
 
@@ -244,7 +245,7 @@ fi
     LDFLAGS="$LDFLAGS" \
     PKG_CONFIG_PATH="$LIBDIR/pkgconfig/" \
     OPENSSL_LIBS="$OPENSSL_LIBS" \
-    LIBS="$OPT_SOCKET $OPT_LDL" \
+    LIBS="$UNISTRING_LIBS $OPENSSL_LIBS $OPT_SOCKET $OPT_LDL" \
 ./configure \
     --prefix="$PREFIX" \
     --sysconfdir="$PREFIX/etc" \
