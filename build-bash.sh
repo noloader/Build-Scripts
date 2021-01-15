@@ -71,6 +71,11 @@ rm -rf "$BASH_DIR" &>/dev/null
 gzip -d < "$BASH_TAR" | tar xf -
 cd "$BASH_DIR"
 
+if [[ -e ../patch/bash.patch ]]; then
+    patch -u -p0 < ../patch/bash.patch
+    echo ""
+fi
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
