@@ -109,10 +109,9 @@ echo "**********************"
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
+    --with-curses --enable-multibyte \
     --with-libiconv-prefix="${INSTX_PREFIX}" \
-    --with-libintl-prefix="${INSTX_PREFIX}" \
-    --with-installed-readline \
-    --enable-multibyte
+    --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Bash"
