@@ -84,6 +84,8 @@ rm -rf "$IDN2_DIR" &>/dev/null
 gzip -d < "$IDN2_TAR" | tar xf -
 cd "$IDN2_DIR" || exit 1
 
+exit 1
+
 if [[ -e ../patch/idn2.patch ]]; then
     patch -u -p0 < ../patch/idn2.patch
     echo ""
@@ -107,11 +109,11 @@ echo "**********************"
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
-    --enable-shared \
+    --enable-static --enable-shared \
     --disable-doc \
-    --with-libintl-prefix="${INSTX_PREFIX}" \
     --with-libiconv-prefix="${INSTX_PREFIX}" \
-    --with-libunistring-prefix="${INSTX_PREFIX}"
+    --with-libunistring-prefix="${INSTX_PREFIX}" \
+    --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure IDN2"
