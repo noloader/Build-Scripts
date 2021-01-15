@@ -608,6 +608,14 @@ if [[ -z "$opt_san_norecover" ]]; then
     fi
 fi
 
+# Disable LTO, sometimes
+if [[ -z "$opt_no_lto" ]]; then
+    cc_result=$(${TEST_CC} -o "$outfile" "$infile" -fno-lto 2>&1 | wc -w)
+    if [[ "$cc_result" -eq 0 ]]; then
+        opt_no_lto="-fno-lto"
+    fi
+fi
+
 # Msan option
 if [[ -z "$opt_msan_origin" ]]; then
     cc_result=$(${TEST_CC} -o "$outfile" "$infile" -fsanitize-memory-track-origins 2>&1 | wc -w)
@@ -703,7 +711,7 @@ elif [[ -n "$INSTX_ASAN" ]]; then
     opt_cflags[${#opt_cflags[@]}]="-fno-omit-frame-pointer"
     opt_cxxflags[${#opt_cxxflags[@]}]="-fsanitize=address"
     opt_cxxflags[${#opt_cxxflags[@]}]="-fno-omit-frame-pointer"
-    opt_ldflags[${#opt_ldflags[@]}]="-fsanitize=address"
+    opt_ldflags[${#opt_ldflags[@]}]="-fsanitize=address $opt_no_lto"
 
 # Requires GCC 10, like on Fedora 32
 elif [[ -n "$INSTX_ANALYZE" ]]; then
@@ -926,7 +934,7 @@ if [[ -n "$INSTX_ASAN" ]]; then
     echo "*****************************"
     echo "Disabling ASAN leak detection"
     echo "*****************************"
-    ASAN_OPTIONS=detect_leaks=0
+    ASAN_OPTIONS='detect_leaks=0'
     export ASAN_OPTIONS
 fi
 
