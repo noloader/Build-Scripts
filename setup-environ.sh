@@ -556,6 +556,11 @@ if [[ -z "$opt_sym" ]]; then
             opt_sym="-g"
         fi
     fi
+
+    # If we are building under the sanitizers with GCC or Clang, just use -g3
+    if [[ -n "$INSTX_UBSAN" || -n "$INSTX_ASAN" || -n "$INSTX_MSAN" ]]; then
+        opt_sym="-g3"
+    fi
 fi
 
 # Optimizations
@@ -568,6 +573,11 @@ if [[ -z "$opt_optimize" ]]; then
         if [[ "$cc_result" -eq 0 ]]; then
             opt_optimize="-O"
         fi
+    fi
+
+    # If we are building under the sanitizers with GCC or Clang, just use -O1
+    if [[ -n "$INSTX_UBSAN" || -n "$INSTX_ASAN" || -n "$INSTX_MSAN" ]]; then
+        opt_sym="-O1"
     fi
 fi
 
