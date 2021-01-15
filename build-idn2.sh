@@ -84,8 +84,6 @@ rm -rf "$IDN2_DIR" &>/dev/null
 gzip -d < "$IDN2_TAR" | tar xf -
 cd "$IDN2_DIR" || exit 1
 
-exit 1
-
 if [[ -e ../patch/idn2.patch ]]; then
     patch -u -p0 < ../patch/idn2.patch
     echo ""
