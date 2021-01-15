@@ -3,12 +3,16 @@
 # Written and placed in public domain by Jeffrey Walton
 
 # This script builds a handful of packages that are used by most GNU packages.
-# The packages built by this script are Patchelf, Ncurses, Readline, iConvert
-# and GetText.
+# The primary packages built by this script are Patchelf, Ncurses, Readline,
+# iConvert and GetText.
 #
-# GetText is built in two stages. First, the iConv/GetText pair is built due
-# to circular dependency. Second, the final GetText is build which includes
-# libunistring and libxml2.
+# The primary packages have prerequisites, so secondary packages include
+# libunistring, libxml2, PCRE2 and IDN2. GetText is rebuilt a final time
+# after libunitstring and libxml2 are ready.
+#
+# GetText is the real focus of this script. GetText is built in two stages.
+# First, the iConv/GetText pair is built due to circular dependency. Second,
+# the final GetText is build which includes libunistring and libxml2.
 #
 # Most GNU packages will just call build-base.sh to get the common packages
 # out of the way. Non-GNU packages can call the script, too.
