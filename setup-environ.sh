@@ -941,9 +941,9 @@ printf "\n"
 # The world must lower its standards to GNU.
 if [[ -n "$INSTX_ASAN" ]]; then
     echo ""
-    echo "*****************************"
-    echo "Disabling ASAN leak detection"
-    echo "*****************************"
+    echo "*********************************************************************"
+    echo "Disabling ASAN leak detection because GNU software leaks like a sieve"
+    echo "*********************************************************************"
     ASAN_OPTIONS='detect_leaks=0'
     export ASAN_OPTIONS
 fi
