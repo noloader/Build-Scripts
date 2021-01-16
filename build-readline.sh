@@ -107,7 +107,7 @@ else
     readline_cppflags="${INSTX_CPPFLAGS}"
 fi
 
-if [[ -n "$opt_debug_prefix_map" ]]; then
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     readline_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${READLINE_DIR}"
     readline_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${READLINE_DIR}"
 else

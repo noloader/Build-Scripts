@@ -585,8 +585,8 @@ fi
 # https://alex.dzyoba.com/blog/gdb-source-path/
 cc_result=$(${TEST_CC} -g -fdebug-prefix-map=${PWD}=${PWD} -o "$outfile" "$infile" 2>&1 | wc -w)
 if [[ "$cc_result" -eq 0 ]]; then
-    opt_debug_prefix_map="-fdebug-prefix-map"
-    export opt_debug_prefix_map
+    INSTX_DEBUG_MAP=1
+    export INSTX_DEBUG_MAP
 fi
 
 # Perl does not add -lm when needed

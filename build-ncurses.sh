@@ -155,7 +155,7 @@ CONFIG_OPTS+=("--disable-root-environ")
 CONFIG_OPTS+=("--with-pkg-config-libdir=${INSTX_PKGCONFIG}")
 CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/share")
 
-if [[ -n "$opt_debug_prefix_map" ]]; then
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     ncurses_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NCURSES_DIR}"
     ncurses_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NCURSES_DIR}"
 else
@@ -240,7 +240,7 @@ echo "***************************"
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
-    if [[ -n "$opt_debug_prefix_map" ]]; then
+    if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
         printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NCURSES_DIR}"
     fi
 else

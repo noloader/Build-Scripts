@@ -226,7 +226,7 @@ if [[ "$ENABLE_CARES" -eq 1 ]]; then
     CONFIG_OPTS+=("--with-cares")
 fi
 
-if [[ -n "$opt_debug_prefix_map" ]]; then
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     wget_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET_DIR}"
     wget_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET_DIR}"
 else

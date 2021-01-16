@@ -87,7 +87,7 @@ echo "**********************"
 # TODO: figure out the options a distro like Debian or Red Hat uses...
 # https://www.gnu.org/software/bash/manual/html_node/Optional-Features.html
 
-if [[ -n "$opt_debug_prefix_map" ]]; then
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     bash_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${BASH_DIR}"
     bash_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${BASH_DIR}"
 else

@@ -160,7 +160,7 @@ fi
 NETTLE__CFLAGS="${INSTX_CFLAGS}"
 NETTLE__CXXFLAGS="${INSTX_CXXFLAGS}"
 
-if [[ -n "$opt_debug_prefix_map" ]]; then
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     NETTLE__CFLAGS="${NETTLE__CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NETTLE__DIR}"
     NETTLE__CXXFLAGS="${NETTLE__CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NETTLE__DIR}"
 fi
@@ -233,7 +233,7 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
-    if [[ -n "$opt_debug_prefix_map" ]]; then
+    if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
         printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NETTLE__DIR}"
     fi
 else

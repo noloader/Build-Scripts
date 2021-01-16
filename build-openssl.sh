@@ -137,7 +137,7 @@ if [[ "$IS_AMD64" -eq 1 && "$INT128_OPT" -eq 1 ]]; then
 fi
 
 # Debug symbols after install
-if [[ -n "$opt_debug_prefix_map" ]]; then
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     CONFIG_OPTS[${#CONFIG_OPTS[@]}]="-fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${OPENSSL_DIR}"
 fi
 
@@ -273,7 +273,7 @@ MAKE_FLAGS=(install_sw)
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
-    if [[ -n "$opt_debug_prefix_map" ]]; then
+    if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
         printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${OPENSSL_DIR}"
     fi
 else

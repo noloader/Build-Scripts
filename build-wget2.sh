@@ -247,7 +247,7 @@ if [[ "$SKIP_WGET_PSL" -eq 1 ]]; then
     CONFIG_OPTS+=("--without-libpsl")
 fi
 
-if [[ -n "$opt_debug_prefix_map" ]]; then
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     wget2_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET2_DIR}"
     wget2_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET2_DIR}"
 else
