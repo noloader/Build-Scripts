@@ -88,18 +88,18 @@ echo "**********************"
 # https://www.gnu.org/software/bash/manual/html_node/Optional-Features.html
 
 if [[ -n "$opt_debug_prefix_map" ]]; then
-    BASH_CFLAGS="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${BASH_DIR}"
-    BASH_CXXFLAGS="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${BASH_DIR}"
+    bash_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${BASH_DIR}"
+    bash_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${BASH_DIR}"
 else
-    BASH_CFLAGS="${INSTX_CFLAGS}"
-    BASH_CXXFLAGS="${INSTX_CXXFLAGS}"
+    bash_cflags="${INSTX_CFLAGS}"
+    bash_cxxflags="${INSTX_CXXFLAGS}"
 fi
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${BASH_CFLAGS}" \
-    CXXFLAGS="${BASH_CXXFLAGS}" \
+    CFLAGS="${bash_cflags}" \
+    CXXFLAGS="${bash_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LDLIBS="-ltinfow ${INSTX_LDLIBS}" \
     LIBS="-ltinfow ${INSTX_LDLIBS}" \
