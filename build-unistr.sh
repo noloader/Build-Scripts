@@ -86,19 +86,19 @@ echo "**********************"
 echo "Configuring package"
 echo "**********************"
 
-# https://bugs.launchpad.net/ubuntu/+source/binutils/+bug/1340250
-if [[ -n "$opt_no_as_needed" ]]; then
-    UNISTR_LDFLAGS="${LDFLAGS} $opt_no_as_needed"
-else
-    UNISTR_LDFLAGS="${LDFLAGS}"
-fi
-
 if [[ -n "$opt_debug_prefix_map" ]]; then
     UNISTR_CFLAGS="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${UNISTR_DIR}"
     UNISTR_CXXFLAGS="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${UNISTR_DIR}"
 else
     UNISTR_CFLAGS="${INSTX_CFLAGS}"
     UNISTR_CXXFLAGS="${INSTX_CXXFLAGS}"
+fi
+
+# https://bugs.launchpad.net/ubuntu/+source/binutils/+bug/1340250
+if [[ -n "$opt_no_as_needed" ]]; then
+    UNISTR_LDFLAGS="${LDFLAGS} $opt_no_as_needed"
+else
+    UNISTR_LDFLAGS="${LDFLAGS}"
 fi
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
