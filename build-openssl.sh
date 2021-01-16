@@ -136,6 +136,11 @@ if [[ "$IS_AMD64" -eq 1 && "$INT128_OPT" -eq 1 ]]; then
     CONFIG_OPTS[${#CONFIG_OPTS[@]}]="enable-ec_nistp_64_gcc_128"
 fi
 
+# Debug symbols after install
+if [[ -n "$opt_debug_prefix_map" ]]; then
+    CONFIG_OPTS[${#CONFIG_OPTS[@]}]="-fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${OPENSSL_DIR}"
+fi
+
 if [[ "$IS_FREEBSD" -eq 1 ]]; then
     CONFIG_OPTS[${#CONFIG_OPTS[@]}]="-Wno-error"
 fi
@@ -268,9 +273,13 @@ MAKE_FLAGS=(install_sw)
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    if [[ -n "$opt_debug_prefix_map" ]]; then
+        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${OPENSSL_DIR}"
+    fi
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${OPENSSL_DIR}"
 fi
 
 ###############################################################################
