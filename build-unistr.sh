@@ -88,17 +88,25 @@ echo "**********************"
 
 # https://bugs.launchpad.net/ubuntu/+source/binutils/+bug/1340250
 if [[ -n "$opt_no_as_needed" ]]; then
-    UNISTR_LDFLAGS="$opt_no_as_needed"
+    UNISTR_LDFLAGS="${LDFLAGS} $opt_no_as_needed"
 else
-    UNISTR_LDFLAGS=""
+    UNISTR_LDFLAGS="${LDFLAGS}"
+fi
+
+if [[ -n "$opt_debug_prefix_map" ]]; then
+    UNISTR_CFLAGS="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${UNISTR_DIR}"
+    UNISTR_CXXFLAGS="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${UNISTR_DIR}"
+else
+    UNISTR_CFLAGS="${INSTX_CFLAGS}"
+    UNISTR_CXXFLAGS="${INSTX_CXXFLAGS}"
 fi
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
-    LDFLAGS="${INSTX_LDFLAGS} ${UNISTR_LDFLAGS}" \
+    CFLAGS="${UNISTR_CFLAGS}" \
+    CXXFLAGS="${UNISTR_CXXFLAGS}" \
+    LDFLAGS="${UNISTR_LDFLAGS}" \
     LDLIBS="${INSTX_LDLIBS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
@@ -172,9 +180,13 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    if [[ -n "$opt_debug_prefix_map" ]]; then
+        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${UNISTR_DIR}"
+    fi
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${UNISTR_DIR}"
 fi
 
 ###############################################################################
