@@ -158,7 +158,8 @@ export WGET
 ###############################################################################
 
 # Paths are awful on Solaris. An unmodified environment only
-# has /usr/bin and /usr/sbin with anemic tools.
+# has /usr/bin and /usr/sbin on-path with anemic tools. They
+# manage to provide fewer options than Posix...
 if [ "$IS_SOLARIS" -ne 0 ]
 then
     for path in /usr/gnu/bin /usr/sfw/bin /usr/ucb/bin /usr/xpg4/bin /bin /usr/bin /sbin /usr/sbin
