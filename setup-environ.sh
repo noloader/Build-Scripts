@@ -590,12 +590,10 @@ if [[ "$cc_result" -eq 0 ]]; then
 fi
 
 # Perl does not add -lm when needed
-if [[ -z "$opt_libm" ]]; then
-    cc_result=$(${TEST_CC} -o "$outfile" "$infile" -lm 2>&1 | wc -w)
-    if [[ "$cc_result" -eq 0 ]]; then
-        opt_libm="-lm"
-        export opt_libm
-    fi
+cc_result=$(${TEST_CC} -o "$outfile" "$infile" -lm 2>&1 | wc -w)
+if [[ "$cc_result" -eq 0 ]]; then
+    INSTX_LIBM=1
+    export INSTX_LIBM
 fi
 
 # OpenBSD does not have -ldl

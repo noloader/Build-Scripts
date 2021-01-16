@@ -217,6 +217,10 @@ export ORIGIN="ABCDE_ORIGIN_WXYZ"
 # http://www.linuxfromscratch.org/lfs/view/development/chapter08/perl.html
 export BUILD_ZLIB=0 BUILD_BZIP2=0
 
+if [[ "${INSTX_LIBM}" -eq 1 ]]; then
+    opt_libm="-lm"
+fi
+
     CC="${CC}" \
     CXX="${CXX}" \
     PKGCONFIG="${INSTX_PKGCONFIG}" \
