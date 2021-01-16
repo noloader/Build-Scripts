@@ -83,8 +83,9 @@ echo "**********************"
 echo "Configuring package"
 echo "**********************"
 
-# Fix Ncurses library names via LIBS.
-# TERMCAP_LIB=-ltinfow does not work...
+# Bash has lots of other options. We should use what a distro provides.
+# TODO: figure out what a distro like Debian or Red Hat provides ...
+# https://www.gnu.org/software/bash/manual/html_node/Optional-Features.html
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -99,6 +100,7 @@ echo "**********************"
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
     --with-curses --enable-multibyte \
+    --with-installed-readline="${INSTX_PREFIX}" \
     --with-libiconv-prefix="${INSTX_PREFIX}" \
     --with-libintl-prefix="${INSTX_PREFIX}"
 
