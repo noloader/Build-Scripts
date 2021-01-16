@@ -159,6 +159,16 @@ echo "*************************"
 echo "Testing package"
 echo "*************************"
 
+if true; then
+
+make check-local TESTSUITEFLAGS='271 -d'
+TIME_LIMIT=1 ./src/bison -Tcex -Wcex ./tests/testsuite.dir/271/input.y >/tmp/271.log 2>&1
+zip -9 271.log.zip /tmp/271.log
+
+exit 0
+
+fi
+
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
