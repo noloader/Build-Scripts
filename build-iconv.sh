@@ -121,11 +121,19 @@ echo "*************************"
 echo "Configuring package"
 echo "*************************"
 
+ICONV_CFLAGS="${INSTX_CFLAGS}"
+ICONV_CXXFLAGS="${INSTX_CXXFLAGS}"
+
+if [[ -n "$opt_debug_prefix_map" ]]; then
+    ICONV_CFLAGS="${ICONV_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${ICONV_DIR}"
+    ICONV_CXXFLAGS="${ICONV_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${ICONV_DIR}"
+fi
+
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    CFLAGS="${ICONV_CFLAGS}" \
+    CXXFLAGS="${ICONV_CXXFLAGS}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
@@ -201,9 +209,13 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    if [[ -n "$opt_debug_prefix_map" ]]; then
+        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${ICONV_DIR}"
+    fi
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${ICONV_DIR}"
 fi
 
 ###############################################################################
