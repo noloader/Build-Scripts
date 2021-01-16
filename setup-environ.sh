@@ -354,6 +354,9 @@ fi
 if [[ -z "${INSTX_LIBDIR}" ]]; then
     INSTX_LIBDIR="$DEF_LIBDIR"
 fi
+if [[ -z "${INSTX_SRCDIR}" ]]; then
+    INSTX_SRCDIR="$INSTX_PREFIX/src"
+fi
 if [[ -z "$INSTX_RPATH" ]]; then
     INSTX_RPATH="$DEF_RPATH"
 fi
@@ -364,17 +367,20 @@ fi
 # Remove duplicate and trailing slashes.
 INSTX_PREFIX="$(echo ${INSTX_PREFIX} | tr -s '/' | ${SED} -e 's/\/$//g')"
 INSTX_LIBDIR="$(echo ${INSTX_LIBDIR} | tr -s '/' | ${SED} -e 's/\/$//g')"
+INSTX_SRCDIR="$(echo ${INSTX_SRCDIR} | tr -s '/' | ${SED} -e 's/\/$//g')"
 INSTX_RPATH="$(echo ${INSTX_RPATH} | tr -s '/' | ${SED} -e 's/\/$//g')"
 INSTX_OPATH="$(echo ${INSTX_OPATH} | tr -s '/' | ${SED} -e 's/\/$//g')"
 
 export INSTX_BITNESS
-export INSTX_PREFIX INSTX_LIBDIR
+export INSTX_PREFIX INSTX_LIBDIR INSTX_SRCDIR
 export INSTX_RPATH INSTX_OPATH
 
 ###############################################################################
 
 # Add our path since we know we are using the latest binaries.
-# Strip duplicate, leading and trailing colons
+# Strip duplicate, leading and trailing colons. This will bite
+# us for the Wget we build for PREFIX. It is having problems
+# with some multibyte names on Ubuntu.
 PATH=$(echo "${INSTX_PREFIX}/bin:$PATH" | tr -s ':' | ${SED} -e 's/^:\(.*\)/\1/' | ${SED} -e 's/:$//g')
 export PATH
 
@@ -578,6 +584,13 @@ if [[ -z "$opt_optimize" ]]; then
     if [[ -n "$INSTX_UBSAN" || -n "$INSTX_ASAN" || -n "$INSTX_MSAN" ]]; then
         opt_optimize="-O1"
     fi
+fi
+
+# Location to install the sources
+# https://alex.dzyoba.com/blog/gdb-source-path/
+cc_result=$(${TEST_CC} -g -fdebug-prefix-map=${PWD}=${PWD} -o "$outfile" "$infile" 2>&1 | wc -w)
+if [[ "$cc_result" -eq 0 ]]; then
+    opt_debug_prefix_map="-fdebug-prefix-map"
 fi
 
 # Perl does not add -lm when needed
