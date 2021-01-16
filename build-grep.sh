@@ -67,9 +67,9 @@ echo "================= Grep ================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 echo ""
 echo "Grep ${GREP_VER}..."
@@ -88,9 +88,9 @@ cd "$GREP_DIR" || exit 1
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo "************************"
 echo "Configuring package"
-echo "**********************"
+echo "************************"
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     grep_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GREP_DIR}"
@@ -116,7 +116,11 @@ fi
     --with-libpcre-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo "************************"
     echo "Failed to configure Grep"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -124,38 +128,42 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo "************************"
     echo "Failed to build Grep"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo "************************"
     echo "Failed to test Grep"
-    echo "**********************"
+    echo "************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
-echo "**********************"
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
