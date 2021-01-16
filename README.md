@@ -72,27 +72,6 @@ If you wish to install the source code for a package, then follow the `build-bas
 
 Once the sources are installed, the debugger works as expected.
 
-```
-(gdb) run
-...
-Program received signal SIGSEGV, Segmentation fault.
-0x00005555556fd300 in internal_malloc (n=n@entry=0x20, file=file@entry=0x0,
-    line=line@entry=0x0, flags=flags@entry=0x2) at malloc.c:824
-824	{
-(gdb) list
-819	static PTR_T
-820	internal_malloc (n, file, line, flags)		/* get a block */
-821	     size_t n;
-822	     const char *file;
-823	     int line, flags;
-824	{
-825	  register union mhead *p;
-826	  register int nunits;
-827	  register char *m, *z;
-828	  long nbytes;
-(gdb)
-```
-
 ## Authenticity
 
 The scripts do not check signatures on tarballs with GnuPG. Its non-trivial to build and install GnuPG for some of these machines. Instead, the scripts rely on a trusted distribution channel to deliver authentic tarballs. `setup-cacerts.sh` and `setup-wget.sh` are enough to ensure the correct CAs and Wget are available to bootstrap the process with minimal risk.
