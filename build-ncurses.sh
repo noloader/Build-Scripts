@@ -240,9 +240,7 @@ echo "***************************"
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
-    if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
-        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NCURSES_DIR}"
-    fi
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NCURSES_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NCURSES_DIR}"
