@@ -83,8 +83,8 @@ echo "**********************"
 echo "Configuring package"
 echo "**********************"
 
-# Bash has lots of other options. We should use what a distro provides.
-# TODO: figure out what a distro like Debian or Red Hat provides ...
+# Bash has lots of other options. We should use what a distro uses.
+# TODO: figure out the options a distro like Debian or Red Hat uses...
 # https://www.gnu.org/software/bash/manual/html_node/Optional-Features.html
 
 BASH_CFLAGS="${INSTX_CFLAGS}"
