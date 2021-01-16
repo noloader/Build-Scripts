@@ -171,6 +171,14 @@ echo "**********************"
 echo "Configuring package"
 echo "**********************"
 
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
+    curl_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${CURL_DIR}"
+    curl_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${CURL_DIR}"
+else
+    curl_cflags="${INSTX_CFLAGS}"
+    curl_cxxflags="${INSTX_CXXFLAGS}"
+fi
+
 CONFIG_OPTS=()
 CONFIG_OPTS+=("--enable-shared")
 CONFIG_OPTS+=("--enable-static")
@@ -217,8 +225,8 @@ fi
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    CFLAGS="${curl_cflags}" \
+    CXXFLAGS="${curl_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
@@ -229,8 +237,13 @@ fi
     ac_cv_func_SSLv2_client_method=no \
     "${CONFIG_OPTS[@]}"
 
-if [[ "$?" -ne 0 ]]; then
+if [[ "$?" -ne 0 ]]
+then
+    echo "************************"
     echo "Failed to configure cURL"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -245,7 +258,11 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo "************************"
     echo "Failed to build cURL"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -265,9 +282,12 @@ echo "**********************"
 MAKE_FLAGS=("test" "TFLAGS=-n" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-#    echo "Failed to test cURL"
-#    exit 1
-    :
+    echo "************************"
+    echo "Failed to test cURL"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
+    #exit 1
 fi
 
 # Fix runpaths again
@@ -281,9 +301,11 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${CURL_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${CURL_DIR}"
 fi
 
 ###############################################################################
