@@ -534,11 +534,6 @@ if [[ "$cc_result" -eq 0 ]]; then
     opt_origin="-Wl,-z,origin"
 fi
 
-cc_result=$(${TEST_CC} -fopenmp -o "$outfile" "$infile" 2>&1 | wc -w)
-if [[ "$cc_result" -eq 0 ]]; then
-    opt_openmp="-fopenmp"
-fi
-
 cc_result=$(${TEST_CC} -Wl,--no-as-needed -o "$outfile" "$infile" 2>&1 | wc -w)
 if [[ "$cc_result" -eq 0 ]]; then
     opt_no_as_needed="-Wl,--no-as-needed"
