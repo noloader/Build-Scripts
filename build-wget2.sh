@@ -5,7 +5,7 @@
 
 # Per TR, the tarballs are pre-release. We should clone Master.
 
-WGET_DIR=wget2
+WGET2_DIR=wget2
 PKG_NAME=wget2
 
 ###############################################################################
@@ -186,16 +186,16 @@ echo "========================================"
 #    exit 1
 #fi
 #
-#rm -rf "$WGET_DIR" &>/dev/null
+#rm -rf "$WGET2_DIR" &>/dev/null
 #gzip -d < "$WGET_TAR" | tar xf -
-#cd "$WGET_DIR" || exit 1
+#cd "$WGET2_DIR" || exit 1
 
-rm -rf "$WGET_DIR" &>/dev/null
+rm -rf "$WGET2_DIR" &>/dev/null
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Cloning package"
-echo "**********************"
+echo "*************************"
 
 if ! git clone https://gitlab.com/gnuwget/wget2.git;
 then
@@ -203,7 +203,7 @@ then
     exit 1
 fi
 
-cd "$WGET_DIR" || exit 1
+cd "$WGET2_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/wget2.patch ]]; then
@@ -214,9 +214,9 @@ fi
 # Hack for distro tools
 export MAKEINFO=true
 
-echo "**********************"
+echo "*************************"
 echo "Bootstrapping package"
-echo "**********************"
+echo "*************************"
 
 if ! ./bootstrap;
 then
@@ -227,9 +227,9 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo "*************************"
 echo "Configuring package"
-echo "**********************"
+echo "*************************"
 
 CONFIG_OPTS=()
 CONFIG_OPTS+=("--with-openssl=yes")
@@ -247,11 +247,19 @@ if [[ "$SKIP_WGET_PSL" -eq 1 ]]; then
     CONFIG_OPTS+=("--without-libpsl")
 fi
 
+if [[ -n "$opt_debug_prefix_map" ]]; then
+    wget2_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET2_DIR}"
+    wget2_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET2_DIR}"
+else
+    wget2_cflags="${INSTX_CFLAGS}"
+    wget2_cxxflags="${INSTX_CXXFLAGS}"
+fi
+
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    CFLAGS="${wget2_cflags}" \
+    CXXFLAGS="${wget2_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
@@ -263,7 +271,11 @@ fi
 
 
 if [[ "$?" -ne 0 ]]; then
+    echo "*************************"
     echo "Failed to configure Wget2"
+    echo "*************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -271,51 +283,57 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo "*************************"
 echo "Building package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo "*************************"
     echo "Failed to build Wget2"
+    echo "*************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo "*************************"
 echo "Testing package"
-echo "**********************"
+echo "*************************"
 
 if [[ "$SKIP_WGET_TESTS" -eq 0 ]]
 then
     MAKE_FLAGS=("check" "-k" "V=1")
     if ! PERL_USE_UNSAFE_INC=1 "${MAKE}" "${MAKE_FLAGS[@]}"
     then
-        echo "**********************"
+        echo "*************************"
         echo "Failed to test Wget2"
-        echo "**********************"
+        echo "*************************"
 
         bash ../collect-logs.sh "${PKG_NAME}"
         exit 1
     fi
 else
-    echo "**********************"
+    echo "*************************"
     echo "Wget2 not tested."
-    echo "**********************"
+    echo "*************************"
 fi
 
-echo "**********************"
+echo "*************************"
 echo "Installing package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${WGET2_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${WGET2_DIR}"
 fi
 
 # Wget does not have any CA's configured at the moment. HTTPS downloads
@@ -344,7 +362,7 @@ else
 fi
 
 # Collect test logs for error reporting
-bash ../collect-logs.sh wget2
+bash ../collect-logs.sh "${PKG_NAME}"
 
 ###############################################################################
 
@@ -364,7 +382,7 @@ cd "${CURR_DIR}" || exit 1
 # Set to true to retain artifacts
 if true;
 then
-    ARTIFACTS=("$WGET_TAR" "$WGET_DIR")
+    ARTIFACTS=("$WGET_TAR" "$WGET2_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
