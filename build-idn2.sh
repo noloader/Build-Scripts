@@ -66,9 +66,9 @@ echo "================= IDN2 ================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 echo ""
 echo "IDN2 ${IDN2_VER}..."
@@ -92,9 +92,9 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo "************************"
 echo "Configuring package"
-echo "**********************"
+echo "************************"
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     idn2_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${IDN2_DIR}"
@@ -122,7 +122,11 @@ fi
     --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo "************************"
     echo "Failed to configure IDN2"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -130,16 +134,16 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo "************************"
     echo "Failed to build IDN2"
-    echo "**********************"
+    echo "************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
@@ -151,16 +155,16 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo "************************"
     echo "Failed to test IDN2"
-    echo "**********************"
+    echo "************************"
     bash ../collect-logs.sh "${PKG_NAME}"
 
     echo "Installing IDN2 anyways..."
@@ -170,9 +174,9 @@ fi
 # Fix runpaths again
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
