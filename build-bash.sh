@@ -155,13 +155,13 @@ if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
     if [[ -n "$opt_debug_prefix_map" ]]; then
-        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy_sources.sh "${PWD}" "${INSTX_SRCDIR}/${BASH_DIR}"
+        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${BASH_DIR}"
     fi
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
     if [[ -n "$opt_debug_prefix_map" ]]; then
-        bash ../copy_sources.sh "${PWD}" "${INSTX_SRCDIR}/${BASH_DIR}"
+        bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${BASH_DIR}"
     fi
 fi
 

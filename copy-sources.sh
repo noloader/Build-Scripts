@@ -35,7 +35,7 @@ IFS= find "./" \( -name '*.h' -o -name '*.c' -o -name '*.cc' -o \
 do
     # This trims the leading "./" in "./foo.c".
     file=$(echo "${file}" | tr -s '/' | cut -c 3-);
-    cp --parents--preserve=mode,timestamps "${file}" "${dest_dir}"
+    cp --parents --preserve=mode,timestamps "${file}" "${dest_dir}"
 done
 
 exit 0
