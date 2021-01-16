@@ -20,3 +20,16 @@
  
  clean:
  	$(RM) man2html$(EXEEXT) $(OBJ1)
+--- lib/malloc/malloc.c
++++ lib/malloc/malloc.c
+@@ -847,7 +847,10 @@
+ 
+   /* Silently reject too-large requests. XXX - can increase this if HAVE_MMAP */
+   if (nunits >= NBUCKETS)
++    {
++    write (1, "nunits >= NBUCKETS, return NULL\n", 32);
+     return ((PTR_T) NULL);
++    }
+ 
+   /* In case this is reentrant use of malloc from signal handler,
+      pick a block size that no other malloc level is currently
