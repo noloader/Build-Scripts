@@ -155,13 +155,21 @@ CONFIG_OPTS+=("--disable-root-environ")
 CONFIG_OPTS+=("--with-pkg-config-libdir=${INSTX_PKGCONFIG}")
 CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/share")
 
+NCURSES_CFLAGS="${INSTX_CFLAGS}"
+NCURSES_CXXFLAGS="${INSTX_CXXFLAGS}"
+
+if [[ -n "$opt_debug_prefix_map" ]]; then
+    NCURSES_CFLAGS="${NCURSES_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NCURSES_DIR}"
+    NCURSES_CXXFLAGS="${NCURSES_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NCURSES_DIR}"
+fi
+
     # Ncurses use PKG_CONFIG_LIBDIR, not PKG_CONFIG_PATH???
     PKG_CONFIG_LIBDIR="${INSTX_PKGCONFIG}" \
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    CFLAGS="${NCURSES_CFLAGS}" \
+    CXXFLAGS="${NCURSES_CXXFLAGS}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LDLIBS="${INSTX_LDLIBS}" \
     LIBS="${INSTX_LDLIBS}" \
@@ -232,8 +240,12 @@ echo "***************************"
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+    if [[ -n "$opt_debug_prefix_map" ]]; then
+        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NCURSES_DIR}"
+    fi
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NCURSES_DIR}"
 fi
 
 echo "***************************"
