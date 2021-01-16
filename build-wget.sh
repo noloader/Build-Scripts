@@ -226,11 +226,19 @@ if [[ "$ENABLE_CARES" -eq 1 ]]; then
     CONFIG_OPTS+=("--with-cares")
 fi
 
+if [[ -n "$opt_debug_prefix_map" ]]; then
+    WGET_CFLAGS="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET_DIR}"
+    WGET_CXXFLAGS="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET_DIR}"
+else
+    WGET_CFLAGS="${INSTX_CFLAGS}"
+    WGET_CXXFLAGS="${INSTX_CXXFLAGS}"
+fi
+
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    CFLAGS="${WGET_CFLAGS}" \
+    CXXFLAGS="${WGET_CXXFLAGS}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
@@ -316,8 +324,10 @@ echo "************************"
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${WGET_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
+	bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${WGET_DIR}"
 fi
 
 # Wget does not have any CA's configured at the moment. HTTPS downloads
