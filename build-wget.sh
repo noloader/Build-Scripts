@@ -227,18 +227,18 @@ if [[ "$ENABLE_CARES" -eq 1 ]]; then
 fi
 
 if [[ -n "$opt_debug_prefix_map" ]]; then
-    WGET_CFLAGS="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET_DIR}"
-    WGET_CXXFLAGS="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET_DIR}"
+    wget_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET_DIR}"
+    wget_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET_DIR}"
 else
-    WGET_CFLAGS="${INSTX_CFLAGS}"
-    WGET_CXXFLAGS="${INSTX_CXXFLAGS}"
+    wget_cflags="${INSTX_CFLAGS}"
+    wget_cxxflags="${INSTX_CXXFLAGS}"
 fi
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${WGET_CFLAGS}" \
-    CXXFLAGS="${WGET_CXXFLAGS}" \
+    CFLAGS="${wget_cflags}" \
+    CXXFLAGS="${wget_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
