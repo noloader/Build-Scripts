@@ -121,19 +121,19 @@ echo "*************************"
 echo "Configuring package"
 echo "*************************"
 
-ICONV_CFLAGS="${INSTX_CFLAGS}"
-ICONV_CXXFLAGS="${INSTX_CXXFLAGS}"
-
 if [[ -n "$opt_debug_prefix_map" ]]; then
-    ICONV_CFLAGS="${ICONV_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${ICONV_DIR}"
-    ICONV_CXXFLAGS="${ICONV_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${ICONV_DIR}"
+    iconv_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${ICONV_DIR}"
+    iconv_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${ICONV_DIR}"
+else
+    iconv_cflags="${INSTX_CFLAGS}"
+    iconv_cxxflags="${INSTX_CXXFLAGS}"
 fi
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${ICONV_CFLAGS}" \
-    CXXFLAGS="${ICONV_CXXFLAGS}" \
+    CFLAGS="${iconv_cflags}" \
+    CXXFLAGS="${iconv_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
