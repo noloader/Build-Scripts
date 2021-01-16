@@ -140,10 +140,10 @@ fi
 if [[ -z "$WGET" ]]; then
     if [[ -e "$HOME/.build-scripts/wget/bin/wget" ]]; then
         WGET="$HOME/.build-scripts/wget/bin/wget"
-    elif [[ -e "/usr/local/bin/wget" ]]; then
-        WGET="/usr/local/bin/wget"
-    elif [[ -n "$(command -v wget)" ]]; then
-        WGET="$(command -v wget)"
+    elif [[ -e "${INSTX_PREFIX}/bin/wget" ]]; then
+        WGET="${INSTX_PREFIX}/bin/wget"
+    elif [[ -n "$(command -v wget 2>/dev/null)" ]]; then
+        WGET="$(command -v wget 2>/dev/null)"
     fi
 fi
 
