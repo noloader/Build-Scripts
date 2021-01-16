@@ -121,6 +121,14 @@ echo "**********************"
 echo "Configuring package"
 echo "**********************"
 
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
+    emacs_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${EMACS_DIR}"
+    emacs_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${EMACS_DIR}"
+else
+    emacs_cflags="${INSTX_CFLAGS}"
+    emacs_cxxflags="${INSTX_CXXFLAGS}"
+fi
+
 CONFIG_OPTS=('--with-xml2' '--with-libgmp' '--with-gnutls=no'
     '--without-x' '--without-sound' '--without-xpm'
     '--without-jpeg' '--without-tiff' '--without-gif' '--without-png'
@@ -189,9 +197,11 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${EMACS_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${EMACS_DIR}"
 fi
 
 ###############################################################################
