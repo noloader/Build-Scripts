@@ -174,9 +174,7 @@ fi
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
-    --enable-static \
-    --enable-shared \
-    --with-pic \
+    --enable-static --enable-shared \
     --with-libiconv-prefix="${INSTX_PREFIX}" \
     --with-libncurses-prefix="${INSTX_PREFIX}" \
     --with-libunistring-prefix="${INSTX_PREFIX}" \
