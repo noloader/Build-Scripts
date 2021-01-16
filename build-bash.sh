@@ -113,7 +113,11 @@ fi
     --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo "************************"
     echo "Failed to configure Bash"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -128,21 +132,33 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo "************************"
     echo "Failed to build Bash"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-#echo "**********************"
-#echo "Testing package"
-#echo "**********************"
+echo "**********************"
+echo "Testing package"
+echo "**********************"
+
+echo "**********************"
+echo "Bash not tested"
+echo "**********************"
 
 # MAKE_FLAGS=("PERL_USE_UNSAFE_INC=1" "check")
 #if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 #then
+#    echo "************************"
 #    echo "Failed to test Bash"
+#    echo "************************"
+#
+#    bash ../collect-logs.sh "${PKG_NAME}"
 #    exit 1
 #fi
 
