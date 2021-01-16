@@ -97,21 +97,29 @@ do
     rm "$file.timestamp"
 done
 
-if [[ "$IS_DARWIN" -ne 0 ]]; then
-    READLINE_CPPFLAGS="-DNEED_EXTERN_PC"
-else
-    READLINE_CPPFLAGS=""
-fi
-
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
 
+if [[ "$IS_DARWIN" -ne 0 ]]; then
+    readline_cppflags="${INSTX_CPPFLAGS} -DNEED_EXTERN_PC"
+else
+    readline_cppflags="${INSTX_CPPFLAGS}"
+fi
+
+if [[ -n "$opt_debug_prefix_map" ]]; then
+    readline_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${READLINE_DIR}"
+    readline_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${READLINE_DIR}"
+else
+    readline_cflags="${INSTX_CFLAGS}"
+    readline_cxxflags="${INSTX_CXXFLAGS}"
+fi
+
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
-    CPPFLAGS="${INSTX_CPPFLAGS} ${READLINE_CPPFLAGS}" \
+    CPPFLAGS="${readline_cppflags}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    CFLAGS="${readline_cflags}" \
+    CXXFLAGS="${readline_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LDLIBS="-ltinfow ${INSTX_LDLIBS}" \
     LIBS="-ltinfow ${INSTX_LDLIBS}" \
@@ -165,9 +173,11 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${READLINE_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${READLINE_DIR}"
 fi
 
 ###############################################################################
