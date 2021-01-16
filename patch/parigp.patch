@@ -31,7 +31,7 @@
  
  # try linking without locatelib (without -L except --with-xxx-lib)
 -for tlib in "" tinfo ncurses termcap; do
-+for tlib in "" tinfo ncursesw ncurses termcap; do
++for tlib in "" tinfow tinfo ncursesw ncurses termcap; do
    t=$rl
    if test -n "$tlib"; then # need a termcap compatible library?
      eval with="\$with_${tlib}_lib"
