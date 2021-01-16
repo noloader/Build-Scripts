@@ -122,7 +122,8 @@ fi
     --with-libgpg-error-prefix="${INSTX_PREFIX}" \
     --with-pth-prefix="${INSTX_PREFIX}"
 
-if [[ "$?" -ne 0 ]]; then
+if [[ "$?" -ne 0 ]]
+then
     echo "*****************************"
     echo "Failed to configure libgcrypt"
     echo "*****************************"
