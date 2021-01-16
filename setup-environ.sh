@@ -591,6 +591,7 @@ fi
 cc_result=$(${TEST_CC} -g -fdebug-prefix-map=${PWD}=${PWD} -o "$outfile" "$infile" 2>&1 | wc -w)
 if [[ "$cc_result" -eq 0 ]]; then
     opt_debug_prefix_map="-fdebug-prefix-map"
+    export opt_debug_prefix_map
 fi
 
 # Perl does not add -lm when needed
@@ -598,6 +599,7 @@ if [[ -z "$opt_libm" ]]; then
     cc_result=$(${TEST_CC} -o "$outfile" "$infile" -lm 2>&1 | wc -w)
     if [[ "$cc_result" -eq 0 ]]; then
         opt_libm="-lm"
+        export opt_libm
     fi
 fi
 
