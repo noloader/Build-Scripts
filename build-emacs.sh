@@ -161,7 +161,11 @@ fi
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo "*************************"
     echo "Failed to configure emacs"
+    echo "*************************"
+
+    bash ../collect-logs "${PKG_NAME}"
     exit 1
 fi
 
@@ -176,8 +180,12 @@ echo "**********************"
 MAKE_FLAGS=("V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-   echo "Failed to build Emacs"
-   exit 1
+    echo "*************************"
+    echo "Failed to build emacs"
+    echo "*************************"
+
+    bash ../collect-logs "${PKG_NAME}"
+    exit 1
 fi
 
 # Fix flags in *.pc files
@@ -190,9 +198,12 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-   echo "Failed to test Emacs"
-   bash ../collect-logs.sh "${PKG_NAME}"
-   # exit 1
+    echo "*************************"
+    echo "Failed to test emacs"
+    echo "*************************"
+
+    bash ../collect-logs "${PKG_NAME}"
+    #exit 1
 fi
 
 echo "**********************"
