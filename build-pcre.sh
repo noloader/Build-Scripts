@@ -97,18 +97,18 @@ echo "Configuring package"
 echo "**********************"
 
 if [[ -n "$opt_debug_prefix_map" ]]; then
-    PCRE_CFLAGS="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${PCRE_DIR}"
-    PCRE_CXXFLAGS="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${PCRE_DIR}"
+    pcre_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${PCRE_DIR}"
+    pcre_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${PCRE_DIR}"
 else
-    PCRE_CFLAGS="${INSTX_CFLAGS}"
-    PCRE_CXXFLAGS="${INSTX_CXXFLAGS}"
+    pcre_cflags="${INSTX_CFLAGS}"
+    pcre_cxxflags="${INSTX_CXXFLAGS}"
 fi
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${PCRE_CFLAGS}" \
-    CXXFLAGS="${PCRE_CXXFLAGS}" \
+    CFLAGS="${pcre_cflags}" \
+    CXXFLAGS="${pcre_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
