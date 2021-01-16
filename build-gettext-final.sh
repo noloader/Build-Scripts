@@ -147,10 +147,6 @@ do
     mv "$file.fixed" "$file"
 done
 
-if [ -e "${INSTX_PREFIX}/bin/sed" ]; then
-    export SED="${INSTX_PREFIX}/bin/sed"
-fi
-
 echo "***************************"
 echo "Configuring package"
 echo "***************************"
