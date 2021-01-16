@@ -48,6 +48,22 @@ Examples of running the scripts and changing variables are shown below:
 INSTX_PREFIX="$HOME/tmp" ./build-wget.sh
 ```
 
+## Runtime Paths
+
+The build scripts attempt to set runtime paths in everything it builds. For example, on Fedora x86_64 the `LDFLAGS` include `-L/usr/local/lib64 -Wl,-R,/usr/local/lib64 -Wl,--enable-new-dtags`. `new-dtags` ensures a `RUNPATH` is used (as opposed to `RPATH`), and `RUNPATH` allows `LD_LIBRARY_PATH` overrides at runtime. The `LD_LIBRARY_PATH` support is important so self tests can run during `make check`.
+
+If all goes well you will not suffer the stupid path problems that have plagued Linux for the last 25 years or so.
+
+## Dependencies
+
+Dependent libraries are minimally tracked. Once a library is built a file with the library name is `touch`'d in `$HOME/.build-scripts/$prefix`. Use of `$prefix` allows tracking of multiple installs. If the file is older than 7 days then the library is automatically rebuilt. Automatic rebuilding ensures newer versions of a library are used when available and sidesteps problems with trying to track version numbers.
+
+Rebuilding after 7 days avoids a lot of package database bloat. As an example, MacPorts `registry.db` have been reported with sizes of 658,564,096, 744,112,128, 62,558,208 and 59,329,536. Also see [registry.db getting rather obese and updates very slow](https://lists.macports.org/pipermail/macports-users/2020-June/048510.html) on the MacPorts mailing list.
+
+Programs are not tracked. When a script like `build-git.sh` or `build-ssh.sh` is run then the program is always built or rebuilt. The dependently libraries may (or may not) be built based the age, but the program is always rebuilt.
+
+You can delete `$HOME/.build-scripts/$prefix` and all dependent libraries will be rebuilt on the next run of a build script.
+
 ## Source Code
 
 The source code for a package can be installed if you need to perform debugging after installation. However, most recipes do not install the source code.
@@ -56,7 +72,7 @@ If you wish to install the source code for a package, then follow the `build-bas
 
 Once the sources are installed, the debugger works as expected.
 
-```bash
+```
 (gdb) run
 ...
 Program received signal SIGSEGV, Segmentation fault.
@@ -76,22 +92,6 @@ Program received signal SIGSEGV, Segmentation fault.
 828	  long nbytes;
 (gdb)
 ```
-
-## Runtime Paths
-
-The build scripts attempt to set runtime paths in everything it builds. For example, on Fedora x86_64 the `LDFLAGS` include `-L/usr/local/lib64 -Wl,-R,/usr/local/lib64 -Wl,--enable-new-dtags`. `new-dtags` ensures a `RUNPATH` is used (as opposed to `RPATH`), and `RUNPATH` allows `LD_LIBRARY_PATH` overrides at runtime. The `LD_LIBRARY_PATH` support is important so self tests can run during `make check`.
-
-If all goes well you will not suffer the stupid path problems that have plagued Linux for the last 25 years or so.
-
-## Dependencies
-
-Dependent libraries are minimally tracked. Once a library is built a file with the library name is `touch`'d in `$HOME/.build-scripts/$prefix`. Use of `$prefix` allows tracking of multiple installs. If the file is older than 7 days then the library is automatically rebuilt. Automatic rebuilding ensures newer versions of a library are used when available and sidesteps problems with trying to track version numbers.
-
-Rebuilding after 7 days avoids a lot of package database bloat. As an example, MacPorts `registry.db` have been reported with sizes of 658,564,096, 744,112,128, 62,558,208 and 59,329,536. Also see [registry.db getting rather obese and updates very slow](https://lists.macports.org/pipermail/macports-users/2020-June/048510.html) on the MacPorts mailing list.
-
-Programs are not tracked. When a script like `build-git.sh` or `build-ssh.sh` is run then the program is always built or rebuilt. The dependently libraries may (or may not) be built based the age, but the program is always rebuilt.
-
-You can delete `$HOME/.build-scripts/$prefix` and all dependent libraries will be rebuilt on the next run of a build script.
 
 ## Authenticity
 
