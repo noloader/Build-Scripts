@@ -71,9 +71,9 @@ echo "================= Bzip2 ================"
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "****************************"
 echo "Downloading package"
-echo "**********************"
+echo "****************************"
 
 echo ""
 echo "Bzip2 ${BZIP2_VER}..."
@@ -106,9 +106,9 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo "****************************"
 echo "Building package"
-echo "**********************"
+echo "****************************"
 
 # Since we call the makefile directly, we need to escape dollar signs.
 PKG_CONFIG_PATH="${INSTX_PKGCONFIG}"
@@ -132,16 +132,20 @@ MAKE_FLAGS+=("LIBS=${LDLIBS}")
 
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo "****************************"
     echo "Failed to build Bzip archive"
+    echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo "****************************"
 echo "Testing package"
-echo "**********************"
+echo "****************************"
 
 MAKE_FLAGS=()
 MAKE_FLAGS+=("-f" "Makefile" "check")
@@ -156,13 +160,17 @@ MAKE_FLAGS+=("LIBS=${LDLIBS}")
 
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to test Bzip library"
+    echo "****************************"
+    echo "Failed to test Bzip"
+    echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
-echo "**********************"
+echo "****************************"
 echo "Installing package"
-echo "**********************"
+echo "****************************"
 
 if [[ -n "$SUDO_PASSWORD" ]]
 then
@@ -190,9 +198,9 @@ fi
 
 ###############################################################################
 
-echo "**********************"
+echo "****************************"
 echo "Building package"
-echo "**********************"
+echo "****************************"
 
 if [[ "$IS_DARWIN" -ne 0 ]]; then
     MAKEFILE=Makefile-libbz2_dylib
@@ -213,13 +221,17 @@ MAKE_FLAGS+=("LIBS=${LDLIBS}")
 
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build Bzip shared object"
+    echo "****************************"
+    echo "Failed to build Bzip library"
+    echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
-echo "**********************"
+echo "****************************"
 echo "Installing package"
-echo "**********************"
+echo "****************************"
 
 if [[ -n "$SUDO_PASSWORD" ]]
 then
