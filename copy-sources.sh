@@ -29,13 +29,14 @@ fi
 cd "${src_dir}" || exit 1
 mkdir -p "${dest_dir}"
 
-IFS= find "./" \( -name '*.h' -o -name '*.c' -o -name '*.cc' -o \
+IFS= find "./" \( -name '*.h' -o -name '*.hpp' -o -name '*.hxx' -o \
+                  -name '*.c' -o -name '*.cc' -o \
                   -name '*.cpp' -o -name '*.cxx' -o -name '*.CC' -o \
                   -name '*.s' -o -name '*.S' \) -print | while read -r file
 do
     # This trims the leading "./" in "./foo.c".
-    file=$(echo "${file}" | tr -s '/' | cut -c 3-);
-    cp --parents --preserve=mode,timestamps "${file}" "${dest_dir}"
+    file=$(echo -n "${file}" | tr -s '/' | cut -c 3-);
+    cp --parents --preserve=timestamps "${file}" "${dest_dir}"
 done
 
 exit 0
