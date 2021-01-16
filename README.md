@@ -48,6 +48,35 @@ Examples of running the scripts and changing variables are shown below:
 INSTX_PREFIX="$HOME/tmp" ./build-wget.sh
 ```
 
+## Source Code
+
+The source code for a package can be installed if you need to perform debugging after installation. However, most recipes do not install the source code.
+
+If you wish to install the source code for a package, then follow the `build-bash.sh` recipe. The script adds `-fdebug-prefix-map` to `CFLAGS` and `CXXFLAGS`, and then calls `copy-sources.sh` during install. `copy-sources.sh` copies headers and source files into `$INSTX_PREFIX/src`, and the script preserves the destination directory structure.
+
+Once the sources are installed, the debugger works as expected.
+
+```bash
+(gdb) run
+...
+Program received signal SIGSEGV, Segmentation fault.
+0x00005555556fd300 in internal_malloc (n=n@entry=0x20, file=file@entry=0x0,
+    line=line@entry=0x0, flags=flags@entry=0x2) at malloc.c:824
+824	{
+(gdb) list
+819	static PTR_T
+820	internal_malloc (n, file, line, flags)		/* get a block */
+821	     size_t n;
+822	     const char *file;
+823	     int line, flags;
+824	{
+825	  register union mhead *p;
+826	  register int nunits;
+827	  register char *m, *z;
+828	  long nbytes;
+(gdb)
+```
+
 ## Runtime Paths
 
 The build scripts attempt to set runtime paths in everything it builds. For example, on Fedora x86_64 the `LDFLAGS` include `-L/usr/local/lib64 -Wl,-R,/usr/local/lib64 -Wl,--enable-new-dtags`. `new-dtags` ensures a `RUNPATH` is used (as opposed to `RPATH`), and `RUNPATH` allows `LD_LIBRARY_PATH` overrides at runtime. The `LD_LIBRARY_PATH` support is important so self tests can run during `make check`.
