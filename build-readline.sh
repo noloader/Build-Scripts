@@ -108,8 +108,8 @@ else
 fi
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
-    readline_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${READLINE_DIR}"
-    readline_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${READLINE_DIR}"
+    readline_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${READLN_DIR}"
+    readline_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${READLN_DIR}"
 else
     readline_cflags="${INSTX_CFLAGS}"
     readline_cxxflags="${INSTX_CXXFLAGS}"
@@ -173,11 +173,11 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${READLINE_DIR}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${READLN_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
-    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${READLINE_DIR}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${READLN_DIR}"
 fi
 
 ###############################################################################
