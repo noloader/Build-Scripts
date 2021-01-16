@@ -935,13 +935,6 @@ printf "%s\n" "  CXX: $(command -v "${CXX}")"
 printf "%s\n" " WGET: $WGET"
 printf "\n"
 
-if [[ -n "$INSTX_CACERT_PATH" ]]; then
-    printf " INSTX_CACERT_PATH: %s\n" "$INSTX_CACERT_PATH"
-fi
-if [[ -n "$INSTX_CACERT_FILE" ]]; then
-    printf " INSTX_CACERT_FILE: %s\n" "$INSTX_CACERT_FILE"
-fi
-
 ###############################################################################
 
 # Too many GNU programs and libraries leak.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script source files from $1 to $2 for debugging.
+# This script copies source files for debugging after installation.
 
 echo ""
 echo "**********************"
