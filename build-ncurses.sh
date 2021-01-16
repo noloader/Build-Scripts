@@ -155,12 +155,12 @@ CONFIG_OPTS+=("--disable-root-environ")
 CONFIG_OPTS+=("--with-pkg-config-libdir=${INSTX_PKGCONFIG}")
 CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/share")
 
-NCURSES_CFLAGS="${INSTX_CFLAGS}"
-NCURSES_CXXFLAGS="${INSTX_CXXFLAGS}"
-
 if [[ -n "$opt_debug_prefix_map" ]]; then
-    NCURSES_CFLAGS="${NCURSES_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NCURSES_DIR}"
-    NCURSES_CXXFLAGS="${NCURSES_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NCURSES_DIR}"
+    ncurses_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NCURSES_DIR}"
+    ncurses_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NCURSES_DIR}"
+else
+    ncurses_cflags="${INSTX_CFLAGS}"
+    ncurses_cxxflags="${INSTX_CXXFLAGS}"
 fi
 
     # Ncurses use PKG_CONFIG_LIBDIR, not PKG_CONFIG_PATH???
@@ -168,8 +168,8 @@ fi
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${NCURSES_CFLAGS}" \
-    CXXFLAGS="${NCURSES_CXXFLAGS}" \
+    CFLAGS="${ncurses_cflags}" \
+    CXXFLAGS="${ncurses_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LDLIBS="${INSTX_LDLIBS}" \
     LIBS="${INSTX_LDLIBS}" \
