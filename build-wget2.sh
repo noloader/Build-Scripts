@@ -86,6 +86,16 @@ fi
 
 ###############################################################################
 
+# libhsts has a few problems at the moment. Check the script for comments.
+
+#if ! ./build-libhsts.sh
+#then
+#    echo "Failed to build libhsts"
+#    exit 1
+#fi
+
+###############################################################################
+
 if [[ ! -f "${INSTX_PREFIX}/bin/flex" ]]
 then
     if ! ./build-flex.sh
@@ -231,11 +241,25 @@ echo "*************************"
 echo "Configuring package"
 echo "*************************"
 
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
+    wget2_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET2_DIR}"
+    wget2_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET2_DIR}"
+else
+    wget2_cflags="${INSTX_CFLAGS}"
+    wget2_cxxflags="${INSTX_CXXFLAGS}"
+fi
+
 CONFIG_OPTS=()
+CONFIG_OPTS+=("--enable-static")
+CONFIG_OPTS+=("--enable-shared")
+CONFIG_OPTS+=("--with-pic")
+CONFIG_OPTS+=("--enable-threads")
+CONFIG_OPTS+=("--disable-assert")
+CONFIG_OPTS+=("--disable-doc")
 CONFIG_OPTS+=("--with-openssl=yes")
 CONFIG_OPTS+=("--with-ssl=openssl")
-CONFIG_OPTS+=("--with-libintl-prefix=${INSTX_PREFIX}")
 CONFIG_OPTS+=("--with-libiconv-prefix=${INSTX_PREFIX}")
+CONFIG_OPTS+=("--with-libintl-prefix=${INSTX_PREFIX}")
 CONFIG_OPTS+=("--with-libidn2=${INSTX_PREFIX}")
 CONFIG_OPTS+=("--with-libpcre2=${INSTX_PREFIX}")
 CONFIG_OPTS+=("--without-gpgme")
@@ -245,14 +269,6 @@ CONFIG_OPTS+=("--without-libmicrohttpd")
 
 if [[ "$SKIP_WGET_PSL" -eq 1 ]]; then
     CONFIG_OPTS+=("--without-libpsl")
-fi
-
-if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
-    wget2_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET2_DIR}"
-    wget2_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${WGET2_DIR}"
-else
-    wget2_cflags="${INSTX_CFLAGS}"
-    wget2_cxxflags="${INSTX_CXXFLAGS}"
 fi
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
