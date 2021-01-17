@@ -859,6 +859,7 @@ DIGICERT_ROOT="$HOME/.build-scripts/cacert/digicert-root-ca.pem"
 DIGITRUST_ROOT="$HOME/.build-scripts/cacert/digitrust-root-ca.pem"
 USERTRUST_ROOT="$HOME/.build-scripts/cacert/usertrust-root-ca.pem"
 GITHUB_ROOT="$HOME/.build-scripts/cacert/github-ca-zoo.pem"
+GITLAB_ROOT="$HOME/.build-scripts/cacert/sectigo-ca.pem"
 
 # Perl used to use GLOBALSIGN_ROOT. They now use LETS_ENCRYPT_ROOT
 # OK to delete this in several months, like around June or July 2021.
