@@ -545,6 +545,13 @@ if [[ "$cc_result" -eq 0 ]]; then
     opt_max_header_pad="-headerpad_max_install_names"
 fi
 
+# Debug versus release builds
+if [[ -n "$INSTX_DEBUG" ]]; then
+    opt_cppflags_build="-DDEBUG"
+else
+    opt_cppflags_build="-DNDEBUG"
+fi
+
 # Debug symbols
 if [[ -z "$opt_sym" ]]; then
     cc_result=$(${TEST_CC} -g2 -o "$outfile" "$infile" 2>&1 | wc -w)
@@ -559,6 +566,11 @@ if [[ -z "$opt_sym" ]]; then
 
     # If we are building under the sanitizers with GCC or Clang, just use -g3
     if [[ -n "$INSTX_UBSAN" || -n "$INSTX_ASAN" || -n "$INSTX_MSAN" ]]; then
+        opt_sym="-g3"
+    fi
+
+    # If we are building a debug build with GCC or Clang, just use -g3
+    if [[ -n "$INSTX_DEBUG" ]]; then
         opt_sym="-g3"
     fi
 fi
@@ -578,6 +590,11 @@ if [[ -z "$opt_optimize" ]]; then
     # If we are building under the sanitizers with GCC or Clang, just use -O1
     if [[ -n "$INSTX_UBSAN" || -n "$INSTX_ASAN" || -n "$INSTX_MSAN" ]]; then
         opt_optimize="-O1"
+    fi
+
+    # If we are building a debug build with GCC or Clang, just use -O0
+    if [[ -n "$INSTX_DEBUG" ]]; then
+        opt_optimize="-O0"
     fi
 fi
 
@@ -690,7 +707,7 @@ export INSTX_ICANN_PATH INSTX_ICANN_FILE
 ###############################################################################
 
 opt_pkgconfig=("${INSTX_LIBDIR}/pkgconfig")
-opt_cppflags=("-I${INSTX_PREFIX}/include" "-DNDEBUG")
+opt_cppflags=("-I${INSTX_PREFIX}/include" "${opt_cppflags_build}")
 opt_cflags=("$opt_sym" "$opt_optimize")
 opt_cxxflags=("$opt_sym" "$opt_optimize")
 opt_asflags=()
@@ -710,7 +727,13 @@ then
     opt_cxxflags[${#opt_cxxflags[@]}]="$opt_64bit_dbl"
 fi
 
-if [[ -n "$INSTX_UBSAN" ]]; then
+# Debug, UBsan, Asan, Msan and Analyzer builds
+if [[ -n "$INSTX_DEBUG" ]]; then
+    opt_cppflags[${#opt_cppflags[@]}]="-DTEST_DEBUG=1"
+    opt_cflags[${#opt_cflags[@]}]="-fno-omit-frame-pointer"
+    opt_cxxflags[${#opt_cxxflags[@]}]="-fno-omit-frame-pointer"
+
+elif [[ -n "$INSTX_UBSAN" ]]; then
     opt_cppflags[${#opt_cppflags[@]}]="-DTEST_UBSAN=1"
     opt_cflags[${#opt_cflags[@]}]="-fsanitize=undefined"
     opt_cxxflags[${#opt_cxxflags[@]}]="-fsanitize=undefined"
