@@ -109,6 +109,7 @@ fi
     --libdir="${INSTX_LIBDIR}" \
     --with-curses --enable-multibyte \
     --enable-largefile \
+    --enable-history \
     --with-installed-readline="${INSTX_PREFIX}" \
     --with-libiconv-prefix="${INSTX_PREFIX}" \
     --with-libintl-prefix="${INSTX_PREFIX}"
