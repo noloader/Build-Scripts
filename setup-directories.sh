@@ -41,12 +41,12 @@ fi
 
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "${INSTX_PREFIX}/"{bin,sbin,etc,include,var,libexec,share}
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "${INSTX_PREFIX}/share/"{doc,info,man}
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "${INSTX_PREFIX}/share/"{doc,info,locale,man}
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "${INSTX_PKGCONFIG}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ${FIX_PERMISSIONS} "${INSTX_PREFIX}"
 else
     mkdir -p "${INSTX_PREFIX}/"{bin,sbin,etc,include,var,libexec,share,src}
-    mkdir -p "${INSTX_PREFIX}/share/"{doc,info,man}
+    mkdir -p "${INSTX_PREFIX}/share/"{doc,info,locale,man}
     mkdir -p "${INSTX_PKGCONFIG}"
     bash ${FIX_PERMISSIONS} "${INSTX_PREFIX}"
 fi
