@@ -32,9 +32,6 @@ else
 	export INSTX_BASE_RECURSION_GUARD
 fi
 
-# GetText will be checked in build-gettext-final.sh
-export INSTX_DISABLE_GETTEXT_CHECK=1
-
 ###############################################################################
 
 # Get the environment as needed.
@@ -60,6 +57,9 @@ if [[ "${SUDO_PASSWORD_DONE}" != "yes" ]]; then
         exit 1
     fi
 fi
+
+# GetText will be checked in build-gettext-final.sh
+export INSTX_DISABLE_GETTEXT_CHECK=1
 
 ###############################################################################
 
