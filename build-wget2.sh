@@ -262,9 +262,13 @@ CONFIG_OPTS+=("--with-libiconv-prefix=${INSTX_PREFIX}")
 CONFIG_OPTS+=("--with-libintl-prefix=${INSTX_PREFIX}")
 CONFIG_OPTS+=("--with-libidn2=${INSTX_PREFIX}")
 CONFIG_OPTS+=("--with-libpcre2=${INSTX_PREFIX}")
+CONFIG_OPTS+=("--with-bzip2=${INSTX_PREFIX}")
+CONFIG_OPTS+=("--with-zlib=${INSTX_PREFIX}")
+CONFIG_OPTS+=("--with-lzip=${INSTX_PREFIX}")
+CONFIG_OPTS+=("--without-idn")
+CONFIG_OPTS+=("--without-pcre")
 CONFIG_OPTS+=("--without-gpgme")
-
-# CONFIG_OPTS+=("--with-libmicrohttpd=${INSTX_PREFIX}")
+CONFIG_OPTS+=("--without-libhsts")
 CONFIG_OPTS+=("--without-libmicrohttpd")
 
 if [[ "$SKIP_WGET_PSL" -eq 1 ]]; then
