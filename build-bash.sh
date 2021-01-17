@@ -108,6 +108,7 @@ fi
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
     --with-curses --enable-multibyte \
+    --enable-largefile \
     --with-installed-readline="${INSTX_PREFIX}" \
     --with-libiconv-prefix="${INSTX_PREFIX}" \
     --with-libintl-prefix="${INSTX_PREFIX}"
@@ -151,7 +152,8 @@ echo "**********************"
 echo "Bash not tested"
 echo "**********************"
 
-# MAKE_FLAGS=("PERL_USE_UNSAFE_INC=1" "check")
+# https://git.savannah.gnu.org/cgit/bash.git/tree/INSTALL
+# MAKE_FLAGS=("PERL_USE_UNSAFE_INC=1" "tests")
 #if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 #then
 #    echo "************************"
