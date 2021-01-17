@@ -12,7 +12,7 @@
 #
 # GetText is the real focus of this script. GetText is built in two stages.
 # First, the iConv/GetText pair is built due to circular dependency. Second,
-# the final GetText is build which includes libunistring and libxml2.
+# the final GetText is built which includes libunistring and libxml2.
 #
 # Most GNU packages will just call build-base.sh to get the common packages
 # out of the way. Non-GNU packages can call the script, too.
