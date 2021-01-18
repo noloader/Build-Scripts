@@ -92,11 +92,11 @@ fi
 #   sed -i -e 's/^subject/#subject/g' -e 's/^issuer/#issuer/g' root-anchors.pem
 
 UNBOUND_ANCHOR=$(command -v unbound-anchor 2>/dev/null)
-if [[ -z "$UNBOUND_ANCHOR" ]]; then
+if [[ -z "${UNBOUND_ANCHOR}" ]]; then
     UNBOUND_ANCHOR=/sbin/unbound-anchor;
 fi
 
-if [[ -f "$UNBOUND_ANCHOR" ]]
+if [[ -f "${UNBOUND_ANCHOR}" ]]
 then
     echo "Updating bootstrap dnsroot.key"
     "${UNBOUND_ANCHOR}" -a ../bootstrap/dnsroot.key -u data.iana.org
