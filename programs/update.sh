@@ -23,7 +23,9 @@ if [[ $(wc -c < config.sub.new) -eq 0 ]]; then
     exit 1
 fi
 
-mv config.sub.new config.sub
+if ! mv config.sub.new config.sub; then
+    echo "Failed to copy config.sub"
+fi
 
 echo "Fixing config.sub permissions"
 chmod +x config.sub
@@ -42,7 +44,9 @@ if [[ $(wc -c < config.guess.new) -eq 0 ]]; then
     exit 1
 fi
 
-mv config.guess.new config.guess
+if ! mv config.guess.new config.guess; then
+    echo "Failed to copy config.guess"
+fi
 
 echo "Fixing config.guess permissions"
 chmod +x config.guess
@@ -61,7 +65,9 @@ if [[ $(wc -c < ../bootstrap/cacert.pem.new) -eq 0 ]]; then
     exit 1
 fi
 
-mv ../bootstrap/cacert.pem.new ../bootstrap/cacert.pem
+if ! mv ../bootstrap/cacert.pem.new ../bootstrap/cacert.pem; then
+    echo "Failed to copy cacert.pem"
+fi
 
 echo "Updating bootstrap icannbundle.pem"
 if ! ${WGET} -q -O ../bootstrap/icannbundle.pem.new --ca-certificate="${ca_zoo}" \
@@ -76,7 +82,9 @@ if [[ $(wc -c < ../bootstrap/icannbundle.pem.new) -eq 0 ]]; then
     exit 1
 fi
 
-mv ../bootstrap/icannbundle.pem.new ../bootstrap/icannbundle.pem
+if ! mv ../bootstrap/icannbundle.pem.new ../bootstrap/icannbundle.pem; then
+    echo "Failed to copy icannbundle.pem"
+fi
 
 # Not correct:
 #   wget -O root-anchors.p7s https://data.iana.org/root-anchors/root-anchors.p7s
