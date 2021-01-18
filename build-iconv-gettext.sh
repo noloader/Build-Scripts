@@ -52,7 +52,7 @@ rm -f "${INSTX_PKG_CACHE}/gettext"
 # pkg-config is special
 export INSTX_DISABLE_ICONV_TEST=1
 
-if [[ "$IS_DARWIN" -ne 0 || "$IS_LINUX" -ne 0 ]]
+if [[ "$IS_DARWIN" -ne 0 ]]
 then
     if ! ./build-iconv-utf8mac.sh
     then
@@ -83,7 +83,7 @@ fi
 # to build iConvert again so it picks up the new GetText.
 rm "${INSTX_PKG_CACHE}/iconv"
 
-if [[ "$IS_DARWIN" -ne 0 || "$IS_LINUX" -ne 0 ]]
+if [[ "$IS_DARWIN" -ne 0 ]]
 then
     if ! ./build-iconv-utf8mac.sh
     then
