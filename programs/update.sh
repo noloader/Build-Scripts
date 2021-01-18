@@ -91,10 +91,12 @@ fi
 #   openssl pkcs7 -print_certs -in root-anchors.p7s -inform DER -out root-anchors.pem
 #   sed -i -e 's/^subject/#subject/g' -e 's/^issuer/#issuer/g' root-anchors.pem
 
-UNBOUND_ANCHOR=$(command -v unbound-anchor)
-if [ -z "$UNBOUND_ANCHOR" ]; then UNBOUND_ANCHOR=/sbin/unbound-anchor; fi
+UNBOUND_ANCHOR=$(command -v unbound-anchor 2>/dev/null)
+if [[ -z "$UNBOUND_ANCHOR" ]]; then
+    UNBOUND_ANCHOR=/sbin/unbound-anchor;
+fi
 
-if [[ $(ls "$UNBOUND_ANCHOR" 2>/dev/null) ]]
+if [[ -f "$UNBOUND_ANCHOR" ]]
 then
     echo "Updating bootstrap dnsroot.key"
     "${UNBOUND_ANCHOR}" -a ../bootstrap/dnsroot.key -u data.iana.org
