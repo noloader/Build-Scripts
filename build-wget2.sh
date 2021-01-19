@@ -297,8 +297,8 @@ fi
     --sysconfdir="${INSTX_PREFIX}/etc" \
     "${CONFIG_OPTS[@]}"
 
-
-if [[ "$?" -ne 0 ]]; then
+if [[ "$?" -ne 0 ]]
+then
     echo "*************************"
     echo "Failed to configure Wget2"
     echo "*************************"

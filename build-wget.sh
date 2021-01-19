@@ -260,7 +260,8 @@ fi
     --with-libssl-prefix="${INSTX_PREFIX}" \
     "${CONFIG_OPTS[@]}"
 
-if [[ "$?" -ne 0 ]]; then
+if [[ "$?" -ne 0 ]]
+then
     echo "************************"
     echo "Failed to configure Wget"
     echo "************************"
