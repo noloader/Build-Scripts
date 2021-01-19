@@ -340,7 +340,7 @@ cp "./doc/sample.wgetrc" "./wgetrc"
     echo "ca_directory = $INSTX_CACERT_PATH"
     echo "ca_certificate = $INSTX_CACERT_FILE"
     echo ""
-} > "./wgetrc"
+} >> "./wgetrc"
 
 # Install the rc file
 if [[ -n "$SUDO_PASSWORD" ]]; then
