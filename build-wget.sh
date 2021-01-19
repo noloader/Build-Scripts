@@ -327,20 +327,25 @@ if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${WGET_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
-	bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${WGET_DIR}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${WGET_DIR}"
 fi
 
 # Wget does not have any CA's configured at the moment. HTTPS downloads
-# will fail with the message "... use --no-check-certifcate ...". Fix it
-# through the system's wgetrc configuration file.
-cp "./doc/sample.wgetrc" "./wgetrc"
+# will fail with the message "... use --no-check-certificate ...". Fix it
+# through the system's wget2rc configuration file.
+cp "./doc/sample.wget2rc" "./wget2rc"
 {
     echo ""
-    echo "# Default CA Zoo file added by Build-Scripts"
+    echo "############################################"
+    echo ""
+    echo "Build Script default settings"
+    echo ""
+    echo "iri = on"
+    echo "secure_protocol = PFS"
     echo "ca_directory = $INSTX_CACERT_PATH"
     echo "ca_certificate = $INSTX_CACERT_FILE"
     echo ""
-} >> "./wgetrc"
+} >> "./wget2rc"
 
 # Install the rc file
 if [[ -n "$SUDO_PASSWORD" ]]; then

@@ -357,15 +357,21 @@ else
 fi
 
 # Wget does not have any CA's configured at the moment. HTTPS downloads
-# will fail with the message "... use --no-check-certifcate ...". Fix it
+# will fail with the message "... use --no-check-certificate ...". Fix it
 # through the system's wget2rc configuration file.
+cp "./doc/sample.wgetrc" "./wgetrc"
 {
     echo ""
-    echo "# Default CA Zoo file added by Build-Scripts"
+    echo "############################################"
+    echo ""
+    echo "Build Script default settings"
+    echo ""
+    echo "iri = on"
+    echo "secure_protocol = PFS"
     echo "ca_directory = $INSTX_CACERT_PATH"
     echo "ca_certificate = $INSTX_CACERT_FILE"
     echo ""
-} > ./wget2rc
+} >> ./wget2rc
 
 # Install the rc file
 if [[ -n "$SUDO_PASSWORD" ]]; then
