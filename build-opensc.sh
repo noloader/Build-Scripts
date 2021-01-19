@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds OpenSC from sources.
 
-OPENSC_VER=0.20.0
+OPENSC_VER=0.21.0
 OPENSC_TAR=opensc-"$OPENSC_VER".tar.gz
 OPENSC_DIR=opensc-"$OPENSC_VER"
 PKG_NAME=opensc
