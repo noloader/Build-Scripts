@@ -359,7 +359,7 @@ fi
 # Wget does not have any CA's configured at the moment. HTTPS downloads
 # will fail with the message "... use --no-check-certificate ...". Fix it
 # through the system's wget2rc configuration file.
-cp "./doc/sample.wgetrc" "./wgetrc"
+cp "./doc/sample.wget2rc" "./wget2rc"
 {
     echo ""
     echo "############################################"

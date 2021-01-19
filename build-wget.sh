@@ -332,8 +332,8 @@ fi
 
 # Wget does not have any CA's configured at the moment. HTTPS downloads
 # will fail with the message "... use --no-check-certificate ...". Fix it
-# through the system's wget2rc configuration file.
-cp "./doc/sample.wget2rc" "./wget2rc"
+# through the system's wgetrc configuration file.
+cp "./doc/sample.wgetrc" "./wgetrc"
 {
     echo ""
     echo "############################################"
@@ -345,7 +345,7 @@ cp "./doc/sample.wget2rc" "./wget2rc"
     echo "ca_directory = $INSTX_CACERT_PATH"
     echo "ca_certificate = $INSTX_CACERT_FILE"
     echo ""
-} >> "./wget2rc"
+} >> "./wgetrc"
 
 # Install the rc file
 if [[ -n "$SUDO_PASSWORD" ]]; then
