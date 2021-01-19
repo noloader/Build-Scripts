@@ -193,6 +193,7 @@ if [[ -e ../patch/wget.patch ]]; then
 fi
 
 # https://lists.gnu.org/archive/html/bug-gnulib/2019-07/msg00058.html
+if false; then
 IFS= find "$PWD" -name '*.h' -print | while read -r file
 do
     touch -a -m -r "$file" "$file.timestamp"
@@ -205,6 +206,7 @@ do
     touch -a -m -r "$file.timestamp" "$file"
     rm "$file.timestamp"
 done
+fi
 
 # https://lists.gnu.org/archive/html/bug-wget/2019-05/msg00064.html
 IFS= find "$PWD" -name '*.px' -print | while read -r file
