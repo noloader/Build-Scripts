@@ -4,7 +4,7 @@
 # This script copies source files for debugging after installation.
 
 # Only copy sources on Linux machines
-if [[ $(uname -s | grep -i -c 'linux') -eq 0 ]]
+if [[ $(uname -s | grep -i -c 'linux') -eq 0 ]]; then
     exit 0
 fi
 
