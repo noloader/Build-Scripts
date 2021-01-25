@@ -3,6 +3,11 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script copies source files for debugging after installation.
 
+# Only copy sources on Linux machines
+if [[ $(uname -s | grep -i -c 'linux') -eq 0 ]]
+    exit 0
+fi
+
 echo ""
 echo "**********************"
 echo "Copying source files"
