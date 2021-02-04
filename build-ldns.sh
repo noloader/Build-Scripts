@@ -80,6 +80,11 @@ rm -rf "$LDNS_DIR" &>/dev/null
 gzip -d < "$LDNS_TAR" | tar xf -
 cd "$LDNS_DIR" || exit 1
 
+if [[ -e ../patch/ldns.patch ]]; then
+    patch -u -p0 < ../patch/ldns.patch
+    echo ""
+fi
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
@@ -98,6 +103,9 @@ echo "**********************"
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
+    --enable-ed25519 \
+    --enable-ed448 \
+    --enable-rrtype-avc \
     --with-drill \
     --with-ssl="${INSTX_PREFIX}" \
     --with-ca-file="$INSTX_ICANN_FILE" \
