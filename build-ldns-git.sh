@@ -2,9 +2,10 @@
 
 # Written and placed in public domain by Jeffrey Walton
 # This script builds LDNS from sources.
+# Also see https://github.com/NLnetLabs/ldns/commit/3373aa99
 
 LDNS_DIR=ldns-master
-LDNS_TAG=release-1.7.0
+LDNS_TAG=devel
 PKG_NAME=ldns-rc
 
 ###############################################################################
@@ -90,13 +91,15 @@ fi
 sed '11iAM_INIT_AUTOMAKE' configure.ac > configure.ac.fixed
 mv configure.ac.fixed configure.ac
 
-mkdir -p m4/
-automake --add-missing
-autoreconf --force --install
+if ! mkdir -p m4/ || ! libtoolize -ci || ! autoreconf -fi
+then
+    echo "Failed to bootstrap LDNS"
+    exit 1
+fi
 
 if [[ ! -f ./configure ]]
 then
-    echo "Failed to autoreconf LDNS"
+    echo "Failed to bootstrap LDNS"
     exit 1
 fi
 
@@ -118,6 +121,10 @@ echo "**********************"
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
+    --enable-ed25519 \
+    --enable-ed448 \
+    --enable-rrtype-avc \
+    --enable-rrtype-svcb-https \
     --with-ssl="${INSTX_PREFIX}" \
     --with-ca-file="$INSTX_ICANN_FILE" \
     --with-ca-path="$INSTX_ICANN_PATH" \
