@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds libgcrypt from sources.
 
-GCRYPT_VER=1.9.1
+GCRYPT_VER=1.9.2
 GCRYPT_TAR="libgcrypt-${GCRYPT_VER}.tar.bz2"
 GCRYPT_DIR="libgcrypt-${GCRYPT_VER}"
 GCRYPT_LOG="libgcrypt.log"
