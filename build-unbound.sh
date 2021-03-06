@@ -111,10 +111,6 @@ if [[ -e ../patch/unbound.patch ]]; then
     echo ""
 fi
 
-# A small patch
-#echo "Patching unbound-anchor.c"
-#wget -q -O smallapp/unbound-anchor.c https://raw.githubusercontent.com/noloader/unbound/master/smallapp/unbound-anchor.c
-
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
