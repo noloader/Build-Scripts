@@ -1,3 +1,5 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch adds Apple M1 support to OpenSSL 1.0.2u.
 --- Configure
 +++ Configure
 @@ -650,6 +650,7 @@
