@@ -294,6 +294,13 @@ do
     mv "${file}.fixed" "${file}"
 done
 
+# Fix lib/malloc/dynarray-skeleton.c
+file=lib/malloc/dynarray-skeleton.c
+sed -e 's/__nonnull ((1))//g' \
+    -e 's/__nonnull ((1, 2))//g' \
+    "${file}" > "${file}.fixed"
+mv "${file}.fixed" "${file}"
+
 if ! make -j "$INSTX_JOBS" V=1; then
     echo "Failed to build Wget"
     exit 1
