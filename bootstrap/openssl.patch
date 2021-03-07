@@ -1,0 +1,13 @@
+--- config
++++ config
+@@ -277,6 +277,10 @@
+ 	    Power*)
+ 		echo "ppc-apple-darwin${VERSION}"
+ 		;;
++	    arm64*)
++               VERSION=20.3.0
++		echo "arm64-apple-darwin${VERSION}"
++		;;
+ 	    *)
+ 		echo "i686-apple-darwin${VERSION}"
+ 		;;

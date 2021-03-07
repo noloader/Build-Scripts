@@ -147,6 +147,9 @@ rm -rf "$SSL_DIR" &>/dev/null
 gzip -d < "$SSL_TAR" | tar xf -
 cd "$BOOTSTRAP_DIR/$SSL_DIR" || exit 1
 
+cp "${BOOTSTRAP_DIR}/openssl.patch" .
+patch -p0 < openssl.patch
+
     KERNEL_BITS="$OPT_BITS" \
 ./config \
     --prefix="$PREFIX" \
