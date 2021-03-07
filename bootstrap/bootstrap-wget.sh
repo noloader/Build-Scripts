@@ -28,7 +28,7 @@ CACERTFILE="$CACERTDIR/cacert.pem"
 : "${INSTX_JOBS:=2}"
 
 # Make the directories
-mkdir -p "$PREFIX" "$LIBDIR" "$CACERTDIR"
+mkdir -p "$PREFIX" "$BINDIR" "$LIBDIR" "$CACERTDIR"
 
 ###############################################################################
 
@@ -102,10 +102,11 @@ echo "  OPT_LDL: $OPT_LDL"
 echo "  OPT_SOCKET: $OPT_SOCKET"
 echo "*************************************************"
 
-IS_DARWIN=$(echo -n "$(uname -s 2>&1)" | grep -i -c 'darwin')
-IS_LINUX=$(echo -n "$(uname -s 2>&1)" | grep -i -c 'linux')
-IS_AMD64=$(echo -n "$(uname -m 2>&1)" | grep -i -c -E 'x86_64|amd64')
-#IS_SOLARIS=$(echo -n "$(uname -s 2>&1)" | grep -i -c 'sunos')
+IS_DARWIN=$(grep -i -c 'darwin' <<< "$(uname -s 2>&1)")
+IS_LINUX=$(grep -i -c 'linux' <<< "$(uname -s 2>&1)")
+IS_SOLARIS=$(grep -i -c 'sunos' <<< "$(uname -s 2>&1)")
+IS_AMD64=$(grep -i -c -E 'x86_64|amd64' <<< "$(uname -m 2>&1)")
+IS_ARM64=$(grep -i -c -E 'aarch64|arm64' <<< "$(uname -m 2>&1)")
 
 # DH is 2x to 4x faster with ec_nistp_64_gcc_128, but it is
 # only available on x64 machines with uint128 available.
