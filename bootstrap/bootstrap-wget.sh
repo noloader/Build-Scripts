@@ -239,6 +239,9 @@ rm -rf "$WGET_DIR" &>/dev/null
 gzip -d < "$WGET_TAR" | tar xf -
 cd "$BOOTSTRAP_DIR/$WGET_DIR" || exit 1
 
+cp "${BOOTSTRAP_DIR}/wget.patch" .
+patch -p0 < wget.patch
+
 # Install recipe does not overwrite a config, if present.
 if [[ -f "$PREFIX/etc/wgetrc" ]]; then
     rm "$PREFIX/etc/wgetrc"
