@@ -21,15 +21,12 @@
  	    *)
  		echo "i686-apple-darwin${VERSION}"
  		;;
-@@ -560,6 +564,12 @@
+@@ -560,6 +564,9 @@
  	else
  	    OUT="darwin-ppc-cc"
  	fi ;;
 +  arm64-apple-darwin*)
-+      OUT="darwin64-aarch64-cc"
-+      ;;
-+  aarch64-apple-darwin*)
-+      OUT="darwin64-aarch64-cc"
++      OUT="darwin64-arm64-cc"
 +      ;;
    i?86-apple-darwin*)
  	ISA64=`(sysctl -n hw.optional.x86_64) 2>/dev/null`
