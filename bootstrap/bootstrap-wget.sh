@@ -11,6 +11,8 @@ SSL_TAR=openssl-1.0.2u.tar.gz
 
 # Directories
 BOOTSTRAP_DIR=$(pwd)
+PATCH_DIR="$(pwd)/../patch"
+
 WGET_DIR=wget-1.21.1
 UNISTR_DIR=libunistring-0.9.10
 SSL_DIR=openssl-1.0.2u
@@ -147,8 +149,8 @@ rm -rf "$SSL_DIR" &>/dev/null
 gzip -d < "$SSL_TAR" | tar xf -
 cd "$BOOTSTRAP_DIR/$SSL_DIR" || exit 1
 
-cp "${BOOTSTRAP_DIR}/openssl.patch" .
-patch -p0 < openssl.patch
+cp "${PATCH_DIR}/openssl-1.0.2.patch" .
+patch -p0 < openssl-1.0.2.patch
 
     KERNEL_BITS="$OPT_BITS" \
 ./config \
@@ -239,7 +241,7 @@ rm -rf "$WGET_DIR" &>/dev/null
 gzip -d < "$WGET_TAR" | tar xf -
 cd "$BOOTSTRAP_DIR/$WGET_DIR" || exit 1
 
-cp "${BOOTSTRAP_DIR}/wget.patch" .
+cp "${PATCH_DIR}/wget.patch" .
 patch -p0 < wget.patch
 
 # Install recipe does not overwrite a config, if present.
