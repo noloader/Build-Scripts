@@ -12,12 +12,11 @@
  # iPhoneOS/iOS
 --- config
 +++ config
-@@ -277,6 +277,10 @@
+@@ -277,6 +277,9 @@
  	    Power*)
  		echo "ppc-apple-darwin${VERSION}"
  		;;
 +	    arm64*)
-+		VERSION=`uname -r`
 +		echo "arm64-apple-darwin${VERSION}"
 +		;;
  	    *)
