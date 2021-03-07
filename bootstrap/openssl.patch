@@ -14,9 +14,9 @@
  	    Power*)
  		echo "ppc-apple-darwin${VERSION}"
  		;;
-+		arm64*)
-+			VERSION=20.3.0
-+			echo "arm64-apple-darwin${VERSION}"
++	    arm64*)
++		VERSION=20.3.0
++		echo "arm64-apple-darwin${VERSION}"
 +		;;
  	    *)
  		echo "i686-apple-darwin${VERSION}"
@@ -25,9 +25,9 @@
  	else
  	    OUT="darwin-ppc-cc"
  	fi ;;
-+	arm64-apple-darwin*)
-+		OUT="darwin64-arm64-cc"
-+       ;;
++  arm64-apple-darwin*)
++	    OUT="darwin64-arm64-cc"
++	    ;;
    i?86-apple-darwin*)
  	ISA64=`(sysctl -n hw.optional.x86_64) 2>/dev/null`
  	if [ "$ISA64" = "1" -a -z "$KERNEL_BITS" ]; then
