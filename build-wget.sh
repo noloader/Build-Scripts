@@ -221,6 +221,13 @@ do
     rm "$file.timestamp"
 done
 
+# https://lists.gnu.org/archive/html/bug-wget/2021-03/msg00003.html
+file=lib/malloc/dynarray-skeleton.c
+sed -e 's/__nonnull ((1))//g' \
+    -e 's/__nonnull ((1, 2))//g' \
+    "${file}" > "${file}.fixed"
+mv "${file}.fixed" "${file}"
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
