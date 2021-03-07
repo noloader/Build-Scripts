@@ -15,7 +15,7 @@
  		echo "ppc-apple-darwin${VERSION}"
  		;;
 +	    arm64*)
-+		VERSION=20.3.0
++		VERSION=`uname -r`
 +		echo "arm64-apple-darwin${VERSION}"
 +		;;
  	    *)
