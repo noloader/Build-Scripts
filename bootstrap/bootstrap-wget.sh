@@ -328,7 +328,7 @@ fi
 
 # Cleanup
 if true; then
-    cd "$CURR_DIR" || exit 1
+    cd "$BOOTSTRAP_DIR" || exit 1
     rm -rf "$WGET_DIR"
     rm -rf "$UNISTR_DIR"
     rm -rf "$SSL_DIR"
