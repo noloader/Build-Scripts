@@ -73,7 +73,7 @@ fi
 
 if ! ./build-bdb.sh
 then
-    echo "Failed to build Berkely DB"
+    echo "Failed to build Berkeley DB"
     exit 1
 fi
 
