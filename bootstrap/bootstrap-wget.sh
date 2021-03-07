@@ -334,6 +334,8 @@ if true; then
     rm -rf "$WGET_DIR"
     rm -rf "$UNISTR_DIR"
     rm -rf "$SSL_DIR"
+    rm -f openssl-1.0.2.patch
+    rm -f wget.patch
 fi
 
 exit 0
