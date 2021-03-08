@@ -5,9 +5,9 @@
 # pinned at Boehm-GC ${BGC_VER}k to avoid the libatomics. Many
 # C++ compilers claim to be C++11 but lack all the features.
 
-BGC_VER=7.2k
-BGC_TAR=gc-7.2k.tar.gz
-BGC_DIR=gc-7.2
+BGC_VER=8.0.4
+BGC_TAR=gc-8.0.4.tar.gz
+BGC_DIR=gc-8.0.4
 PKG_NAME=boehm-gc
 
 ###############################################################################
