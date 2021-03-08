@@ -5,9 +5,9 @@
 # pinned at Boehm-GC ${BGC_VER}k to avoid the libatomics. Many
 # C++ compilers claim to be C++11 but lack all the features.
 
-GC_VER=7.2
-GC_TAR=gc-${BGC_VER}k.tar.gz
-GC_DIR=gc-${BGC_VER}
+BGC_VER=7.2k
+BGC_TAR=gc-7.2k.tar.gz
+BGC_DIR=gc-7.2
 PKG_NAME=boehm-gc
 
 ###############################################################################
@@ -57,18 +57,18 @@ echo "Downloading package"
 echo "**********************"
 
 echo ""
-echo "Boehm GC ${GC_VER}..."
+echo "Boehm GC ${BGC_VER}..."
 
-if ! "$WGET" -q -O "$GC_TAR" --ca-certificate="$GITHUB_ROOT" \
-     "https://github.com/ivmai/bdwgc/releases/download/v${BGC_VER}k/$GC_TAR"
+if ! "$WGET" -q -O "$BGC_TAR" --ca-certificate="$GITHUB_ROOT" \
+     "https://github.com/ivmai/bdwgc/releases/download/v${BGC_VER}/$BGC_TAR"
 then
     echo "Failed to download Boehm GC"
     exit 1
 fi
 
-rm -rf "$GC_DIR" &>/dev/null
-gzip -d < "$GC_TAR" | tar xf -
-cd "$GC_DIR"
+rm -rf "$BGC_DIR" &>/dev/null
+gzip -d < "$BGC_TAR" | tar xf -
+cd "$BGC_DIR"
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
@@ -149,7 +149,7 @@ cd "${CURR_DIR}" || exit 1
 # Set to false to retain artifacts
 if true;
 then
-    ARTIFACTS=("$GC_TAR" "$GC_DIR")
+    ARTIFACTS=("$BGC_TAR" "$BGC_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
