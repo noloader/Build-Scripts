@@ -259,6 +259,7 @@ echo "***************************"
     echo '#!/usr/bin/env bash'
     echo ''
 
+    echo "include_dir=${INSTX_PREFIX}/include"
     echo "lib_dir=${INSTX_LIBDIR}"
 
     echo 'cd ${lib_dir}'
@@ -298,6 +299,10 @@ fi
     echo '    ln -sfv ${lib}w.pc      ${lib_dir}/pkgconfig/${lib}.pc'
     echo 'done'
     echo ''
+
+    echo 'cd ${include_dir}'
+    echo ''
+    echo 'ln -sfv ncursesw      ${include_dir}/ncurses'
 
 } > extra-cmds.sh
 
