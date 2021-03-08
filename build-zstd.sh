@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Zstd from sources.
 
-ZSTD_VER=v1.4.5
+ZSTD_VER=v1.4.9
 ZSTD_TAR="zstd-${ZSTD_VER}.tar.gz"
 ZSTD_DIR="zstd-${ZSTD_VER}"
 PKG_NAME=zstd
