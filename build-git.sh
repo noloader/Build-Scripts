@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Git and its dependencies from sources.
 
-GIT_VER=2.30.1
+GIT_VER=2.30.2
 GIT_TAR="git-${GIT_VER}.tar.gz"
 GIT_DIR="git-${GIT_VER}"
 PKG_NAME=git
