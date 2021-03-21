@@ -897,7 +897,7 @@ GO_DADDY_ROOT="$HOME/.build-scripts/cacert/godaddy-root-ca.pem"
 DIGICERT_ROOT="$HOME/.build-scripts/cacert/digicert-root-ca.pem"
 DIGITRUST_ROOT="$HOME/.build-scripts/cacert/digitrust-root-ca.pem"
 USERTRUST_ROOT="$HOME/.build-scripts/cacert/usertrust-root-ca.pem"
-GITHUB_ROOT="$HOME/.build-scripts/cacert/github-ca-zoo.pem"
+GITHUB_CA_ZOO="$HOME/.build-scripts/cacert/github-ca-zoo.pem"
 GITLAB_ROOT="$HOME/.build-scripts/cacert/sectigo-ca.pem"
 
 # Perl used to use GLOBALSIGN_ROOT. They now use LETS_ENCRYPT_ROOT
@@ -910,7 +910,7 @@ CA_ZOO="$HOME/.build-scripts/cacert/cacert.pem"
 
 export LETS_ENCRYPT_ROOT IDENTRUST_ROOT GO_DADDY_ROOT
 export DIGICERT_ROOT DIGITRUST_ROOT GLOBALSIGN_ROOT
-export USERTRUST_ROOT GITHUB_ROOT CA_ZOO
+export USERTRUST_ROOT GITHUB_CA_ZOO CA_ZOO
 
 ###############################################################################
 

@@ -59,7 +59,7 @@ echo "**********************"
 echo ""
 echo "libapg ${APG_VER}..."
 
-if ! "$WGET" -q -O "$APG_TAR" --ca-certificate="$GITHUB_ROOT" \
+if ! "$WGET" -q -O "$APG_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
      "https://github.com/jabenninghoff/apg/archive/$APG_TAR"
 then
     echo "Failed to download APG"

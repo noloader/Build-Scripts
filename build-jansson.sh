@@ -57,7 +57,7 @@ echo "**********************"
 echo ""
 echo "Jansson ${JANSSON_VER}..."
 
-if ! "$WGET" -q -O "$JANSSON_TAR" --ca-certificate="$GITHUB_ROOT" \
+if ! "$WGET" -q -O "$JANSSON_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
      "https://github.com/akheron/jansson/archive/v$JANSSON_VER.tar.gz"
 then
     echo "Failed to download Jansson"

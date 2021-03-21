@@ -54,7 +54,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$UTHASH_TAR" --ca-certificate="$GITHUB_ROOT" \
+if ! "$WGET" -q -O "$UTHASH_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
      "https://github.com/troydhanson/uthash/archive/$UTHASH_TAR"
 then
     echo "Failed to download UT Hash"

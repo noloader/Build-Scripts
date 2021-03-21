@@ -77,7 +77,7 @@ if [[ -e ../patch/zile.patch ]]; then
     echo ""
 fi
 
-if ! "$WGET" -q -O m4/pkg.m4 --ca-certificate="$GITHUB_ROOT" \
+if ! "$WGET" -q -O m4/pkg.m4 --ca-certificate="$GITHUB_CA_ZOO" \
      https://raw.githubusercontent.com/pkgconf/pkgconf/master/pkg.m4
 then
     echo "Failed to update pkg.m4"

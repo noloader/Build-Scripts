@@ -73,7 +73,7 @@ echo "***********************"
 echo ""
 echo "Hiredis ${HIREDIS_VER}..."
 
-if ! "$WGET" -q -O "$HIREDIS_TAR" --ca-certificate="$GITHUB_ROOT" \
+if ! "$WGET" -q -O "$HIREDIS_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
      "https://github.com/redis/hiredis/archive/$HIREDIS_TAR"
 then
     echo "Failed to download Hiredis"

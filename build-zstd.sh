@@ -56,7 +56,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$ZSTD_TAR" --ca-certificate="$GITHUB_ROOT" \
+if ! "$WGET" -q -O "$ZSTD_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
      "https://github.com/facebook/zstd/releases/download/$ZSTD_VER/$ZSTD_TAR"
 then
     echo "Failed to download Zstd"

@@ -75,7 +75,7 @@ echo "****************************"
 echo "Downloading package"
 echo "****************************"
 
-if ! "$WGET" -q -O "$PATCHELF_TAR" --ca-certificate="$GITHUB_ROOT" \
+if ! "$WGET" -q -O "$PATCHELF_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
      "https://github.com/NixOS/patchelf/archive/$PATCHELF_TAR"
 then
     echo "****************************"

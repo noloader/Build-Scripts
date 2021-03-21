@@ -70,7 +70,7 @@ fi
 
 # This command fails, but downloads the data???
 # https://lists.gnu.org/archive/html/bug-wget/2021-01/msg00055.html
-if "$WGET" --debug -O hsts.json "$HSTS_TAR" --ca-certificate="$GITHUB_ROOT" \
+if "$WGET" --debug -O hsts.json "$HSTS_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
    'https://raw.github.com/chromium/chromium/master/net/http/transport_security_state_static.json'
 then
     sed 's/^ *\/\/.*$//g' hsts.json > hsts.json.fixed
