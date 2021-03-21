@@ -154,7 +154,7 @@ echo "Autoconf ${AUTOCONF_VER}..."
 if ! "$WGET" -q -O "$AUTOCONF_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/autoconf/$AUTOCONF_TAR"
 then
-    echo "Failed to download libtool"
+    echo "Failed to download Autoconf"
     exit 1
 fi
 
