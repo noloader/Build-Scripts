@@ -206,12 +206,16 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-# Fix runpaths
-bash ../fix-runpath.sh
-
 echo "**********************"
 echo "Testing package"
 echo "**********************"
+
+find . -name 'run-tests' -exec chmod +x {} \;
+find . -name '*-test' -exec chmod +x {} \;
+if [[ -n "$(command -v xattr 2>/dev/null)" ]]; then
+	find . -name 'run-tests' -exec xattr -r -d com.apple.quarantine {} \;
+	find . -name '*-test' -exec xattr -r -d com.apple.quarantine {} \;
+fi
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
