@@ -140,6 +140,8 @@ fi
 if [[ -z "$WGET" ]]; then
     if [[ -e "$HOME/.build-scripts/wget/bin/wget" ]]; then
         WGET="$HOME/.build-scripts/wget/bin/wget"
+        # Automatically update cacerts now
+        ./setup-cacerts.sh 1>/dev/null
     elif [[ -n "$(command -v wget 2>/dev/null)" ]]; then
         WGET="$(command -v wget 2>/dev/null)"
     fi
