@@ -49,9 +49,9 @@ echo "=============== libtasn1 ==============="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 if ! "$WGET" -q -O "$TASN1_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/libtasn1/$TASN1_TAR"
@@ -72,9 +72,9 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo "************************"
 echo "Configuring package"
-echo "**********************"
+echo "************************"
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     tasn1_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${TASN1_DIR}"
@@ -98,7 +98,10 @@ fi
     --enable-shared
 
 if [[ "$?" -ne 0 ]]; then
+    echo "************************"
     echo "Failed to configure libtasn1"
+    echo "************************"
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -106,23 +109,26 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo "************************"
     echo "Failed to build libtasn1"
+    echo "************************"
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 # For NetBSD and failed self tests.
 LD_LIBRARY_PATH="$PWD/lib/.libs:$LD_LIBRARY_PATH"
@@ -132,13 +138,16 @@ export LD_LIBRARY_PATH
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to test libtasn1"
+    echo "************************"
+    echo "Failed to build libtasn1"
+    echo "************************"
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
-echo "**********************"
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
