@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Crypto++ library from sources.
 
-CRYPTOPP_VER=840
+CRYPTOPP_VER=850
 CRYPTOPP_ZIP=cryptopp${CRYPTOPP_VER}.zip
 CRYPTOPP_DIR=cryptopp${CRYPTOPP_VER}
 PKG_NAME=cryptopp
