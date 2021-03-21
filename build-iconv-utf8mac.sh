@@ -80,12 +80,12 @@ echo "Downloading package"
 echo "*************************"
 
 echo ""
-echo "iConv ${ICONV_VER}..."
+echo "iConv-utf8mac ${ICONV_VER}..."
 
 if ! "$WGET" -q -O "$ICONV_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
      "https://github.com/noloader/libiconv-utf8mac/releases/download/v1_16/$ICONV_TAR"
 then
-    echo "Failed to download iConv"
+    echo "Failed to download iConv-utf8mac"
     exit 1
 fi
 
@@ -104,7 +104,7 @@ cd "$ICONV_DIR" || exit 1
 if ! "$WGET" -q -O lib/utf8mac.h --ca-certificate="$GITHUB_CA_ZOO" \
     https://raw.githubusercontent.com/fumiyas/libiconv-utf8mac/utf-8-mac-51.200.6.libiconv-${ICONV_VER}/lib/utf8mac.h
 then
-    echo "Failed to patch iConv"
+    echo "Failed to patch iConv-utf8mac"
     exit 1
 fi
 
@@ -140,7 +140,7 @@ fi
 if [[ "$?" -ne 0 ]]
 then
     echo "*************************"
-    echo "Failed to configure iConv"
+    echo "Failed to configure iConv-utf8mac"
     echo "*************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
@@ -159,7 +159,7 @@ MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo "*************************"
-    echo "Failed to build iConv"
+    echo "Failed to build iConv-utf8mac"
     echo "*************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
@@ -184,7 +184,7 @@ then
     if ! "${MAKE}" "${MAKE_FLAGS[@]}"
     then
         echo "*************************"
-        echo "Failed to test iConv"
+        echo "Failed to test iConv-utf8mac"
         echo "*************************"
 
         bash ../collect-logs.sh "${PKG_NAME}"
