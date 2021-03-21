@@ -109,6 +109,7 @@ if [[ "$IS_SOLARIS" -ne 0 && "$IS_SUNC" -eq 0 ]]; then
     mv configure.fixed configure;
     chmod a+x configure; chmod go-w configure
     touch -a -m -r configure.timestamp.saved configure
+    rm -f configure.timestamp.saved
 fi
 
 CONFIG_OPTS=()
@@ -157,19 +158,19 @@ if [[ "$IS_SOLARIS" -eq 1 ]]; then
     CONFIG_OPTS+=("--disable-fat")
 fi
 
-NETTLE__CFLAGS="${INSTX_CFLAGS}"
-NETTLE__CXXFLAGS="${INSTX_CXXFLAGS}"
+nettle_cflags="${INSTX_CFLAGS}"
+nettle_cxxflags="${INSTX_CXXFLAGS}"
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
-    NETTLE__CFLAGS="${NETTLE__CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NETTLE__DIR}"
-    NETTLE__CXXFLAGS="${NETTLE__CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NETTLE__DIR}"
+    nettle_cflags="${nettle_cflags} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NETTLE_DIR}"
+    nettle_cxxflags="${nettle_cxxflags} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NETTLE_DIR}"
 fi
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    CFLAGS="${nettle_cflags}" \
+    CXXFLAGS="${nettle_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
@@ -210,6 +211,7 @@ echo "**********************"
 echo "Testing package"
 echo "**********************"
 
+# I wish the maintainer would test his shit...
 find . -name 'run-tests' -exec chmod +x {} \;
 find . -name '*-test' -exec chmod +x {} \;
 if [[ -n "$(command -v xattr 2>/dev/null)" ]]; then
@@ -238,12 +240,12 @@ if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
     if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
-        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NETTLE__DIR}"
+        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NETTLE_DIR}"
     fi
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
-    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NETTLE__DIR}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NETTLE_DIR}"
 fi
 
 ###############################################################################
