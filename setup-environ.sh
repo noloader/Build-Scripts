@@ -874,6 +874,20 @@ done
 
 ###############################################################################
 
+# Solaris and OS X may have the GNU tools.
+if command -v glibtool 2>/dev/null;
+then
+    LIBTOOL=glibtool
+    export LIBTOOL
+    if command -v glibtoolize 2>/dev/null;
+    then
+        LIBTOOLIZE=glibtoolize
+        export LIBTOOLIZE
+    fi
+fi
+
+###############################################################################
+
 # setup-cacerts.sh does not source the environment, so we can't use the
 # variables in the setup-cacerts.sh script. Other scripts can use them.
 
@@ -897,6 +911,11 @@ CA_ZOO="$HOME/.build-scripts/cacert/cacert.pem"
 export LETS_ENCRYPT_ROOT IDENTRUST_ROOT GO_DADDY_ROOT
 export DIGICERT_ROOT DIGITRUST_ROOT GLOBALSIGN_ROOT
 export USERTRUST_ROOT GITHUB_ROOT CA_ZOO
+
+###############################################################################
+
+# Delete old log files from the last build
+find . -name '*.log.zip' -exec rm -f {} \;
 
 ###############################################################################
 
