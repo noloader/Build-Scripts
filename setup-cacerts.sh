@@ -17,7 +17,7 @@ echo
 echo "********** Comodo DV Root **********"
 echo
 
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIF2DCCA8CgAwIBAgIQTKr5yttjb+Af907YWwOGnTANBgkqhkiG9w0BAQwFADCB
 hTELMAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4G
 A1UEBxMHU2FsZm9yZDEaMBgGA1UEChMRQ09NT0RPIENBIExpbWl0ZWQxKzApBgNV
@@ -50,7 +50,7 @@ S0Zj/gA0QHDBw7mh3aZw4gSzQbzpgJHqZJx64SIDqZxubw5lT2yHh17zbqD5daWb
 QOhTsiedSrnAdyGN/4fy3ryM7xfft0kL0fJuMAsaDk527RH89elWsn2/x20Kk4yl
 0MC2Hb46TpSi125sC8KKfPog88Tk5c0NqMuRkrF8hey1FGlmDoLnzc7ILaZRfyHB
 NVOFBkpdn627G190
------END CERTIFICATE-----" > comodo-rsa-root.pem
+-----END CERTIFICATE-----' > comodo-rsa-root.pem
 
 echo "Wrote $HOME/.build-scripts/cacert/comodo-rsa-root.pem"
 
@@ -64,7 +64,7 @@ echo
 echo "********** GlobalSign Root R1 **********"
 echo
 
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIDdTCCAl2gAwIBAgILBAAAAAABFUtaw5QwDQYJKoZIhvcNAQEFBQAwVzELMAkG
 A1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNVBAsTB1Jv
 b3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw05ODA5MDExMjAw
@@ -84,7 +84,7 @@ yj1hTdNGCbM+w6DjY1Ub8rrvrTnhQ7k4o+YviiY776BQVvnGCv04zcQLcFGUl5gE
 AbEVtQwdpf5pLGkkeB6zpxxxYu7KyJesF12KwvhHhm4qxFYxldBniYUr+WymXUad
 DKqC5JlR3XC321Y9YeRq4VzW9v493kHMB65jUr9TU/Qr6cf9tveCX4XSQRjbgbME
 HMUfpIBvFSDJ3gyICh3WZlXi/EjJKSZp4A==
------END CERTIFICATE-----" > globalsign-root-r1.pem
+-----END CERTIFICATE-----' > globalsign-root-r1.pem
 
 echo "Wrote $HOME/.build-scripts/cacert/globalsign-root-r1.pem"
 
@@ -97,7 +97,7 @@ echo "********** Let's Encrypt Root **********"
 echo
 
 # This is the new "Let's Encrypt Authority R3"
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIFFjCCAv6gAwIBAgIRAJErCErPDBinU/bWLiWnX1owDQYJKoZIhvcNAQELBQAw
 TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
 cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMjAwOTA0MDAwMDAw
@@ -126,10 +126,10 @@ hCExroL1+7mryIkXPeFM5TgO9r0rvZaBFOvV2z0gp35Z0+L4WPlbuEjN/lxPFin+
 HlUjr8gRsI3qfJOQFy/9rKIJR0Y/8Omwt/8oTWgy1mdeHmmjk7j1nYsvC9JSQ6Zv
 MldlTTKB3zhThV1+XWYp6rjd5JW1zbVWEkLNxE7GJThEUG3szgBVGP7pSWTUTsqX
 nLRbwHOoq7hHwg==
------END CERTIFICATE-----" > lets-encrypt-roots.pem
+-----END CERTIFICATE-----' > lets-encrypt-roots.pem
 
 # This is the original "Let's Encrypt Authority X3"
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIEkjCCA3qgAwIBAgIQCgFBQgAAAVOFc2oLheynCDANBgkqhkiG9w0BAQsFADA/
 MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT
 DkRTVCBSb290IENBIFgzMB4XDTE2MDMxNzE2NDA0NloXDTIxMDMxNzE2NDA0Nlow
@@ -155,17 +155,17 @@ wApIvJSwtmVi4MFU5aMqrSDE6ea73Mj2tcMyo5jMd6jmeWUHK8so/joWUoHOUgwu
 X4Po1QYz+3dszkDqMp4fklxBwXRsW10KXzPMTZ+sOPAveyxindmjkW8lGy+QsRlG
 PfZ+G6Z6h7mjem0Y+iWlkYcV4PIWL1iwBi8saCbGS5jN2p8M+X+Q7UNKEkROb3N6
 KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==
------END CERTIFICATE-----" >> lets-encrypt-roots.pem
+-----END CERTIFICATE-----' >> lets-encrypt-roots.pem
 
 echo "Wrote $HOME/.build-scripts/cacert/lets-encrypt-roots.pem"
 
 ###############################################################################
 
 echo
-echo "********** identrust Root **********"
+echo "********** Identrust Root **********"
 echo
 
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIDSjCCAjKgAwIBAgIQRK+wgNajJ7qJMDmGLvhAazANBgkqhkiG9w0BAQUFADA/
 MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT
 DkRTVCBSb290IENBIFgzMB4XDTAwMDkzMDIxMTIxOVoXDTIxMDkzMDE0MDExNVow
@@ -184,7 +184,7 @@ AvHRAosZy5Q6XkjEGB5YGV8eAlrwDPGxrancWYaLbumR9YbK+rlmM6pZW87ipxZz
 R8srzJmwN0jP41ZL9c8PDHIyh8bwRLtTcm1D9SZImlJnt1ir/md2cXjbDaJWFBM5
 JDGFoqgCWjBH4d1QB7wCCZAA62RjYJsWvIjJEubSfZGL+T0yjWW06XyxV3bqxbYo
 Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ
------END CERTIFICATE-----" > identrust-root-x3.pem
+-----END CERTIFICATE-----' > identrust-root-x3.pem
 
 echo "Wrote $HOME/.build-scripts/cacert/identrust-root-x3.pem"
 
@@ -194,7 +194,7 @@ echo
 echo "********** DigiTrust Root **********"
 echo
 
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIEtjCCA56gAwIBAgIQDHmpRLCMEZUgkmFf4msdgzANBgkqhkiG9w0BAQsFADBsMQswCQYDVQQG
 EwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMSsw
 KQYDVQQDEyJEaWdpQ2VydCBIaWdoIEFzc3VyYW5jZSBFViBSb290IENBMB4XDTEzMTAyMjEyMDAw
@@ -217,7 +217,7 @@ dP3THYUYUN9XR3WhfVUgLkc3UHKMf4Ib0mKPLQNa2sPIoc4sUqIAY+tzunHISScjl2SFnjgOrWNo
 PLpSgVh5oywM395t6zHyuqB8bPEs1OG9d4Q3A84ytciagRpKkk47RpqF/oOi+Z6Mo8wNXrM9zwR4
 jxQUezKcxwCmXMS1oVWNWlZopCJwqjyBcdmdqEU79OX2olHdx3ti6G8MdOu42vi/hw15UJGQmxg7
 kVkn8TUoE6smftX3eg==
------END CERTIFICATE-----" > digitrust-root-ca.pem
+-----END CERTIFICATE-----' > digitrust-root-ca.pem
 
 echo "Wrote $HOME/.build-scripts/cacert/digitrust-root-ca.pem"
 
@@ -230,7 +230,7 @@ echo
 # This is the SHA256 EV Root, but wget rejects it because
 # the cert is signed by the SHA1 Root below. Sigh...
 if false; then
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIEtjCCA56gAwIBAgIQDHmpRLCMEZUgkmFf4msdgzANBgkqhkiG9w0BAQsFADBsMQswCQYDVQQG
 EwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cuZGlnaWNlcnQuY29tMSsw
 KQYDVQQDEyJEaWdpQ2VydCBIaWdoIEFzc3VyYW5jZSBFViBSb290IENBMB4XDTEzMTAyMjEyMDAw
@@ -253,14 +253,14 @@ dP3THYUYUN9XR3WhfVUgLkc3UHKMf4Ib0mKPLQNa2sPIoc4sUqIAY+tzunHISScjl2SFnjgOrWNo
 PLpSgVh5oywM395t6zHyuqB8bPEs1OG9d4Q3A84ytciagRpKkk47RpqF/oOi+Z6Mo8wNXrM9zwR4
 jxQUezKcxwCmXMS1oVWNWlZopCJwqjyBcdmdqEU79OX2olHdx3ti6G8MdOu42vi/hw15UJGQmxg7
 kVkn8TUoE6smftX3eg==
------END CERTIFICATE-----" > digicert-root-ca.pem
+-----END CERTIFICATE-----' > digicert-root-ca.pem
 fi
 
 ###############################################################################
 
 # This is "DigiCert High Assurance EV Root CA"
 # 02:AC:5C:26:6A:0B:40:9B:8F:0B:79:F2:AE:46:25:77
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIDxTCCAq2gAwIBAgIQAqxcJmoLQJuPC3nyrkYldzANBgkqhkiG9w0BAQUFADBs
 MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3
 d3cuZGlnaWNlcnQuY29tMSswKQYDVQQDEyJEaWdpQ2VydCBIaWdoIEFzc3VyYW5j
@@ -282,9 +282,43 @@ hS9OMPagMRYjyOfiZRYzy78aG6A9+MpeizGLYAiJLQwGXFK3xPkKmNEVX58Svnw2
 Yzi9RKR/5CYrCsSXaQ3pjOLAEFe4yHYSkVXySGnYvCoCWw9E1CAx2/S6cCZdkGCe
 vEsXCS+0yx5DaMkHJ8HSXPfqIbloEpw8nL+e/IBcm2PN7EeqJSdnoDfzAIJ9VNep
 +OkuE6N36B9K
------END CERTIFICATE-----" > digicert-root-ca.pem
+-----END CERTIFICATE-----' > digicert-root-ca.pem
 
 echo "Wrote $HOME/.build-scripts/cacert/digicert-root-ca.pem"
+
+###############################################################################
+
+echo
+echo "********** DigiCert Hybrid ECC **********"
+echo
+
+echo '-----BEGIN CERTIFICATE-----
+MIIEQzCCAyugAwIBAgIQCidf5wTW7ssj1c1bSxpOBDANBgkqhkiG9w0BAQwFADBh
+MQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3
+d3cuZGlnaWNlcnQuY29tMSAwHgYDVQQDExdEaWdpQ2VydCBHbG9iYWwgUm9vdCBD
+QTAeFw0yMDA5MjMwMDAwMDBaFw0zMDA5MjIyMzU5NTlaMFYxCzAJBgNVBAYTAlVT
+MRUwEwYDVQQKEwxEaWdpQ2VydCBJbmMxMDAuBgNVBAMTJ0RpZ2lDZXJ0IFRMUyBI
+eWJyaWQgRUNDIFNIQTM4NCAyMDIwIENBMTB2MBAGByqGSM49AgEGBSuBBAAiA2IA
+BMEbxppbmNmkKaDp1AS12+umsmxVwP/tmMZJLwYnUcu/cMEFesOxnYeJuq20ExfJ
+qLSDyLiQ0cx0NTY8g3KwtdD3ImnI8YDEe0CPz2iHJlw5ifFNkU3aiYvkA8ND5b8v
+c6OCAa4wggGqMB0GA1UdDgQWBBQKvAgpF4ylOW16Ds4zxy6z7fvDejAfBgNVHSME
+GDAWgBQD3lA1VtFMu2bwo+IbG8OXsj3RVTAOBgNVHQ8BAf8EBAMCAYYwHQYDVR0l
+BBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMBIGA1UdEwEB/wQIMAYBAf8CAQAwdgYI
+KwYBBQUHAQEEajBoMCQGCCsGAQUFBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5j
+b20wQAYIKwYBBQUHMAKGNGh0dHA6Ly9jYWNlcnRzLmRpZ2ljZXJ0LmNvbS9EaWdp
+Q2VydEdsb2JhbFJvb3RDQS5jcnQwewYDVR0fBHQwcjA3oDWgM4YxaHR0cDovL2Ny
+bDMuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0R2xvYmFsUm9vdENBLmNybDA3oDWgM4Yx
+aHR0cDovL2NybDQuZGlnaWNlcnQuY29tL0RpZ2lDZXJ0R2xvYmFsUm9vdENBLmNy
+bDAwBgNVHSAEKTAnMAcGBWeBDAEBMAgGBmeBDAECATAIBgZngQwBAgIwCAYGZ4EM
+AQIDMA0GCSqGSIb3DQEBDAUAA4IBAQDeOpcbhb17jApY4+PwCwYAeq9EYyp/3YFt
+ERim+vc4YLGwOWK9uHsu8AjJkltz32WQt960V6zALxyZZ02LXvIBoa33llPN1d9R
+JzcGRvJvPDGJLEoWKRGC5+23QhST4Nlg+j8cZMsywzEXJNmvPlVv/w+AbxsBCMqk
+BGPI2lNM8hkmxPad31z6n58SXqJdH/bYF462YvgdgbYKOytobPAyTgr3mYI5sUje
+CzqJx1+NLyc8nAK8Ib2HxnC+IrrWzfRLvVNve8KaN9EtBH7TuMwNW4SpDCmGr6fY
+1h3tDjHhkTb9PA36zoaJzu0cIw265vZt6hCmYWJC+/j+fgZwcPwL
+-----END CERTIFICATE-----' > digicert-hybrid-ecc.pem
+
+echo "Wrote $HOME/.build-scripts/cacert/digicert-hybrid-ecc.pem"
 
 ###############################################################################
 
@@ -292,7 +326,7 @@ echo
 echo "********** AddTrust Root CA **********"
 echo
 
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIENjCCAx6gAwIBAgIBATANBgkqhkiG9w0BAQUFADBvMQswCQYDVQQGEwJTRTEU
 MBIGA1UEChMLQWRkVHJ1c3QgQUIxJjAkBgNVBAsTHUFkZFRydXN0IEV4dGVybmFs
 IFRUUCBOZXR3b3JrMSIwIAYDVQQDExlBZGRUcnVzdCBFeHRlcm5hbCBDQSBSb290
@@ -316,7 +350,7 @@ YINRsPkyPef89iYTx4AWpb9a/IfPeHmJIZriTAcKhjW88t5RxNKWt9x+Tu5w/Rw5
 Nr4TDea9Y355e6cJDUCrat2PisP29owaQgVR1EX1n6diIWgVIEM8med8vSTYqZEX
 c4g/VhsxOBi0cQ+azcgOno4uG+GMmIPLHzHxREzGBHNJdmAPx/i9F4BrLunMTA5a
 mnkPIAou1Z5jJh5VkpTYghdae9C8x49OhgQ=
------END CERTIFICATE-----" > addtrust-root-ca.pem
+-----END CERTIFICATE-----' > addtrust-root-ca.pem
 
 echo "Wrote $HOME/.build-scripts/cacert/addtrust-root-ca.pem"
 
@@ -326,7 +360,7 @@ echo
 echo "********** Go Daddy Certification Authority **********"
 echo
 
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIEADCCAuigAwIBAgIBADANBgkqhkiG9w0BAQUFADBjMQswCQYDVQQGEwJVUzEh
 MB8GA1UEChMYVGhlIEdvIERhZGR5IEdyb3VwLCBJbmMuMTEwLwYDVQQLEyhHbyBE
 YWRkeSBDbGFzcyAyIENlcnRpZmljYXRpb24gQXV0aG9yaXR5MB4XDTA0MDYyOTE3
@@ -349,7 +383,7 @@ TMozI+gciKqdi0FuFskg5YmezTvacPd+mSYgFFQlq25zheabIZ0KbIIOqPjCDPoQ
 HmyW74cNxA9hi63ugyuV+I6ShHI56yDqg+2DzZduCLzrTia2cyvk0/ZM/iZx4mER
 dEr/VxqHD3VILs9RaRegAhJhldXRQLIQTO7ErBBDpqWeCtWVYpoNz4iCxTIM5Cuf
 ReYNnyicsbkqWletNw+vHX/bvZ8=
------END CERTIFICATE-----" > godaddy-root-ca.pem
+-----END CERTIFICATE-----' > godaddy-root-ca.pem
 
 echo "Wrote $HOME/.build-scripts/cacert/godaddy-root-ca.pem"
 
@@ -359,7 +393,7 @@ echo
 echo "********** USERTrust Certification Authority **********"
 echo
 
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIF3jCCA8agAwIBAgIQAf1tMPyjylGoG7xkDjUDLTANBgkqhkiG9w0BAQwFADCB
 iDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0pl
 cnNleSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNV
@@ -392,7 +426,7 @@ qS3fuQL39ZeatTXaw2ewh0qpKJ4jjv9cJ2vhsE/zB+4ALtRZh8tSQZXq9EfX7mRB
 VXyNWQKV3WKdwrnuWih0hKWbt5DHDAff9Yk2dDLWKMGwsAvgnEzDHNb842m1R0aB
 L6KCq9NjRHDEjf8tM7qtj3u1cIiuPhnPQCjY/MiQu12ZIvVS5ljFH4gxQ+6IHdfG
 jjxDah2nGN59PRbxYvnKkKj9
------END CERTIFICATE-----" > usertrust-root-ca.pem
+-----END CERTIFICATE-----' > usertrust-root-ca.pem
 
 echo "Wrote $HOME/.build-scripts/cacert/usertrust-root-ca.pem"
 
@@ -405,7 +439,7 @@ echo
 # DigiCert Baltimore CA-2 G2
 # https://www.digicert.com/digicert-root-certificates.htm
 
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIEYzCCA0ugAwIBAgIQAYL4CY6i5ia5GjsnhB+5rzANBgkqhkiG9w0BAQsFADBa
 MQswCQYDVQQGEwJJRTESMBAGA1UEChMJQmFsdGltb3JlMRMwEQYDVQQLEwpDeWJl
 clRydXN0MSIwIAYDVQQDExlCYWx0aW1vcmUgQ3liZXJUcnVzdCBSb290MB4XDTE1
@@ -430,7 +464,7 @@ B0lCY0ZStWnGm0nyGg9Xxva3vqt1jQ2iqzPkYoVDVKtjlAyjU6DqHeSmpqyVDmV4
 bxcQKegOw+FUllSlkZUIII1pLJ4vP1C0LuVXH6+kc9KhJLsNkP5FEx2noSnYZgvD
 0WyzT7QrhExHkOyL4kGJE7YHRndC/bseF/r/JUuOUFfrjsxOFT+xJd1BDKCcYm1v
 upcHi9nzBhDFKdT3uhaQqNBU4UtJx5g=
------END CERTIFICATE-----" > baltimore-root-ca.pem
+-----END CERTIFICATE-----' > baltimore-root-ca.pem
 
 echo "Wrote $HOME/.build-scripts/cacert/baltimore-root-ca.pem"
 
@@ -443,7 +477,7 @@ echo
 # GitLab: Sectigo RSA Domain Validation Secure Server CA
 # https://support.sectigo.com/Com_KnowledgeDetailPage?Id=kA01N000000rfBO
 
-echo "-----BEGIN CERTIFICATE-----
+echo '-----BEGIN CERTIFICATE-----
 MIIGEzCCA/ugAwIBAgIQfVtRJrR2uhHbdBYLvFMNpzANBgkqhkiG9w0BAQwFADCB
 iDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0pl
 cnNleSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNV
@@ -477,13 +511,13 @@ l6lFhd2zi+WJN44pDfwGF/Y4QA5C5BIG+3vzxhFoYt/jmPQT2BVPi7Fp2RBgvGQq
 LcmsJWTyXnW0OMGuf1pGg+pRyrbxmRE1a6Vqe8YAsOf4vmSyrcjC8azjUeqkk+B5
 yOGBQMkKW+ESPMFgKuOXwIlCypTPRpgSabuY0MLTDXJLR27lk8QyKGOHQ+SwMj4K
 00u/I5sUKUErmgQfky3xxzlIPK1aEn8=
------END CERTIFICATE-----" > sectigo-ca.pem
+-----END CERTIFICATE-----' > sectigo-ca.pem
 
 echo "Wrote $HOME/.build-scripts/cacert/sectigo-ca.pem"
 
 ###############################################################################
 
-# GitHub takes folks to Amazon on occassion using HTTP 301 or 302
+# GitHub takes folks to Amazon on occasion using HTTP 301 or 302
 # redirects. It seems to happen when a tarball is an archive versus
 # a release. We need three authorities to make it work.
 
@@ -491,6 +525,7 @@ echo "Wrote $HOME/.build-scripts/cacert/sectigo-ca.pem"
     cat "$HOME/.build-scripts/cacert/lets-encrypt-roots.pem"
     cat "$HOME/.build-scripts/cacert/digicert-root-ca.pem"
     cat "$HOME/.build-scripts/cacert/baltimore-root-ca.pem"
+    cat "$HOME/.build-scripts/cacert/digicert-hybrid-ecc.pem"
 
 } > "$HOME/.build-scripts/cacert/github-ca-zoo.pem"
 
@@ -500,3 +535,5 @@ echo "Wrote $HOME/.build-scripts/cacert/sectigo-ca.pem"
 rm -rf "$HOME/.cacert"
 
 echo ""
+
+exit 0
