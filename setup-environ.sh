@@ -875,11 +875,11 @@ done
 ###############################################################################
 
 # Solaris and OS X may have the GNU tools.
-if command -v glibtool 2>/dev/null;
+if [[ -n "$(command -v glibtool 2>/dev/null)" ]];
 then
     LIBTOOL=glibtool
     export LIBTOOL
-    if command -v glibtoolize 2>/dev/null;
+    if [[ -n "$(command -v glibtoolize 2>/dev/null)" ]];
     then
         LIBTOOLIZE=glibtoolize
         export LIBTOOLIZE

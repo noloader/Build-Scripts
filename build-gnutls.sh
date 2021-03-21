@@ -61,7 +61,7 @@ fi
 
 ###############################################################################
 
-if ! ./build-tasn1.sh
+if ! ./build-libtasn1.sh
 then
     echo "Failed to build libtasn1"
     exit 1

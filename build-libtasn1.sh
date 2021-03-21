@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds tasn1 from sources.
+# This script builds libtasn1 from sources.
 
 TASN1_TAR=libtasn1-4.16.0.tar.gz
 TASN1_DIR=libtasn1-4.16.0
-PKG_NAME=tasn1
+PKG_NAME=libtasn1
 
 ###############################################################################
 
