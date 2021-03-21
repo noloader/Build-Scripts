@@ -487,7 +487,24 @@ fi
 if [[ $(${EGREP} -i -c 'asimd' /proc/cpuinfo 2>/dev/null) -ne 0 ]]; then
     cc_result=$(${TEST_CC} -march=armv8-a -o "$outfile" "$infile" 2>&1 | wc -w)
     if [[ "$cc_result" -eq 0 ]]; then
+        IS_ARMV8=1
         opt_armv8="-march=armv8-a"
+    fi
+fi
+# See if we can upgrade to Altivec
+if [[ $(${EGREP} -i -c 'altivec' /proc/cpuinfo 2>/dev/null) -ne 0 ]]; then
+    cc_result=$(${TEST_CC} -maltivec -o "$outfile" "$infile" 2>&1 | wc -w)
+    if [[ "$cc_result" -eq 0 ]]; then
+        IS_ALTIVEC=1
+        opt_altivec="-maltivec"
+    fi
+fi
+# See if we can upgrade to Power8
+if [[ $(${EGREP} -i -c 'crypto' /proc/cpuinfo 2>/dev/null) -ne 0 ]]; then
+    cc_result=$(${TEST_CC} -mcpu=power8 -maltivec -o "$outfile" "$infile" 2>&1 | wc -w)
+    if [[ "$cc_result" -eq 0 ]]; then
+        IS_POWER8=1
+        opt_power8="-mcpu=power8 -maltivec"
     fi
 fi
 

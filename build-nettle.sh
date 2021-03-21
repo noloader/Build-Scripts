@@ -153,6 +153,45 @@ then
     fi
 fi
 
+if [[ "$IS_ARM_NEON" -eq 1 ]]
+then
+
+    NEON_OPT=$("$CC" "${INSTX_CFLAGS}" -dM -E - </dev/null 2>&1 | grep -i -c "__NEON__")
+
+    if [[ "$NEON_OPT" -ne 0 ]]
+    then
+        echo "Compiler supports ARM NEON. Adding --enable-arm-neon"
+        CONFIG_OPTS+=("--enable-arm-neon")
+
+        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+        CONFIG_OPTS+=("--enable-fat")
+    fi
+fi
+
+if [[ "$IS_ALTIVEC" -eq 1 ]]
+then
+
+    POWER8_OPT=$("$CC" "${INSTX_CFLAGS}" -dM -E - </dev/null 2>&1 | grep -i -c "_ARCH_PWR8")
+    ALTIVEC_OPT=$("$CC" "${INSTX_CFLAGS}" -dM -E - </dev/null 2>&1 | grep -i -c "_ALTIVEC_")
+
+    if [[ "$POWER8_OPT" -ne 0 ]]
+    then
+        echo "Compiler supports POWER8. Adding --enable-power-crypto-ext"
+        CONFIG_OPTS+=("--enable-power-crypto-ext")
+
+        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+        CONFIG_OPTS+=("--enable-fat")
+    fi
+	elif [[ "$ALTIVEC_OPT" -ne 0 ]]
+    then
+        echo "Compiler supports POWER8. Adding --enable-power-altivec"
+        CONFIG_OPTS+=("--enable-power-altivec")
+
+        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+        CONFIG_OPTS+=("--enable-fat")
+    fi
+fi
+
 # Damn Nettle (mis)configuration... I wish the author would test his shit.
 if [[ "$IS_SOLARIS" -eq 1 ]]; then
     CONFIG_OPTS+=("--disable-fat")
@@ -186,6 +225,12 @@ fi
 
 # Fix LD_LIBRARY_PATH and DYLD_LIBRARY_PATH
 bash ../fix-library-path.sh
+
+# I wish the maintainer would test his shit.
+#echo "Removing examples/ directory"
+#rm -rf examples/
+#sed 's/SUBDIRS = tools testsuite examples/SUBDIRS = tools testsuite/g' Makefile > Makefile.fixed
+#mv Makefile.fixed Makefile
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
