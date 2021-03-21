@@ -85,7 +85,7 @@ LDFLAGS=$(echo "${INSTX_LDFLAGS}" | sed 's/\$/\$\$/g')
 LIBS="${INSTX_LDLIBS}"
 
 MAKE_FLAGS=("all" "libcryptopp.pc" "-j" "${INSTX_JOBS}")
-if ! CPPFLAGS="${CPPFLAGS}" \
+if ! CPPFLAGS="-I. ${CPPFLAGS}" \
      ASFLAGS="${ASFLAGS}" \
      CFLAGS="${CFLAGS}" \
      CXXFLAGS="${CXXFLAGS}" \
