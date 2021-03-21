@@ -140,12 +140,15 @@ fi
 if [[ -z "$WGET" ]]; then
     if [[ -e "$HOME/.build-scripts/wget/bin/wget" ]]; then
         WGET="$HOME/.build-scripts/wget/bin/wget"
-        # Automatically update cacerts now
-        ./setup-cacerts.sh 1>/dev/null
     elif [[ -n "$(command -v wget 2>/dev/null)" ]]; then
         WGET="$(command -v wget 2>/dev/null)"
     fi
 fi
+
+# Automatically update the user's cacerts now. On occasion we need
+# to add or remove a certificate. Otherwise, there are unexplained
+# download failures.
+bash setup-cacerts.sh 1>/dev/null
 
 # OS X may not have a Wget available. However, a few build scripts
 # intelligently fallback to cURL on OS X to get a critical download.
