@@ -3,9 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script fixes owner and permissions on files and directories.
 # Some packages use SUDO_USER and SUDO_GROUP during install for
-# system directories. I _think_ using SUDO_USER:SUDO_GROUP is correct
-# Unix behavior, but we want to use more traditional file permissions
-# in system directories.
+# system directories. I _think_ using SUDO_USER:SUDO_GROUP is
+# correct Unix behavior, but we want to use more traditional file
+# permissions in system directories.
 #
 # There are two use case. First use case, $root_dir is in $HOME.
 # In this case we use the user's info as owner:group. The second
@@ -97,7 +97,7 @@ fi
 
 # Set the owner:group on the root directory and below
 if ! chown -hR "${dir_usr}:${dir_grp}" "${root_dir}"; then
-    echo "Failed to change owner and group"
+    echo "Failed to change owner and group on root directory"
     exit 1
 fi
 
@@ -119,9 +119,10 @@ fi
 find "${root_dir}" -type d -exec chmod a+x {} \;
 
 # Fix permissions on shared objects
+IS_DARWIN="$(uname -s | grep -i -c darwin)"
 IFS= find "${root_dir}" -type d -name 'lib*' -print | while read -r sharedobj_dir
 do
-    if [[ "$(uname -s | grep -i darwin)" ]]; then
+    if [[ "${IS_DARWIN}" -ne 0 ]]; then
         find "${sharedobj_dir}" -type f -name '*\.dylib*' -exec chmod a+x {} \;
     else
         find "${sharedobj_dir}" -type f -name '*\.so*' -exec chmod a+x {} \;
