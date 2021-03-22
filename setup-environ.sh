@@ -194,7 +194,7 @@ OSX_10p10_OR_ABOVE=$(${EGREP} -i -c -E "^10.10|^1[1-9].|^[2-9][0-9]" <<< "$OSX_V
 OSX_10p5_OR_BELOW=$(${EGREP} -i -c -E "10\.[0-5]" <<< "$OSX_VERSION")
 OSX_10p5_OR_10p6=$(${EGREP} -i -c -E "10\.5|10\.6" <<< "$OSX_VERSION")
 
-export OSX_10p5_OR_BELOW OSX_10p10_OR_ABOVE
+export OSX_10p5_OR_BELOW OSX_10p5_OR_10p6 OSX_10p10_OR_ABOVE
 
 # Check for the BSD family members
 THIS_SYSTEM=$(uname -s 2>&1)
