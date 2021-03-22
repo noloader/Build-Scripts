@@ -220,7 +220,7 @@ export BUILD_ZLIB=0 BUILD_BZIP2=0
 # And more broken Perl shit on OS X.
 # https://stackoverflow.com/q/32280732
 if [[ "${OSX_10p5_OR_10p6}" -eq 1 ]]; then
-	echo "Fixing Perl's MACOSX_DEPLOYMENT_TARGET"
+    echo "Fixing Perl's MACOSX_DEPLOYMENT_TARGET"
     export MACOSX_DEPLOYMENT_TARGET="10.5"
     filename=hints/darwin.sh
     sed 's/MACOSX_DEPLOYMENT_TARGET=10.3/MACOSX_DEPLOYMENT_TARGET=10.5/g' "${filename}" > "${filename}.fixed"
