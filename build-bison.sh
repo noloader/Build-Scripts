@@ -120,7 +120,8 @@ fi
     --with-libiconv-prefix="${INSTX_PREFIX}" \
     --with-libintl-prefix="${INSTX_PREFIX}" \
     --with-libncurses-prefix="${INSTX_PREFIX}" \
-    --with-libtextstyle-prefix="${INSTX_PREFIX}"
+    --with-libtextstyle-prefix="${INSTX_PREFIX}" \
+    --disable-assert
 
 if [[ "$?" -ne 0 ]]; then
     echo "*************************"
