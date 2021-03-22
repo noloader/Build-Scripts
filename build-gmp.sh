@@ -70,7 +70,7 @@ cd "$GMP_DIR" || exit 1
 
 # Fix decades old compile and link errors on early Darwin.
 # https://gmplib.org/list-archives/gmp-bugs/2009-May/001423.html
-if [[ "$OSX_105_OR_BELOW" -ne 0 ]]; then
+if [[ "$OSX_10p5_OR_BELOW" -ne 0 ]]; then
     if [[ -e ../patch/gmp-darwin.patch ]]; then
         patch -u -p0 < ../patch/gmp-darwin.patch
         echo ""

@@ -81,7 +81,7 @@ fi
 cd "$LDNS_DIR"
 git checkout "$LDNS_TAG" &>/dev/null
 
-if [[ "$OSX_105_OR_BELOW" -ne 0 ]]; then
+if [[ "$OSX_10p5_OR_BELOW" -ne 0 ]]; then
     if [[ -e ../patch/ldns-darwin.patch ]]; then
         patch -u -p0 < ../patch/ldns-darwin.patch
         echo ""
