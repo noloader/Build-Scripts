@@ -19,6 +19,13 @@ if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     fi
 fi
 
+# Early exit if directories already exist
+if [[ -d "${INSTX_PREFIX}/bin" && -d "${INSTX_PREFIX}/share" && \
+      -d "${INSTX_LIBDIR}" && -d "${INSTX_PKGCONFIG}" ]];
+then
+    exit 0
+fi
+
 # The password should die when this subshell goes out of scope
 if [[ "${SUDO_PASSWORD_DONE}" != "yes" ]]; then
     if ! source ./setup-password.sh
@@ -42,12 +49,12 @@ fi
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "${INSTX_PREFIX}/"{bin,sbin,etc,include,var,libexec,share}
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "${INSTX_PREFIX}/share/"{doc,info,locale,man}
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "${INSTX_PKGCONFIG}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "${INSTX_LIBDIR}" "${INSTX_PKGCONFIG}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ${FIX_PERMISSIONS} "${INSTX_PREFIX}"
 else
     mkdir -p "${INSTX_PREFIX}/"{bin,sbin,etc,include,var,libexec,share,src}
     mkdir -p "${INSTX_PREFIX}/share/"{doc,info,locale,man}
-    mkdir -p "${INSTX_PKGCONFIG}"
+    mkdir -p "${INSTX_LIBDIR}" "${INSTX_PKGCONFIG}"
     bash ${FIX_PERMISSIONS} "${INSTX_PREFIX}"
 fi
 
