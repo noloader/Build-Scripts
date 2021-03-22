@@ -42,6 +42,13 @@ if [[ "${IS_SOLARIS}" -eq 1 ]]; then
     BISON_DIR=bison-${BISON_VER}
 fi
 
+# Bison 3.0, and 3.2 through 3.7 fail to compile on OS X 10.5.
+if [[ "${OSX_10p5_OR_BELOW}" -eq 1 ]]; then
+    BISON_VER=3.1
+    BISON_TAR=bison-${BISON_VER}.tar.gz
+    BISON_DIR=bison-${BISON_VER}
+fi
+
 ###############################################################################
 
 if ! ./build-cacert.sh
