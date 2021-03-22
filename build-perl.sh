@@ -217,6 +217,11 @@ export ORIGIN="ABCDE_ORIGIN_WXYZ"
 # http://www.linuxfromscratch.org/lfs/view/development/chapter08/perl.html
 export BUILD_ZLIB=0 BUILD_BZIP2=0
 
+# And more broken Perl shit on OS X
+if [[ "${OSX_10p5_OR_BELOW}" -eq 1 ]]; then
+    export MACOSX_DEPLOYMENT_TARGET=10.5
+fi
+
 if [[ "${INSTX_LIBM}" -eq 1 ]]; then
     opt_libm="-lm"
 fi
