@@ -141,22 +141,7 @@ fi
 if [[ "$IS_ARM_NEON" -eq 1 ]]
 then
 
-    NEON_OPT=$("$CC" "${INSTX_CFLAGS}" -dM -E - </dev/null 2>&1 | grep -i -c "__NEON__")
-
-    if [[ "$NEON_OPT" -ne 0 ]]
-    then
-        echo "Compiler supports ARM NEON. Adding --enable-arm-neon"
-        CONFIG_OPTS+=("--enable-arm-neon")
-
-        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
-        CONFIG_OPTS+=("--enable-fat")
-    fi
-fi
-
-if [[ "$IS_ARM_NEON" -eq 1 ]]
-then
-
-    NEON_OPT=$("$CC" "${INSTX_CFLAGS}" -dM -E - </dev/null 2>&1 | grep -i -c "__NEON__")
+    NEON_OPT=$("$CC" "${INSTX_CFLAGS}" -dM -E -mfpu=neon - </dev/null 2>&1 | grep -i -c "__NEON__")
 
     if [[ "$NEON_OPT" -ne 0 ]]
     then
@@ -171,8 +156,8 @@ fi
 if [[ "$IS_ALTIVEC" -eq 1 ]]
 then
 
-    POWER8_OPT=$("$CC" "${INSTX_CFLAGS}" -dM -E - </dev/null 2>&1 | grep -i -c "_ARCH_PWR8")
-    ALTIVEC_OPT=$("$CC" "${INSTX_CFLAGS}" -dM -E - </dev/null 2>&1 | grep -i -c "_ALTIVEC_")
+    POWER8_OPT=$("$CC" "${INSTX_CFLAGS}" -dM -E -mcpu=power8 - </dev/null 2>&1 | grep -i -c "_ARCH_PWR8")
+    ALTIVEC_OPT=$("$CC" "${INSTX_CFLAGS}" -dM -E -maltivec - </dev/null 2>&1 | grep -i -c "_ALTIVEC_")
 
     if [[ "$POWER8_OPT" -ne 0 ]]
     then
@@ -182,7 +167,7 @@ then
         echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
         CONFIG_OPTS+=("--enable-fat")
 
-	elif [[ "$ALTIVEC_OPT" -ne 0 ]]
+    elif [[ "$ALTIVEC_OPT" -ne 0 ]]
     then
         echo "Compiler supports Altivec. Adding --enable-power-altivec"
         CONFIG_OPTS+=("--enable-power-altivec")
@@ -260,8 +245,8 @@ echo "**********************"
 find . -name 'run-tests' -exec chmod +x {} \;
 find . -name '*-test' -exec chmod +x {} \;
 if [[ -n "$(command -v xattr 2>/dev/null)" ]]; then
-	find . -name 'run-tests' -exec xattr -r -d com.apple.quarantine {} \;
-	find . -name '*-test' -exec xattr -r -d com.apple.quarantine {} \;
+    find . -name 'run-tests' -exec xattr -r -d com.apple.quarantine {} \;
+    find . -name '*-test' -exec xattr -r -d com.apple.quarantine {} \;
 fi
 
 MAKE_FLAGS=("check" "-k" "V=1")
