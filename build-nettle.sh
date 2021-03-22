@@ -121,80 +121,26 @@ CONFIG_OPTS+=("--disable-documentation")
 
 if [[ "$IS_IA32" -eq 1 ]]
 then
-
-    AESNI_OPT=$("${CC}" ${INSTX_CFLAGS} -dM -E -maes - </dev/null 2>&1 | grep -i -c "__AES__")
-    SHANI_OPT=$("${CC}" ${INSTX_CFLAGS} -dM -E -msha - </dev/null 2>&1 | grep -i -c "__SHA__")
-
-    if [[ "$AESNI_OPT" -ne 0 && "$SHANI_OPT" -ne 0 ]]
-    then
-        echo "Compiler supports AES-NI. Adding --enable-x86-aesni"
-        CONFIG_OPTS+=("--enable-x86-aesni")
-
-        echo "Compiler supports SHA-NI. Adding --enable-x86-sha-ni"
-        CONFIG_OPTS+=("--enable-x86-sha-ni")
-
-        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
-        CONFIG_OPTS+=("--enable-fat")
-    fi
+    echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+    CONFIG_OPTS+=("--enable-fat")
 fi
 
 if [[ "$IS_ARM_NEON" -eq 1 ]]
 then
-
-    NEON_OPT=$("${CC}" ${INSTX_CFLAGS} -dM -E -mfpu=neon - </dev/null 2>&1 | grep -i -c "__NEON__")
-
-    if [[ "$NEON_OPT" -ne 0 ]]
-    then
-        echo "Compiler supports ARM NEON. Adding --enable-arm-neon"
-        CONFIG_OPTS+=("--enable-arm-neon")
-
-        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
-        CONFIG_OPTS+=("--enable-fat")
-    fi
+    echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+    CONFIG_OPTS+=("--enable-fat")
 fi
 
 if [[ "$IS_ARMV8" -eq 1 ]]
 then
-
-    ARMV8_OPT=$("${CC}" ${INSTX_CFLAGS} -dM -E -march=armv8-a - </dev/null 2>&1 | grep -i -c -E "__ARM_NEON|__ARM_ASIMD|__AARCH64_SIMD")
-
-    if [[ "$ARMV8_OPT" -ne 0 ]]
-    then
-        echo "Compiler supports ARMv8. Adding --enable-arm-neon"
-        CONFIG_OPTS+=("--enable-arm-neon")
-
-        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
-        CONFIG_OPTS+=("--enable-fat")
-    fi
+    echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+    CONFIG_OPTS+=("--enable-fat")
 fi
 
 if [[ "$IS_ALTIVEC" -eq 1 ]]
 then
-
-    POWER8_OPT=$("${CC}" ${INSTX_CFLAGS} -dM -E -mcpu=power8 - </dev/null 2>&1 | grep -i -c "_ARCH_PWR8")
-    ALTIVEC_OPT=$("${CC}" ${INSTX_CFLAGS} -dM -E -maltivec - </dev/null 2>&1 | grep -i -c "_ALTIVEC_")
-
-    if [[ "$POWER8_OPT" -ne 0 ]]
-    then
-        echo "Compiler supports POWER8. Adding --enable-power-crypto-ext"
-        CONFIG_OPTS+=("--enable-power-crypto-ext")
-
-        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
-        CONFIG_OPTS+=("--enable-fat")
-
-    elif [[ "$ALTIVEC_OPT" -ne 0 ]]
-    then
-        echo "Compiler supports Altivec. Adding --enable-power-altivec"
-        CONFIG_OPTS+=("--enable-power-altivec")
-
-        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
-        CONFIG_OPTS+=("--enable-fat")
-    fi
-fi
-
-# Damn Nettle (mis)configuration... I wish the author would test his shit.
-if [[ "$IS_SOLARIS" -eq 1 ]]; then
-    CONFIG_OPTS+=("--disable-fat")
+    echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+    CONFIG_OPTS+=("--enable-fat")
 fi
 
 nettle_cflags="${INSTX_CFLAGS}"
