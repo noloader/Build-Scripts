@@ -217,9 +217,14 @@ export ORIGIN="ABCDE_ORIGIN_WXYZ"
 # http://www.linuxfromscratch.org/lfs/view/development/chapter08/perl.html
 export BUILD_ZLIB=0 BUILD_BZIP2=0
 
-# And more broken Perl shit on OS X
-if [[ "${OSX_10p5_OR_BELOW}" -eq 1 ]]; then
-    export MACOSX_DEPLOYMENT_TARGET=10.5
+# And more broken Perl shit on OS X.
+# https://stackoverflow.com/q/32280732
+if [[ "${OSX_10p5_OR_10p6}" -eq 1 ]]; then
+    export MACOSX_DEPLOYMENT_TARGET="10.5"
+    filename=hints/darwin.sh
+    sed 's/MACOSX_DEPLOYMENT_TARGET=10.3/MACOSX_DEPLOYMENT_TARGET=10.5/g' "${filename}" > "${filename}.fixed"
+    mv "${filename}.fixed" "${filename}"
+    chmod +x "${filename}"
 fi
 
 if [[ "${INSTX_LIBM}" -eq 1 ]]; then
