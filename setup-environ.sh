@@ -922,17 +922,12 @@ USERTRUST_ROOT="$HOME/.build-scripts/cacert/usertrust-root-ca.pem"
 GITHUB_CA_ZOO="$HOME/.build-scripts/cacert/github-ca-zoo.pem"
 GITLAB_ROOT="$HOME/.build-scripts/cacert/sectigo-ca.pem"
 
-# Perl used to use GLOBALSIGN_ROOT. They now use LETS_ENCRYPT_ROOT
-# OK to delete this in several months, like around June or July 2021.
-GLOBALSIGN_ROOT="$HOME/.build-scripts/cacert/globalsign-root-r1.pem"
-rm -rf "$GLOBALSIGN_ROOT"
-
 # Some downloads need the CA Zoo due to multiple redirects
 THE_CA_ZOO="$HOME/.build-scripts/cacert/cacert.pem"
 
 export LETS_ENCRYPT_ROOT IDENTRUST_ROOT GO_DADDY_ROOT
-export DIGICERT_ROOT DIGITRUST_ROOT GLOBALSIGN_ROOT
-export USERTRUST_ROOT GITHUB_CA_ZOO THE_CA_ZOO
+export DIGICERT_ROOT DIGITRUST_ROOT USERTRUST_ROOT
+export GITHUB_CA_ZOO THE_CA_ZOO
 
 ###############################################################################
 
