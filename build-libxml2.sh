@@ -152,23 +152,25 @@ echo "**********************"
 echo "Testing package"
 echo "**********************"
 
-# libxml2 hangs on old PowerMacs.
+# libxml2 appears to hang on old PowerMacs. Be patient.
 # https://mail.gnome.org/archives/xml/2021-March/msg00013.html
-if [[ "$OSX_10p5_OR_BELOW" -eq 1 ]]
+
+echo "**********************"
+echo "Start time: $(date)"
+echo "**********************"
+
+MAKE_FLAGS=("check" "-k" "V=1")
+if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo "**********************"
-    echo "Skipping libxml2 tests"
+    echo "Failed to test libxml2"
     echo "**********************"
-else
-    MAKE_FLAGS=("check" "-k" "V=1")
-    if ! "${MAKE}" "${MAKE_FLAGS[@]}"
-    then
-        echo "**********************"
-        echo "Failed to test libxml2"
-        echo "**********************"
-        exit 1
-    fi
+    exit 1
 fi
+
+echo "**********************"
+echo "Finish time: $(date)"
+echo "**********************"
 
 # Fix runpaths again
 bash ../fix-runpath.sh
