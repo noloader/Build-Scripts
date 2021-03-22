@@ -491,6 +491,13 @@ if [[ $(${EGREP} -i -c 'asimd' /proc/cpuinfo 2>/dev/null) -ne 0 ]]; then
         opt_armv8="-march=armv8-a"
     fi
 fi
+if [[ $(sysctl -a 2>/dev/null | ${EGREP} -i -c 'hw.optional.arm64: 1') -ne 0 ]]; then
+    cc_result=$(${TEST_CC} -march=armv8-a -o "$outfile" "$infile" 2>&1 | wc -w)
+    if [[ "$cc_result" -eq 0 ]]; then
+        IS_ARMV8=1
+        opt_armv8="-march=armv8-a"
+    fi
+fi
 # See if we can upgrade to Altivec
 if [[ $(${EGREP} -i -c 'altivec' /proc/cpuinfo 2>/dev/null) -ne 0 ]]; then
     cc_result=$(${TEST_CC} -maltivec -o "$outfile" "$infile" 2>&1 | wc -w)
