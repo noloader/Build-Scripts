@@ -7,7 +7,7 @@
 # The 'make check' recipe tries to build the documentation even when the
 # tools are missing. Derp...
 
-BISON_VER=3.7.4
+BISON_VER=3.7.6
 BISON_TAR=bison-${BISON_VER}.tar.gz
 BISON_DIR=bison-${BISON_VER}
 PKG_NAME=bison
