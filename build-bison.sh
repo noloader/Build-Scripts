@@ -119,7 +119,7 @@ fi
     --libdir="${INSTX_LIBDIR}" \
     --with-libiconv-prefix="${INSTX_PREFIX}" \
     --with-libintl-prefix="${INSTX_PREFIX}" \
-    --with-libncurses-prefix="${INSTX_PREFIX}" \
+    --with-libreadline-prefix="${INSTX_PREFIX}" \
     --with-libtextstyle-prefix="${INSTX_PREFIX}" \
     --disable-assert
 
