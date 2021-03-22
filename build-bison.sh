@@ -43,6 +43,7 @@ if [[ "${IS_SOLARIS}" -eq 1 ]]; then
 fi
 
 # Bison 3.0, and 3.2 through 3.7 fail to compile on OS X 10.5.
+# https://lists.gnu.org/archive/html/bug-bison/2021-03/msg00005.html
 if [[ "${OSX_10p5_OR_BELOW}" -eq 1 ]]; then
     BISON_VER=3.1
     BISON_TAR=bison-${BISON_VER}.tar.gz
