@@ -226,7 +226,7 @@ if [[ "${OSX_10p5_OR_10p6}" -eq 1 ]]; then
     chmod +w "${filename}"
     sed 's/MACOSX_DEPLOYMENT_TARGET=10.3/MACOSX_DEPLOYMENT_TARGET=10.5/g' "${filename}" > "${filename}.fixed"
     mv "${filename}.fixed" "${filename}"
-    chmod -r "${filename}"
+    chmod -w "${filename}"
 fi
 
 if [[ "${INSTX_LIBM}" -eq 1 ]]; then
