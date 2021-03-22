@@ -223,9 +223,10 @@ if [[ "${OSX_10p5_OR_10p6}" -eq 1 ]]; then
     echo "Fixing Perl's MACOSX_DEPLOYMENT_TARGET"
     export MACOSX_DEPLOYMENT_TARGET="10.5"
     filename=hints/darwin.sh
+    chmod +w "${filename}"
     sed 's/MACOSX_DEPLOYMENT_TARGET=10.3/MACOSX_DEPLOYMENT_TARGET=10.5/g' "${filename}" > "${filename}.fixed"
     mv "${filename}.fixed" "${filename}"
-    chmod +x "${filename}"
+    chmod -r "${filename}"
 fi
 
 if [[ "${INSTX_LIBM}" -eq 1 ]]; then
