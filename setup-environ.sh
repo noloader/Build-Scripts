@@ -499,6 +499,14 @@ if [[ $(${EGREP} -i -c 'altivec' /proc/cpuinfo 2>/dev/null) -ne 0 ]]; then
         opt_altivec="-maltivec"
     fi
 fi
+# See if we can upgrade to Altivec
+if [[ $(sysctl -a 2>/dev/null | ${EGREP} -i -c 'hw.optional.altivec: 1') -ne 0 ]]; then
+    cc_result=$(${TEST_CC} -maltivec -o "$outfile" "$infile" 2>&1 | wc -w)
+    if [[ "$cc_result" -eq 0 ]]; then
+        IS_ALTIVEC=1
+        opt_altivec="-maltivec"
+    fi
+fi
 # See if we can upgrade to Power8
 if [[ $(${EGREP} -i -c 'crypto' /proc/cpuinfo 2>/dev/null) -ne 0 ]]; then
     cc_result=$(${TEST_CC} -mcpu=power8 -maltivec -o "$outfile" "$infile" 2>&1 | wc -w)
@@ -811,6 +819,14 @@ elif [[ -n "$opt_armv7" ]]; then
 elif [[ -n "$opt_native" ]]; then
     opt_cflags[${#opt_cflags[@]}]="$opt_native"
     opt_cxxflags[${#opt_cxxflags[@]}]="$opt_native"
+fi
+
+if [[ -n "$opt_power8" ]]; then
+    opt_cflags[${#opt_cflags[@]}]="$opt_power8"
+    opt_cxxflags[${#opt_cxxflags[@]}]="$opt_power8"
+elif [[ -n "$opt_altivec" ]]; then
+    opt_cflags[${#opt_cflags[@]}]="$opt_altivec"
+    opt_cxxflags[${#opt_cxxflags[@]}]="$opt_altivec"
 fi
 
 if [[ -n "$opt_pic" ]]; then

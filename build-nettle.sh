@@ -184,7 +184,7 @@ then
 
 	elif [[ "$ALTIVEC_OPT" -ne 0 ]]
     then
-        echo "Compiler supports POWER8. Adding --enable-power-altivec"
+        echo "Compiler supports Altivec. Adding --enable-power-altivec"
         CONFIG_OPTS+=("--enable-power-altivec")
 
         echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
