@@ -5,11 +5,6 @@
 # of the packages are braindead and create files instead
 # of directories.
 
-echo ""
-echo "**********************"
-echo "Creating directories"
-echo "**********************"
-
 # Get the environment as needed.
 if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     if ! source ./setup-environ.sh
@@ -45,6 +40,11 @@ elif [[ -f ../../fix-permissions.sh ]]; then
 else
     FIX_PERMISSIONS="fix-permissions.sh"
 fi
+
+echo ""
+echo "**********************"
+echo "Creating directories"
+echo "**********************"
 
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "${INSTX_PREFIX}/"{bin,sbin,etc,include,var,libexec,share}
