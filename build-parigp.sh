@@ -80,7 +80,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$PARI_TAR" --ca-certificate="$CA_ZOO" \
+if ! "$WGET" -q -O "$PARI_TAR" --ca-certificate="$THE_CA_ZOO" \
      "https://pari.math.u-bordeaux.fr/pub/pari/unix/$PARI_TAR"
 then
     echo "Failed to download PARI/GP"

@@ -928,11 +928,11 @@ GLOBALSIGN_ROOT="$HOME/.build-scripts/cacert/globalsign-root-r1.pem"
 rm -rf "$GLOBALSIGN_ROOT"
 
 # Some downloads need the CA Zoo due to multiple redirects
-CA_ZOO="$HOME/.build-scripts/cacert/cacert.pem"
+THE_CA_ZOO="$HOME/.build-scripts/cacert/cacert.pem"
 
 export LETS_ENCRYPT_ROOT IDENTRUST_ROOT GO_DADDY_ROOT
 export DIGICERT_ROOT DIGITRUST_ROOT GLOBALSIGN_ROOT
-export USERTRUST_ROOT GITHUB_CA_ZOO CA_ZOO
+export USERTRUST_ROOT GITHUB_CA_ZOO THE_CA_ZOO
 
 ###############################################################################
 

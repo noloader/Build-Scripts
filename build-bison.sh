@@ -73,7 +73,7 @@ echo "*************************"
 echo ""
 echo "Bison ${BISON_VER}..."
 
-if ! "$WGET" -q -O "$BISON_TAR" --ca-certificate="$CA_ZOO" \
+if ! "$WGET" -q -O "$BISON_TAR" --ca-certificate="$THE_CA_ZOO" \
      "https://ftp.gnu.org/gnu/bison/$BISON_TAR"
 then
     echo "Failed to download Bison"

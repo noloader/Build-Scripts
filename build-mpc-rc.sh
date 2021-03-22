@@ -69,7 +69,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$MPC_TAR" --ca-certificate="$CA_ZOO" \
+if ! "$WGET" -q -O "$MPC_TAR" --ca-certificate="$THE_CA_ZOO" \
      "http://www.multiprecision.org/downloads/$MPC_TAR"
 then
     echo "Failed to download MPC"

@@ -56,7 +56,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$MAWK_TAR" --ca-certificate="$CA_ZOO" \
+if ! "$WGET" -q -O "$MAWK_TAR" --ca-certificate="$THE_CA_ZOO" \
      "http://invisible-island.net/datafiles/release/$MAWK_TAR"
 then
     echo "Failed to download mawk"

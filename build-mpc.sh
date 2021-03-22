@@ -82,7 +82,7 @@ gzip -d < "$MPC_TAR" | tar xf -
 cd "$MPC_DIR" || exit 1
 
 # Per INSTALL
-if "$WGET" -q -O allpatches --ca-certificate="$CA_ZOO" \
+if "$WGET" -q -O allpatches --ca-certificate="$THE_CA_ZOO" \
      "https://www.mpc.org/mpc-${MPC_VER}/allpatches"
 then
     patch -N -Z -p1 < allpatches

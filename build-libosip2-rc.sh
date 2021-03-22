@@ -61,7 +61,7 @@ echo "***************************"
 echo "Downloading package"
 echo "***************************"
 
-if ! "$WGET" -q -O "$OSIP2_TAR" --ca-certificate="$CA_ZOO" \
+if ! "$WGET" -q -O "$OSIP2_TAR" --ca-certificate="$THE_CA_ZOO" \
      "https://sip.antisip.com/tmp/$OSIP2_TAR"
 then
     echo "Failed to download libosip2"
