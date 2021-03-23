@@ -192,11 +192,11 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-	echo "Failed to test libpsl"
-	echo ""
-	echo "If you have existing libpsl libraries at ${INSTX_LIBDIR}"
-	echo "then you should manually delete them and run this script again."
-	exit 1
+    echo "Failed to test libpsl"
+    echo ""
+    echo "If you have existing libpsl libraries at ${INSTX_LIBDIR}"
+    echo "then you should manually delete them and run this script again."
+    exit 1
 fi
 
 # Fix runpaths again
