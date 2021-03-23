@@ -15,7 +15,7 @@
 
 # Perl releases are even numbers. Don't install an odd-release number.
 
-PERL_VER=5.32.0
+PERL_VER=5.32.1
 PERL_TAR=perl-${PERL_VER}.tar.gz
 PERL_DIR=perl-${PERL_VER}
 PKG_NAME=perl
