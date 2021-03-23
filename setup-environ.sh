@@ -198,7 +198,7 @@ export OSX_10p5_OR_BELOW OSX_10p5_OR_10p6 OSX_10p10_OR_ABOVE
 
 if [[ "${OSX_10p5_OR_10p6}" -eq 1 ]]; then
     export MACOSX_DEPLOYMENT_TARGET="10.5"
-elif [[ "${OSX_10p5_OR_BELOW}" -eq 1 ]]
+elif [[ "${OSX_10p5_OR_BELOW}" -eq 1 ]]; then
     export MACOSX_DEPLOYMENT_TARGET="10.3"
 fi
 
