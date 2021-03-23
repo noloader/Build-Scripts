@@ -50,6 +50,14 @@ do
     zip -9 "${test_suite_log_zip}" "$file"
 done
 
+# And GnuPG test logs
+if [[ -e libgcrypt.log ]]; then
+    zip -9 "${test_suite_log_zip}" libgcrypt.log
+fi
+if [[ -e gnupg.log ]]; then
+    zip -9 "${test_suite_log_zip}" gnupg.log
+fi
+
 # Copy the zips to the build script directory
 if [[ -e "${config_log_zip}" ]]; then
     cp "${config_log_zip}" ../
