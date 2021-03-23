@@ -35,9 +35,9 @@ fi
 
 if [[ "$IS_DARWIN" -eq 0 || ("$IS_DARWIN" -eq 1 && "$OSX_10p10_OR_ABOVE" -eq 1) ]]
 then
-    ENABLE_LDNS=1
+    enable_ldns=1
 else
-    ENABLE_LDNS=0
+    enable_ldns=0
 fi
 
 ###############################################################################
@@ -66,7 +66,7 @@ fi
 
 ###############################################################################
 
-if [[ "$ENABLE_LDNS" -eq 1 ]]
+if [[ "${enable_ldns}" -eq 1 ]]
 then
     if ! ./build-ldns.sh
     then
@@ -117,7 +117,7 @@ CONFIG_OPTS[${#CONFIG_OPTS[@]}]="--with-ssl-dir=${INSTX_PREFIX}"
 CONFIG_OPTS[${#CONFIG_OPTS[@]}]="--with-pie"
 CONFIG_OPTS[${#CONFIG_OPTS[@]}]="--disable-strip"
 
-if [[ "$ENABLE_LDNS" -eq 1 ]]
+if [[ "${enable_ldns}" -eq 1 ]]
 then
     CONFIG_OPTS[${#CONFIG_OPTS[@]}]="--with-ldns=${INSTX_PREFIX}"
 fi
