@@ -196,6 +196,12 @@ OSX_10p5_OR_10p6=$(${EGREP} -i -c -E "10\.5|10\.6" <<< "$OSX_VERSION")
 
 export OSX_10p5_OR_BELOW OSX_10p5_OR_10p6 OSX_10p10_OR_ABOVE
 
+if [[ "${OSX_10p5_OR_10p6}" -eq 1 ]]; then
+    export MACOSX_DEPLOYMENT_TARGET="10.5"
+elif [[ "${OSX_10p5_OR_BELOW}" -eq 1 ]]
+    export MACOSX_DEPLOYMENT_TARGET="10.3"
+fi
+
 # Check for the BSD family members
 THIS_SYSTEM=$(uname -s 2>&1)
 IS_BSD_FAMILY=$(${EGREP} -i -c 'dragonfly|freebsd|netbsd|openbsd' <<< "$THIS_SYSTEM")

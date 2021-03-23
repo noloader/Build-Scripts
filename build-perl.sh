@@ -210,7 +210,7 @@ export PERL5LIB="$PWD/lib"
 # Somehow it manages to escape the '$ORIGIN/../lib' in single quotes.
 # Set it to something it does not mishandle, and then fix it later.
 # Also see https://github.com/Perl/perl5/issues/17534.
-export ORIGIN="ABCDE_ORIGIN_WXYZ"
+export ORIGIN="ABCDE_ORIGIN_VWXYZ"
 
 # Don't use Perl versions of zLib or Bzip2. Perl versions are old and
 # have outstanding CVEs. Our versions are new and hardened. Also see
@@ -221,7 +221,6 @@ export BUILD_ZLIB=0 BUILD_BZIP2=0
 # https://stackoverflow.com/q/32280732
 if [[ "${OSX_10p5_OR_10p6}" -eq 1 ]]; then
     echo "Fixing Perl's MACOSX_DEPLOYMENT_TARGET"
-    export MACOSX_DEPLOYMENT_TARGET="10.5"
     filename=hints/darwin.sh
     chmod +w "${filename}"
     sed 's/MACOSX_DEPLOYMENT_TARGET=10.3/MACOSX_DEPLOYMENT_TARGET=10.5/g' "${filename}" > "${filename}.fixed"
@@ -281,7 +280,7 @@ echo "******************************"
 # https://github.com/Perl/perl5/issues/18466
 
 origin_good=$(echo '$$ORIGIN/' | sed -e 's/[\/&]/\\&/g')
-origin_bad=$(echo 'ABCDE_ORIGIN_WXYZ/' | sed -e 's/[\/&]/\\&/g')
+origin_bad=$(echo 'ABCDE_ORIGIN_VWXYZ/' | sed -e 's/[\/&]/\\&/g')
 
 miniperl_good=$(echo '$(miniperl_objs) $(libs)')
 miniperl_bad=$(echo '$(miniperl_objs) $(libs)')
