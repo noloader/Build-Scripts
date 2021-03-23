@@ -88,7 +88,7 @@ else
     flex_cxxflags="${INSTX_CXXFLAGS}"
 fi
 
-	# _GNU_SOURCE due to https://github.com/spack/spack/issues/8152
+    # _GNU_SOURCE due to https://github.com/spack/spack/issues/8152
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS} -D_GNU_SOURCE" \

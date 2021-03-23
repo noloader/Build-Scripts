@@ -31,7 +31,7 @@ then
 
     done
 else
-	echo "Nothing to do."
+    echo "Nothing to do."
 fi
 
 exit 0

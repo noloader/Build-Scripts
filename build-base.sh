@@ -26,10 +26,10 @@ PKG_NAME=gnu-base
 # INSTX_BASE_RECURSION_GUARD goes out of scope when this shell dies.
 
 if [[ "$INSTX_BASE_RECURSION_GUARD" == "yes" ]]; then
-	exit 0
+    exit 0
 else
-	INSTX_BASE_RECURSION_GUARD=yes
-	export INSTX_BASE_RECURSION_GUARD
+    INSTX_BASE_RECURSION_GUARD=yes
+    export INSTX_BASE_RECURSION_GUARD
 fi
 
 ###############################################################################
