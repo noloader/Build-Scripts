@@ -33,8 +33,9 @@ fi
 # LDNS and dependencies will probably fail
 # to build, like on OS X 10.5.
 
-if [[ "$IS_DARWIN" -eq 0 || ("$IS_DARWIN" -eq 1 && "$OSX_10p8_OR_ABOVE" -eq 1) ]]
-then
+if [[ "$IS_DARWIN" -eq 0 ]]; then
+    enable_ldns=1
+if [[ "${OSX_10p8_OR_ABOVE}" -eq 1 ]]; then
     enable_ldns=1
 else
     enable_ldns=0
