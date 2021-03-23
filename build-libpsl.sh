@@ -172,6 +172,20 @@ bash ../fix-pkgconfig.sh
 bash ../fix-runpath.sh
 
 echo "**********************"
+echo "Fixing LD_LIBRARY_PATH"
+echo "**********************"
+
+# The self tests fail if the old libpsl is loaded
+LD_LIBRARY_PATH="$PWD/src/.libs:$LD_LIBRARY_PATH"
+DYLD_LIBRARY_PATH="$PWD/src/.libs:$LD_LIBRARY_PATH"
+
+LD_LIBRARY_PATH=$(echo "$LD_LIBRARY_PATH" | tr -s ':' | sed -e 's/^:\(.*\)/\1/' | sed -e 's/:$//g')
+DYLD_LIBRARY_PATH=$(echo "$DYLD_LIBRARY_PATH" | tr -s ':' | sed -e 's/^:\(.*\)/\1/' | sed -e 's/:$//g')
+
+export LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH
+
+echo "**********************"
 echo "Testing package"
 echo "**********************"
 
