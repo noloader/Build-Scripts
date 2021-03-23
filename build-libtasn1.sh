@@ -95,7 +95,8 @@ fi
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
-    --enable-shared
+    --enable-shared \
+    --disable-doc
 
 if [[ "$?" -ne 0 ]]; then
     echo "************************"
