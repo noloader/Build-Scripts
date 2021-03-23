@@ -35,7 +35,7 @@ fi
 
 if [[ "$IS_DARWIN" -eq 0 ]]; then
     enable_ldns=1
-if [[ "${OSX_10p8_OR_ABOVE}" -eq 1 ]]; then
+elif [[ "${OSX_10p8_OR_ABOVE}" -eq 1 ]]; then
     enable_ldns=1
 else
     enable_ldns=0
