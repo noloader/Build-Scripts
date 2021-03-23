@@ -190,11 +190,12 @@ export PATH
 
 # OS X flavors
 OSX_VERSION=$(system_profiler SPSoftwareDataType 2>&1 | ${GREP} 'System Version:' | ${AWK} '{print $6}')
-OSX_10p10_OR_ABOVE=$(${EGREP} -i -c -E "^10.10|^1[1-9].|^[2-9][0-9]" <<< "$OSX_VERSION")
+OSX_10p10_OR_ABOVE=$(${EGREP} -i -c -E "10\.1[0-9]|1[1-9]\.|[2-9][0-9]" <<< "$OSX_VERSION")
+OSX_10p8_OR_ABOVE=$(${EGREP} -i -c -E "10\.[8-9]|10\.1[0-9]|1[1-9]\.|[2-9][0-9]" <<< "$OSX_VERSION")
 OSX_10p5_OR_BELOW=$(${EGREP} -i -c -E "10\.[0-5]" <<< "$OSX_VERSION")
 OSX_10p5_OR_10p6=$(${EGREP} -i -c -E "10\.5|10\.6" <<< "$OSX_VERSION")
 
-export OSX_10p5_OR_BELOW OSX_10p5_OR_10p6 OSX_10p10_OR_ABOVE
+export OSX_10p5_OR_BELOW OSX_10p5_OR_10p6 OSX_10p8_OR_ABOVE OSX_10p10_OR_ABOVE
 
 if [[ "${OSX_10p5_OR_10p6}" -eq 1 ]]; then
     export MACOSX_DEPLOYMENT_TARGET="10.5"
