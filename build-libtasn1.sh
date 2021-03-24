@@ -72,8 +72,6 @@ if [[ -e ../patch/libtasn1.patch ]]; then
     echo ""
 fi
 
-exit 1
-
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
