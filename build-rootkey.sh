@@ -61,7 +61,7 @@ echo "========================================"
 echo "============ DNS Root Keys ============="
 echo "========================================"
 
-BOOTSTRAP_ROOTKEY_FILE="bootstrap/rootkey.pem"
+BOOTSTRAP_ROOTKEY_FILE="bootstrap/dnsrootkey.pem"
 
 if [[ -n "$SUDO_PASSWORD" ]]
 then

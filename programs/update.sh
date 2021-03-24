@@ -98,10 +98,11 @@ fi
 
 if [[ -f "${UNBOUND_ANCHOR}" ]]
 then
-    echo "Updating bootstrap dnsroot.key"
+    echo "Updating bootstrap dnsrootkey.pem"
     "${UNBOUND_ANCHOR}" -a ../bootstrap/dnsroot.key -u data.iana.org
+    mv ../bootstrap/dnsroot.key ../bootstrap/dnsrootkey.pem
 else
-    echo "Failed to update bootstrap dnsroot.key. Install unbound-anchor"
+    echo "Failed to update bootstrap dnsrootkey.pem. Install unbound-anchor"
     exit 1
 fi
 
