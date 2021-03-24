@@ -3,8 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds MicroHttpd from sources.
 
-HTTPD_TAR=libmicrohttpd-0.9.70.tar.gz
-HTTPD_DIR=libmicrohttpd-0.9.70
+HTTPD_VER=0.9.72
+HTTPD_TAR=libmicrohttpd-${HTTPD_VER}.tar.gz
+HTTPD_DIR=libmicrohttpd-${HTTPD_VER}
 PKG_NAME=microhttpd
 
 ###############################################################################
