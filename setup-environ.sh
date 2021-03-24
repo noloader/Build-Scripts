@@ -431,7 +431,7 @@ if [[ "$cc_result" -eq 0 ]]; then
     INSTX_CXX14=1
 fi
 
-# patchelf needs C++11 support
+# patchelf needs C++11 support. BerkeleyDB needs atomics.
 INSTX_CXX11="${INSTX_CXX11:-0}"
 INSTX_CXX11_ATOMIC="${INSTX_CXX11_ATOMIC:-0}"
 INSTX_CXX14="${INSTX_CXX14:-0}"
