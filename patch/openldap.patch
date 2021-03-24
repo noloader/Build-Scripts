@@ -29,7 +29,7 @@
  #else
 --- libraries/liblmdb/mdb.c
 +++ libraries/liblmdb/mdb.c
-@@ -184,10 +184,6 @@
+@@ -184,10 +187,6 @@
  #define BIG_ENDIAN	__BIG_ENDIAN
  #endif
  
@@ -40,7 +40,7 @@
  #include "lmdb.h"
  #include "midl.h"
  
-@@ -767,7 +763,7 @@
+@@ -767,7 +766,7 @@
  #endif
  		char pad[(MNAME_LEN+CACHELINE-1) & ~(CACHELINE-1)];
  	} mt2;
@@ -49,7 +49,7 @@
  } MDB_txninfo;
  
  	/** Lockfile format signature: version, features and field layout */
-@@ -830,7 +826,7 @@
+@@ -830,7 +829,7 @@
  		} pb;
  		uint32_t	pb_pages;	/**< number of overflow pages */
  	} mp_pb;
@@ -58,7 +58,7 @@
  } MDB_page;
  
  	/** Size of the page header, excluding dynamic data at the end */
-@@ -913,7 +909,7 @@
+@@ -913,7 +912,7 @@
  /** @} */
  	unsigned short	mn_flags;		/**< @ref mdb_node */
  	unsigned short	mn_ksize;		/**< key size */
@@ -67,7 +67,7 @@
  } MDB_node;
  
  	/** Size of the node header, excluding dynamic data at the end */
-@@ -964,9 +960,13 @@
+@@ -964,9 +963,13 @@
  #else
  #if SIZE_MAX > 4294967295UL
  #define COPY_PGNO(dst,src)	do { \
@@ -84,7 +84,7 @@
  	*d++ = *s++;	\
  	*d++ = *s++;	\
  	*d++ = *s++;	\
-@@ -974,9 +974,11 @@
+@@ -974,9 +977,11 @@
  } while (0)
  #else
  #define COPY_PGNO(dst,src)	do { \
