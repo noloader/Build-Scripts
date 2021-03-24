@@ -429,26 +429,14 @@ fi
 cc_result=$(${TEST_CXX} -o "${outfile}" programs/test-cxx14.cpp 2>&1 | wc -w)
 if [[ "$cc_result" -eq 0 ]]; then
     INSTX_CXX14=1
-else
-    cc_result=$(${TEST_CXX} -std=gnu++14 -o "${outfile}" programs/test-cxx14.cpp 2>&1 | wc -w)
-    if [[ "$cc_result" -eq 0 ]]; then
-        INSTX_CXX14_OPT="-std=gnu++14"
-        INSTX_CXX14=1
-    else
-        cc_result=$(${TEST_CXX} -std=c++14 -o "${outfile}" programs/test-cxx14.cpp 2>&1 | wc -w)
-        if [[ "$cc_result" -eq 0 ]]; then
-            INSTX_CXX14_OPT="-std=c++14"
-            INSTX_CXX14=1
-        fi
-    fi
 fi
 
 # patchelf needs C++11 support
-# echo "INSTX_CXX11: $INSTX_CXX11"
 INSTX_CXX11="${INSTX_CXX11:-0}"
+INSTX_CXX11_ATOMIC="${INSTX_CXX11_ATOMIC:-0}"
 INSTX_CXX14="${INSTX_CXX14:-0}"
 
-export INSTX_CXX11 INSTX_CXX11_OPT INSTX_CXX14 INSTX_CXX14_OPT
+export INSTX_CXX11 INSTX_CXX11_ATOMIC INSTX_CXX14
 
 # For the benefit of the programs and libraries. Make them run faster.
 cc_result=$(${TEST_CC} -march=native -o "${outfile}" "${infile}" 2>&1 | wc -w)
