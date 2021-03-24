@@ -154,29 +154,31 @@ echo "**********************"
 echo "Configuring package"
 echo "**********************"
 
-GNUTLS_PKGCONFIG="${INSTX_PKGCONFIG}"
-GNUTLS_CPPFLAGS="${INSTX_CPPFLAGS}"
-GNUTLS_ASFLAGS="${INSTX_ASFLAGS}"
-GNUTLS_CFLAGS="${INSTX_CFLAGS}"
-GNUTLS_CXXFLAGS="${INSTX_CXXFLAGS}"
-GNUTLS_LDFLAGS="${INSTX_LDFLAGS}"
-GNUTLS_LIBS="${INSTX_LDLIBS}"
+gnutls_cflags="${INSTX_CFLAGS}"
+gnutls_cxxflags="${INSTX_CXXFLAGS}"
+gnutls_ldflags="${INSTX_LDFLAGS}"
+CONFIG_OPTS=()
 
 # Solaris is a tab bit stricter than libc
 if [[ "$IS_SOLARIS" -ne 0 ]]; then
     # Don't use CPPFLAGS. Options will cross-pollinate into CXXFLAGS.
-    GNUTLS_CFLAGS+=" -D_XOPEN_SOURCE=600 -std=gnu99"
+    gnutls_cflags="${gnutls_cflags} -D_XOPEN_SOURCE=600 -std=gnu99"
+fi
+
+have_padlock=$(grep -i -c -E 'rng_en|ace_en|ace2_en|phe_en|pmm_en')
+if [[ "$have_padlock" -eq 0 ]]; then
+    CONFIG_OPTS+=("--disable-padlock")
 fi
 
 # We should probably include --disable-anon-authentication below
 
-    PKG_CONFIG_PATH="${GNUTLS_PKGCONFIG}" \
-    CPPFLAGS="${GNUTLS_CPPFLAGS}" \
-    ASFLAGS="${GNUTLS_ASFLAGS}" \
-    CFLAGS="${GNUTLS_CFLAGS}" \
-    CXXFLAGS="${GNUTLS_CXXFLAGS}" \
-    LDFLAGS="${GNUTLS_LDFLAGS}" \
-    LIBS="${GNUTLS_LIBS}" \
+    PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
+    CPPFLAGS="${INSTX_CPPFLAGS}" \
+    ASFLAGS="${INSTX_ASFLAGS}" \
+    CFLAGS="${gnutls_cflags}" \
+    CXXFLAGS="${gnutls_cxxflags}" \
+    LDFLAGS="${gnutls_ldflags}" \
+    LIBS="${INSTX_LDLIBS}" \
 ./configure \
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
@@ -188,7 +190,6 @@ fi
     --disable-guile \
     --disable-ssl2-support \
     --disable-ssl3-support \
-    --disable-padlock \
     --disable-doc \
     --disable-full-test-suite \
     --with-p11-kit \
@@ -199,7 +200,8 @@ fi
     --with-libcrypto-prefix="${INSTX_PREFIX}" \
     --with-unbound-root-key-file="$INSTX_ROOTKEY_FILE" \
     --with-default-trust-store-file="$INSTX_CACERT_FILE" \
-    --with-default-trust-store-dir="$INSTX_CACERT_PATH"
+    --with-default-trust-store-dir="$INSTX_CACERT_PATH" \
+    "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
     echo "**************************"
