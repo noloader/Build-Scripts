@@ -83,15 +83,6 @@ done
 bash ../fix-makefiles.sh
 
 echo "**********************"
-echo "Building package xxx"
-echo "**********************"
-
-if ! bash tools/buildall.sh ${MAKE} ${cc}; then
-    echo "Building failed"
-    exit 1
-fi
-
-echo "**********************"
 echo "Building package"
 echo "**********************"
 
@@ -123,13 +114,14 @@ echo "**********************"
 echo "Testing package"
 echo "**********************"
 
-if ! ./cryptest.exe v
-then
-    echo "Failed to test Cryptlib"
-    exit 1
-fi
-
-if ! ./cryptest.exe tv all
+MAKE_FLAGS=("testlib" "-j" "${INSTX_JOBS}")
+if ! CPPFLAGS="-I. ${CPPFLAGS}" \
+     ASFLAGS="${ASFLAGS}" \
+     CFLAGS="${CFLAGS}" \
+     CXXFLAGS="${CXXFLAGS}" \
+     LDFLAGS="${LDFLAGS}" \
+     LIBS="${LIBS}" \
+     "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to test Cryptlib"
     exit 1
@@ -149,13 +141,6 @@ else
 fi
 
 cd "${CURR_DIR}" || exit 1
-
-# Test from install directory
-if ! "${INSTX_PREFIX}/bin/cryptest.exe" v
-then
-    echo "Failed to test Cryptlib"
-    exit 1
-fi
 
 ###############################################################################
 
