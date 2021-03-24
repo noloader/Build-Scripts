@@ -89,8 +89,6 @@ rm -rf "$HTTPD_DIR" &>/dev/null
 gzip -d < "$HTTPD_TAR" | tar xf -
 cd "$HTTPD_DIR" || exit 1
 
-# exit 0
-
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/httpd.patch ]]; then
     patch -u -p0 < ../patch/httpd.patch
@@ -125,7 +123,11 @@ echo "**********************"
     --disable-examples
 
 if [[ "$?" -ne 0 ]]; then
+    echo "******************************"
     echo "Failed to configure MicroHttpd"
+    echo "******************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -140,7 +142,11 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo "******************************"
     echo "Failed to build MicroHttpd"
+    echo "******************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -154,9 +160,11 @@ echo "**********************"
 MAKE_FLAGS=("check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "*************************"
+    echo "******************************"
     echo "Failed to test MicroHttpd"
-    echo "*************************"
+    echo "******************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

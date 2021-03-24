@@ -154,7 +154,7 @@ bash setup-cacerts.sh 1>/dev/null
 # intelligently fallback to cURL on OS X to get a critical download.
 if [[ "${INSTX_DISABLE_WGET_CHECK}" -ne 1 && -z "${WGET}" ]]; then
     echo "Failed to find Wget. If you have one, set WGET=/path/to/wget."
-    echo "If you don't have one, you can run ./setup-wget."
+    echo "If you don't have one, you can run ./setup-wget.sh."
     exit 1
 fi
 
