@@ -165,7 +165,7 @@ if [[ "$IS_SOLARIS" -ne 0 ]]; then
     gnutls_cflags="${gnutls_cflags} -D_XOPEN_SOURCE=600 -std=gnu99"
 fi
 
-have_padlock=$(grep -i -c -E 'rng_en|ace_en|ace2_en|phe_en|pmm_en')
+have_padlock=$(grep -i -c -E 'rng_en|ace_en|ace2_en|phe_en|pmm_en' /proc/cpuinfo)
 if [[ "$have_padlock" -eq 0 ]]; then
     CONFIG_OPTS+=("--disable-padlock")
 fi
