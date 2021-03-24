@@ -32,3 +32,15 @@
  		tab[it].type = elem[it].type;
  		elem[it].name[NAMESIZE - 1] = 0;
  		if (strcmp(elem[it].name, "NULL"))
+# https://gitlab.com/gnutls/libtasn1/-/issues/32
+--- lib/int.h
++++ lib/int.h
+@@ -97,7 +97,7 @@
+ #define ETYPE_TAG(etype) (_asn1_tags[etype].tag)
+ #define ETYPE_CLASS(etype) (_asn1_tags[etype].class)
+ #define ETYPE_OK(etype) (((etype) != ASN1_ETYPE_INVALID && \
+-                          (etype) <= _asn1_tags_size && \
++                          (etype) < _asn1_tags_size && \
+                           _asn1_tags[(etype)].desc != NULL)?1:0)
+ 
+ #define ETYPE_IS_STRING(etype) ((etype == ASN1_ETYPE_GENERALSTRING || \

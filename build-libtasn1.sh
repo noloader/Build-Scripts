@@ -64,8 +64,8 @@ rm -rf "$TASN1_DIR" &>/dev/null
 gzip -d < "$TASN1_TAR" | tar xf -
 cd "$TASN1_DIR" || exit 1
 
-if [[ -e ../patch/tasn1.patch ]]; then
-    patch -u -p0 < ../patch/tasn1.patch
+if [[ -e ../patch/libtasn1.patch ]]; then
+    patch -u -p0 < ../patch/libtasn1.patch
     echo ""
 fi
 
