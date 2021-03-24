@@ -44,3 +44,26 @@
                            _asn1_tags[(etype)].desc != NULL)?1:0)
  
  #define ETYPE_IS_STRING(etype) ((etype == ASN1_ETYPE_GENERALSTRING || \
+# https://gitlab.com/gnutls/libtasn1/-/issues/30
+--- lib/coding.c
++++ lib/coding.c
+@@ -265,9 +265,6 @@
+   int len_len;
+   int max_len;
+ 
+-  if (der == NULL)
+-    return ASN1_VALUE_NOT_VALID;
+-
+   max_len = *der_len;
+ 
+   asn1_length_der (str_len, (max_len > 0) ? der : NULL, &len_len);
+@@ -959,9 +956,6 @@
+   unsigned char *out = NULL;
+   int err;
+ 
+-  if (der == NULL)
+-    return ASN1_VALUE_NOT_VALID;
+-
+   counter = 0;
+ 
+   if (type_field (node->type) != ASN1_ETYPE_SET_OF)
