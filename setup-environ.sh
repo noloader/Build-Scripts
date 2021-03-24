@@ -841,8 +841,8 @@ if [[ -n "${opt_pthread}" ]]; then
     opt_cxxflags[${#opt_cxxflags[@]}]="${opt_pthread}"
 fi
 
-if [[ -n "${opt_pthread}" ]]; then
-    opt_asflags[${#opt_asflags[@]}]="${opt_pthread}"
+if [[ -n "${opt_as_nxstack}" ]]; then
+    opt_asflags[${#opt_asflags[@]}]="${opt_as_nxstack}"
 fi
 
 if [[ -n "${opt_opath}" ]]; then
