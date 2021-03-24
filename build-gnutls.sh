@@ -202,7 +202,11 @@ fi
     --with-default-trust-store-dir="$INSTX_CACERT_PATH"
 
 if [[ "$?" -ne 0 ]]; then
+    echo "**************************"
     echo "Failed to configure GnuTLS"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
