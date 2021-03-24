@@ -50,3 +50,18 @@
  
  	/* parse DNS packet */
  	regional_free_all(qstate->env->scratch);
+--- services/listen_dnsport.c
++++ services/listen_dnsport.c
+@@ -817,6 +817,12 @@
+ {
+ 	int ds;
+ 
++#ifndef IPV6_TCLASS
++	return NULL;
++	/* define to continue the compile */
++	#define IPV6_TCLASS 0
++#endif
++
+ 	if(dscp == 0)
+ 		return NULL;
+ 	ds = dscp << 2;
