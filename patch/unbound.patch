@@ -57,9 +57,9 @@
  	int ds;
  
 +#ifndef IPV6_TCLASS
-+	return NULL;
 +	/* define to continue the compile */
 +	#define IPV6_TCLASS 0
++	return NULL;
 +#endif
 +
  	if(dscp == 0)
