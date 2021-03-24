@@ -128,6 +128,15 @@ then
 fi
 
 echo "**********************"
+echo "Running test"
+echo "**********************"
+if ! ./testlib
+then
+    echo "Failed to test Cryptlib"
+    exit 1
+fi
+
+echo "**********************"
 echo "Installing package"
 echo "**********************"
 
