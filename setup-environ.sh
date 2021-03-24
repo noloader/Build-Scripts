@@ -418,18 +418,11 @@ fi
 cc_result=$(${TEST_CXX} -o "${outfile}" programs/test-cxx11.cpp 2>&1 | wc -w)
 if [[ "$cc_result" -eq 0 ]]; then
     INSTX_CXX11=1
-else
-    cc_result=$(${TEST_CXX} -std=gnu++11 -o "${outfile}" programs/test-cxx11.cpp 2>&1 | wc -w)
-    if [[ "$cc_result" -eq 0 ]]; then
-        INSTX_CXX11_OPT="-std=gnu++11"
-        INSTX_CXX11=1
-    else
-        cc_result=$(${TEST_CXX} -std=c++11 -o "${outfile}" programs/test-cxx11.cpp 2>&1 | wc -w)
-        if [[ "$cc_result" -eq 0 ]]; then
-            INSTX_CXX11_OPT="-std=c++11"
-            INSTX_CXX11=1
-        fi
-    fi
+fi
+
+cc_result=$(${TEST_CXX} -o "${outfile}" programs/test-cxx11-atomic.cpp 2>&1 | wc -w)
+if [[ "$cc_result" -eq 0 ]]; then
+    INSTX_CXX11_ATOMIC=1
 fi
 
 # Ugh... C++14 support as required. Things may still break.
