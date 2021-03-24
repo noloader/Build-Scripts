@@ -80,17 +80,6 @@
  #ifdef DEBUG
  # define warn() fprintf(stderr, "%s: %d\n", __func__, __LINE__)
 # https://gitlab.com/gnutls/libtasn1/-/merge_requests/69
---- src/Makefile.am
-+++ src/Makefile.am
-@@ -20,7 +20,7 @@
- AM_CPPFLAGS = -I$(top_builddir)/lib/includes -I$(top_srcdir)/lib/includes \
-  -I$(top_builddir)/lib/gl -I$(top_srcdir)/lib/gl $(CODE_COVERAGE_CPPFLAGS)
- 
--LDADD = ../lib/libtasn1.la
-+LDADD = ../lib/libtasn1.la ../lib/gl/libgnu.la
- AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
- 
- bin_PROGRAMS = asn1Parser asn1Coding asn1Decoding
 --- lib/gl/c-ctype.h
 +++ lib/gl/c-ctype.h
 @@ -229,7 +229,7 @@
