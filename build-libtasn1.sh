@@ -64,10 +64,15 @@ rm -rf "$TASN1_DIR" &>/dev/null
 gzip -d < "$TASN1_TAR" | tar xf -
 cd "$TASN1_DIR" || exit 1
 
+cp lib/decoding.c lib/decoding.c.orig
+cp src/Makefile.am src/Makefile.am.orig
+
 if [[ -e ../patch/libtasn1.patch ]]; then
     patch -u -p0 < ../patch/libtasn1.patch
     echo ""
 fi
+
+exit 1
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
