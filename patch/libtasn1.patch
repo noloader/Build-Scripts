@@ -91,3 +91,14 @@
  AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
  
  bin_PROGRAMS = asn1Parser asn1Coding asn1Decoding
+--- lib/parser_aux.c
++++ lib/parser_aux.c
+@@ -26,7 +26,7 @@
+ #include "gstr.h"
+ #include "structure.h"
+ #include "element.h"
+-#include "c-ctype.h"
++#include "gl/c-ctype.h"
+ 
+ char _asn1_identifierMissing[ASN1_MAX_NAME_SIZE + 1];	/* identifier name not found */
+ 
