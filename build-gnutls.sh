@@ -165,7 +165,8 @@ if [[ "$IS_SOLARIS" -ne 0 ]]; then
     gnutls_cflags="${gnutls_cflags} -D_XOPEN_SOURCE=600 -std=gnu99"
 fi
 
-have_padlock=${have_padlock:-0}
+# Old VIA cpu's with Padlock Security Extensions.
+have_padlock=0
 if [[ -d /proc/cpuinfo ]]; then
     have_padlock=$(grep -i -c -E 'rng_en|ace_en|ace2_en|phe_en|pmm_en' /proc/cpuinfo)
 fi
