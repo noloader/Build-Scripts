@@ -50,8 +50,6 @@ echo "========================================"
 echo "============== Crypto++ ================"
 echo "========================================"
 
-echo "Current shell id: $BASHPID"
-
 echo ""
 echo "**********************"
 echo "Downloading package"
