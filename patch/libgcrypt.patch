@@ -63,23 +63,6 @@
 -  return constants[no];
 +  return &constants[no];
  }
---- tests/t-common.h
-+++ tests/t-common.h
-@@ -151,13 +151,7 @@
- 
- 
- /* Convenience macro for initializing gcrypt with error checking.  */
--#define xgcry_control(cmd...)                                   \
--  do {                                                          \
--    gcry_error_t err__ = gcry_control (cmd);                    \
--    if (err__)                                                  \
--      die ("line %d: gcry_control (%s) failed: %s",             \
--           __LINE__, #cmd, gcry_strerror (err__));              \
--  } while (0)
-+#define xgcry_control gcry_control
- 
- 
- /* Split a string into colon delimited fields A pointer to each field
 --- tests/Makefile.in
 +++ tests/Makefile.in
 @@ -896,6 +896,10 @@
@@ -93,3 +76,38 @@
  	list=' $(TESTS) '; \
  	$(am__tty_colors); \
  	if test -n "$$list"; then \
+# https://github.com/macports/macports-ports/blob/7c793c22a431
+--- random/rndlinux.c
++++ random/rndlinux.c
+@@ -48,6 +48,10 @@
+ #endif
+ #endif
+ 
++#ifdef __APPLE__
++# include <sys/random.h>
++#endif
++
+ #include "types.h"
+ #include "g10lib.h"
+ #include "rand-internal.h"
+--- tests/t-common.h
++++ tests/t-common.h
+@@ -149,16 +149,8 @@
+ #endif
+ }
+ 
+-
+-/* Convenience macro for initializing gcrypt with error checking.  */
+-#define xgcry_control(cmd)                                      \
+-  do {                                                          \
+-    gcry_error_t err__ = gcry_control cmd;                      \
+-    if (err__)                                                  \
+-      die ("line %d: gcry_control (%s) failed: %s",             \
+-           __LINE__, #cmd, gcry_strerror (err__));              \
+-  } while (0)
+-
++/* Avoid compile failures */
++#define xgcry_control gcry_control
+ 
+ /* Split a string into colon delimited fields A pointer to each field
+  * is stored in ARRAY.  Stop splitting at ARRAYSIZE fields.  The
