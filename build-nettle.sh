@@ -165,7 +165,10 @@ fi
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo "**************************"
     echo "Failed to configure Nettle"
+    echo "**************************"
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -183,9 +186,10 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "all" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo "**************************"
     echo "Failed to build Nettle"
-    echo "**********************"
+    echo "**************************"
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -207,11 +211,12 @@ fi
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo "**************************"
     echo "Failed to test Nettle"
-    echo "**********************"
+    echo "**************************"
+    bash ../collect-logs.sh "${PKG_NAME}"
 
-    # I wish the maintainer would test his shit
+    # I wish the maintainer would test his shit...
     if [[ "${IS_DARWIN}" -eq 1 ]]; then
         echo "Continuing..."
         echo "**********************"
