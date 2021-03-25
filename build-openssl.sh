@@ -71,6 +71,11 @@ fi
 
 ###############################################################################
 
+echo ""
+echo "========================================"
+echo "================ OpenSSL ==============="
+echo "========================================"
+
 # May be skipped if Perl is too old
 SKIP_OPENSSL_TESTS=0
 
@@ -92,21 +97,10 @@ then
     SKIP_OPENSSL_TESTS=1
 fi
 
-# DH is 2x to 4x faster with ec_nistp_64_gcc_128, but it is
-# only available on x64 machines with uint128 available.
-INT128_OPT=$("$CC" -dM -E - </dev/null | grep -i -c "__SIZEOF_INT128__")
-
-###############################################################################
-
 echo ""
-echo "========================================"
-echo "================ OpenSSL ==============="
-echo "========================================"
-
-echo ""
-echo "**********************"
+echo "***************************"
 echo "Downloading package"
-echo "**********************"
+echo "***************************"
 
 if ! "$WGET" -q -O "$OPENSSL_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://www.openssl.org/source/$OPENSSL_TAR"
@@ -121,16 +115,25 @@ gzip -d < "$OPENSSL_TAR" | tar xf -
 cd "$OPENSSL_DIR" || exit 1
 
 if [[ -e ../patch/openssl.patch ]]; then
-    patch -u -p0 < ../patch/openssl.patch
     echo ""
+    echo "***************************"
+    echo "Patching package"
+    echo "***************************"
+
+    patch -u -p0 < ../patch/openssl.patch
 fi
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Configuring package"
-echo "**********************"
+echo "***************************"
 
 CONFIG_OPTS=()
 CONFIG_OPTS[${#CONFIG_OPTS[@]}]="no-comp"
+
+# DH is 2x to 4x faster with ec_nistp_64_gcc_128, but it is
+# only available on x64 machines with uint128 available.
+INT128_OPT=$("$CC" -dM -E - </dev/null | grep -i -c "__SIZEOF_INT128__")
 
 if [[ "$IS_AMD64" -eq 1 && "$INT128_OPT" -eq 1 ]]; then
     CONFIG_OPTS[${#CONFIG_OPTS[@]}]="enable-ec_nistp_64_gcc_128"
@@ -180,7 +183,11 @@ fi
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -eq 1 ]]; then
+    echo ""
+    echo "***************************"
     echo "Failed to configure OpenSSL"
+    echo "***************************"
+
     exit 1
 fi
 
@@ -195,9 +202,10 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Building package"
-echo "**********************"
+echo "***************************"
 
 # The OpenSSL makefile is fucked up. We can't seem to build
 # only libcrypto, libssl and openssl app. The configuration
@@ -209,16 +217,20 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" all)
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "***************************"
     echo "Failed to build OpenSSL"
+    echo "***************************"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Testing package"
-echo "**********************"
+echo "***************************"
 
 # Self tests are still unreliable, https://github.com/openssl/openssl/issues/4963
 if [[ "$SKIP_OPENSSL_TESTS" -eq 0 ]];
@@ -226,22 +238,36 @@ then
     MAKE_FLAGS=("-j" "${INSTX_JOBS}" test)
     if ! "${MAKE}" "${MAKE_FLAGS[@]}"
     then
-        echo "**********************"
+        echo ""
+        echo "***************************"
         echo "Failed to test OpenSSL"
-        echo "**********************"
+        echo "***************************"
+
         # exit 1
+
+        echo ""
+        echo "***************************"
+        echo "Installing anyways..."
+        echo "***************************"
     fi
 else
-    echo "**********************"
+    echo ""
+    echo "***************************"
     echo "OpenSSL is not tested"
-    echo "**********************"
+    echo "***************************"
+
+    echo ""
+    echo "***************************"
+    echo "Installing anyways..."
+    echo "***************************"
 fi
 
 if [[ "$IS_DARWIN" -eq 1 ]]
 then
-    echo "**********************"
+    echo ""
+    echo "***************************"
     echo "Fixing install_name"
-    echo "**********************"
+    echo "***************************"
 
     install_name_tool -id "${INSTX_LIBDIR}/libcrypto.1.1.dylib" \
         ./libcrypto.1.1.dylib
@@ -264,9 +290,10 @@ then
         "${INSTX_LIBDIR}/libssl.1.1.dylib" ./apps/openssl
 fi
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Installing package"
-echo "**********************"
+echo "***************************"
 
 # Install the software only
 MAKE_FLAGS=(install_sw)
