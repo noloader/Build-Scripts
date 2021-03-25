@@ -1,0 +1,24 @@
+--- p11-kit/lists.c
++++ p11-kit/lists.c
+@@ -43,12 +43,21 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
++#include <limits.h>
+ 
+ #include "message.h"
+ #include "p11-kit.h"
+ #include "tool.h"
+ #include "uri.h"
+ 
++#ifndef SIZE_MAX
++# ifdef SIZE_T_MAX
++#  define SIZE_MAX SIZE_T_MAX
++# else
++#  define SIZE_MAX MAX_SIZE
++# endif
++#endif
++
+ int p11_kit_list_modules (int argc,
+                           char *argv[]);
+ 
