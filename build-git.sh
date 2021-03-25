@@ -130,7 +130,6 @@ if ! "$WGET" -q -O "$GIT_TAR" --ca-certificate="$THE_CA_ZOO" \
      "https://mirrors.edge.kernel.org/pub/software/scm/git/$GIT_TAR"
 then
     echo "Failed to download Git."
-    echo "Maybe Wget is too old. Perhaps run setup-wget.sh?"
     exit 1
 fi
 
@@ -223,7 +222,7 @@ bash ../fix-library-path.sh
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 
 # Disables GUI if TCL is missing.
-if [[ -z $(command -v tclsh) ]]; then
+if [[ -z "$(command -v tclsh 2>/dev/null)" ]]; then
    MAKE_FLAGS+=("NO_TCLTK=Yes")
 fi
 
