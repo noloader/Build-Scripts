@@ -55,12 +55,12 @@ echo "============== Berkeley DB ============="
 echo "========================================"
 
 echo ""
+echo "Berkeley DB ${BDB_VER}..."
+
+echo ""
 echo "*******************************"
 echo "Copying package"
 echo "*******************************"
-
-echo ""
-echo "Berkeley DB ${BDB_VER}..."
 
 cp "bootstrap/$BDB_TAR" "$PWD"
 rm -rf "$BDB_DIR" &>/dev/null
@@ -87,6 +87,7 @@ bash ../../fix-configure.sh
 cd "${CURR_DIR}" || exit 1
 cd "$BDB_DIR" || exit 1
 
+echo ""
 echo "*******************************"
 echo "Configuring package"
 echo "*******************************"
@@ -111,6 +112,7 @@ fi
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "*******************************"
     echo "Failed to configure Berkeley DB"
     echo "*******************************"
@@ -123,6 +125,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "*******************************"
 echo "Building package"
 echo "*******************************"
@@ -130,6 +133,7 @@ echo "*******************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*******************************"
     echo "Failed to build Berkeley DB"
     echo "*******************************"
@@ -141,10 +145,13 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "*******************************"
 echo "Testing package"
 echo "*******************************"
 
+echo ""
+echo "*******************************"
 echo "Unable to test Berkeley DB"
 echo "*******************************"
 
@@ -160,6 +167,7 @@ echo "*******************************"
 #    exit 1
 #fi
 
+echo ""
 echo "*******************************"
 echo "Installing package"
 echo "*******************************"
