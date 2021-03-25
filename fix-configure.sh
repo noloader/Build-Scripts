@@ -85,6 +85,4 @@ do
     chmod a+x "$file"; chmod go-w "$file"
 done
 
-echo ""
-
 exit 0

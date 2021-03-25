@@ -69,9 +69,9 @@ echo "============== GhostScript ============="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "***************************"
 echo "Downloading package"
-echo "**********************"
+echo "***************************"
 
 echo ""
 echo "GhostScript ${GS_VER}..."
@@ -89,16 +89,20 @@ cd "$GS_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/gs.patch ]]; then
-    patch -u -p0 < ../patch/gs.patch
     echo ""
+    echo "***************************"
+    echo "Patching package"
+    echo "***************************"
+
+    patch -u -p0 < ../patch/gs.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo "***************************"
 echo "Configuring package"
-echo "**********************"
+echo "***************************"
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -123,36 +127,43 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Building package"
-echo "**********************"
+echo "***************************"
 
 MAKE_FLAGS=("MAKEINFO=true" "-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "***************************"
     echo "Failed to build GhostScript"
+    echo "***************************"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Testing package"
-echo "**********************"
+echo "***************************"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "***************************"
     echo "Failed to test GhostScript"
-    echo "**********************"
+    echo "***************************"
     exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Installing package"
-echo "**********************"
+echo "***************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
