@@ -85,8 +85,12 @@ gzip -d < "$IDN_TAR" | tar xf -
 cd "$IDN_DIR" || exit 1
 
 if [[ -e ../patch/idn.patch ]]; then
-    patch -u -p0 < ../patch/idn.patch
     echo ""
+    echo "***********************"
+    echo "Downloading package"
+    echo "***********************"
+
+    patch -u -p0 < ../patch/idn.patch
 fi
 
 # https://bugs.launchpad.net/ubuntu/+source/binutils/+bug/1340250
@@ -97,6 +101,7 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "***********************"
 echo "Configuring package"
 echo "***********************"
@@ -128,6 +133,7 @@ fi
     --with-libunistring-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "***********************"
     echo "Failed to configure IDN"
     echo "***********************"
@@ -140,6 +146,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "***********************"
 echo "Building package"
 echo "***********************"
@@ -147,6 +154,7 @@ echo "***********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "***********************"
     echo "Failed to build IDN"
     echo "***********************"
@@ -161,6 +169,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "***********************"
 echo "Testing package"
 echo "***********************"
@@ -179,6 +188,7 @@ fi
 # Fix runpaths again
 bash ../fix-runpath.sh
 
+echo ""
 echo "***********************"
 echo "Installing package"
 echo "***********************"

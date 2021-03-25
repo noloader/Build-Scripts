@@ -85,13 +85,18 @@ gzip -d < "$IDN2_TAR" | tar xf -
 cd "$IDN2_DIR" || exit 1
 
 if [[ -e ../patch/idn2.patch ]]; then
-    patch -u -p0 < ../patch/idn2.patch
     echo ""
+    echo "************************"
+    echo "Patching package"
+    echo "************************"
+
+    patch -u -p0 < ../patch/idn2.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "************************"
 echo "Configuring package"
 echo "************************"
@@ -122,6 +127,7 @@ fi
     --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "************************"
     echo "Failed to configure IDN2"
     echo "************************"
@@ -134,6 +140,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "************************"
 echo "Building package"
 echo "************************"
@@ -141,6 +148,7 @@ echo "************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "************************"
     echo "Failed to build IDN2"
     echo "************************"
@@ -155,6 +163,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "************************"
 echo "Testing package"
 echo "************************"
@@ -167,13 +176,16 @@ then
     echo "************************"
     bash ../collect-logs.sh "${PKG_NAME}"
 
-    echo "Installing IDN2 anyways..."
+    echo "************************"
+    echo "Installing anyways..."
+    echo "************************"
     #exit 1
 fi
 
 # Fix runpaths again
 bash ../fix-runpath.sh
 
+echo ""
 echo "************************"
 echo "Installing package"
 echo "************************"

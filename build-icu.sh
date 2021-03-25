@@ -52,9 +52,9 @@ echo "================ libicu ================"
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "**************************"
 echo "Downloading package"
-echo "**********************"
+echo "**************************"
 
 echo ""
 echo "libicu ${ICU_DVER}..."
@@ -71,18 +71,23 @@ gzip -d < "$ICU_TAR" | tar xf -
 cd "$ICU_DIR" || exit 1
 
 if [[ -e ../patch/icu.patch ]]; then
-    patch -u -p0 < ../patch/icu.patch
     echo ""
+    echo "**************************"
+    echo "Patching package"
+    echo "**************************"
+
+    patch -u -p0 < ../patch/icu.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "**************************"
 echo "Configuring package"
-echo "**********************"
+echo "**************************"
 
-cd "source" || ext 1
+cd "source" || exit 1
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -100,7 +105,11 @@ cd "source" || ext 1
     --with-data-packaging=auto
 
 if [[ "$?" -ne 0 ]]; then
+    echo "**************************"
     echo "Failed to configure libicu"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -108,36 +117,51 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "**************************"
 echo "Building package"
-echo "**********************"
+echo "**************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "**************************"
     echo "Failed to build libicu"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "**************************"
 echo "Testing package"
-echo "**********************"
+echo "**************************"
 
 MAKE_FLAGS=("check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-   echo "**********************"
-   echo "Failed to test libicu"
-   echo "**********************"
-   # exit 1
+    echo ""
+    echo "**************************"
+    echo "Failed to test libicu"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
+
+    echo "**************************"
+    echo "Installing anyways..."
+    echo "**************************"
+    # exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "**************************"
 echo "Installing package"
-echo "**********************"
+echo "**************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then

@@ -110,13 +110,18 @@ cd "$ICONV_DIR" || exit 1
 # libiconv-utf8mac already has patch applied
 # libiconv still needs the patch
 if [[ -e ../patch/iconv.patch ]]; then
-    patch -u -p0 < ../patch/iconv.patch
     echo ""
+    echo "*************************"
+    echo "Downloading package"
+    echo "*************************"
+
+    patch -u -p0 < ../patch/iconv.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "*************************"
 echo "Configuring package"
 echo "*************************"
@@ -145,6 +150,7 @@ fi
 
 if [[ "$?" -ne 0 ]]
 then
+    echo ""
     echo "*************************"
     echo "Failed to configure iConv"
     echo "*************************"
@@ -157,6 +163,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "*************************"
 echo "Building package"
 echo "*************************"
@@ -164,6 +171,7 @@ echo "*************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*************************"
     echo "Failed to build iConv"
     echo "*************************"
@@ -182,6 +190,7 @@ bash ../fix-runpath.sh
 # The first build of iConv does not need 'make check'.
 if [[ "${INSTX_DISABLE_ICONV_TEST:-0}" -ne 1 ]]
 then
+    echo ""
     echo "*************************"
     echo "Testing package"
     echo "*************************"
@@ -201,6 +210,7 @@ fi
 # Fix runpaths again
 bash ../fix-runpath.sh
 
+echo ""
 echo "*************************"
 echo "Installing package"
 echo "*************************"

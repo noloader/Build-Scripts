@@ -50,9 +50,9 @@ echo "================= GMP =================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "***********************"
 echo "Downloading package"
-echo "**********************"
+echo "***********************"
 
 echo ""
 echo "GMP ${GMP_VER}..."
@@ -60,7 +60,9 @@ echo "GMP ${GMP_VER}..."
 if ! "$WGET" -q -O "$GMP_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/gmp/$GMP_TAR"
 then
+    echo "***********************"
     echo "Failed to download GMP"
+    echo "***********************"
     exit 1
 fi
 
@@ -72,8 +74,12 @@ cd "$GMP_DIR" || exit 1
 # https://gmplib.org/list-archives/gmp-bugs/2009-May/001423.html
 if [[ "$OSX_10p5_OR_BELOW" -ne 0 ]]; then
     if [[ -e ../patch/gmp-darwin.patch ]]; then
-        patch -u -p0 < ../patch/gmp-darwin.patch
         echo ""
+        echo "***********************"
+        echo "Patching package"
+        echo "***********************"
+
+        patch -u -p0 < ../patch/gmp-darwin.patch
     fi
 fi
 
@@ -92,9 +98,10 @@ if true; then
     rm -f "$file.timestamp.saved" "$file.fixed"
 fi
 
-echo "**********************"
+echo ""
+echo "***********************"
 echo "Configuring package"
-echo "**********************"
+echo "***********************"
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     gmp_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GMP_DIR}"
@@ -124,7 +131,10 @@ CONFIG_OPTS+=("ABI=$INSTX_BITNESS")
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "***********************"
     echo "Failed to configure GMP"
+    echo "***********************"
     exit 1
 fi
 
@@ -132,9 +142,10 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "***********************"
 echo "Building package"
-echo "**********************"
+echo "***********************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
@@ -146,22 +157,24 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo "***********************"
 echo "Testing package"
-echo "**********************"
+echo "***********************"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "***********************"
     echo "Failed to test GMP"
-    echo "**********************"
+    echo "***********************"
     exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "***********************"
 echo "Installing package"
-echo "**********************"
+echo "***********************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then

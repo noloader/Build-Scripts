@@ -135,6 +135,7 @@ echo "GnuPG ${GNUPG_VER}..."
 if ! "$WGET" -q -O "$GNUPG_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://gnupg.org/ftp/gcrypt/gnupg/$GNUPG_TAR"
 then
+    echo ""
     echo "***************************"
     echo "Failed to download GnuPG"
     echo "***************************"
@@ -153,6 +154,7 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -192,9 +194,11 @@ fi
 
 if [[ "$?" -ne 0 ]]
 then
+    echo ""
     echo "***************************"
     echo "Failed to configure GnuPG"
     echo "***************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -210,9 +214,11 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "***************************"
     echo "Failed to build GnuPG"
     echo "***************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -223,6 +229,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -230,9 +237,11 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "***************************"
     echo "Failed to test GnuPG"
     echo "***************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi

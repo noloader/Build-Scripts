@@ -85,8 +85,12 @@ gzip -d < "$HIREDIS_TAR" | tar xf -
 cd "$HIREDIS_DIR"
 
 if [[ -e ../patch/hiredis.patch ]]; then
-    patch -u -p0 < ../patch/hiredis.patch
     echo ""
+    echo "***********************"
+    echo "Patching package"
+    echo "***********************"
+
+    patch -u -p0 < ../patch/hiredis.patch
 fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
@@ -99,6 +103,7 @@ if [[ "$IS_SOLARIS" -ne 0 && "$IS_SUNC" -eq 0 ]]; then
     mv Makefile.fixed Makefile; chmod +x Makefile
 fi
 
+echo ""
 echo "***********************"
 echo "Building package"
 echo "***********************"
@@ -129,6 +134,7 @@ MAKE_FLAGS+=("PKGCONF_PATH=${INSTX_PKGCONFIG}")
 "${MAKE}" "${MAKE_FLAGS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "***********************"
     echo "Failed to build Hiredis"
     echo "***********************"
@@ -140,13 +146,15 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "***********************"
 echo "Testing package"
 echo "***********************"
 
-echo
+echo ""
+echo "***********************"
 echo "Unable to test Hiredis"
-echo
+echo "***********************"
 
 # Need redis-server
 #MAKE_FLAGS=("check" "-k" "V=1")
@@ -156,6 +164,7 @@ echo
 #    exit 1
 #fi
 
+echo ""
 echo "***********************"
 echo "Installing package"
 echo "***********************"

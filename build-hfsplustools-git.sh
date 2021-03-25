@@ -67,6 +67,7 @@ fi
 cd "$HFSPLUSTOOLS_DIR"
 git checkout master &>/dev/null
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -89,6 +90,7 @@ then
     exit 1
 fi
 
+#echo ""
 #echo "**********************"
 #echo "Testing package"
 #echo "**********************"
@@ -101,6 +103,7 @@ fi
 #    exit 1
 # fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

@@ -80,6 +80,7 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -98,6 +99,7 @@ echo "**********************"
     --enable-shared
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "********************************"
     echo "Failed to configure libgpg-error"
     echo "********************************"
@@ -109,6 +111,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -116,6 +119,7 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "********************************"
     echo "Failed to build libgpg-error"
     echo "********************************"
@@ -129,6 +133,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -136,6 +141,7 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "********************************"
     echo "Failed to test libgpg-error"
     echo "********************************"
@@ -146,6 +152,7 @@ fi
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

@@ -247,6 +247,7 @@ fi
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "**************************"
     echo "Failed to configure GnuTLS"
     echo "**************************"
@@ -321,7 +322,6 @@ then
     sed -e 's/PFCMD -anl/PFCMD -an/g' "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
 fi
-echo ""
 
 echo ""
 echo "**********************"
@@ -357,10 +357,11 @@ then
     echo "**********************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
-    # exit 1
 
+    echo "**********************"
     echo "Installing anyways..."
     echo "**********************"
+    # exit 1
 fi
 
 echo ""

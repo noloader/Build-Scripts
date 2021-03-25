@@ -70,9 +70,9 @@ echo "Gnulib ${GNULIB_VER}..."
 rm -rf "$GNULIB_DIR" "$GNULIB_TEST_DIR" 2>/dev/null
 
 echo ""
-echo "**********************"
+echo "*****************************"
 echo "Cloning package"
-echo "**********************"
+echo "*****************************"
 
 if ! git clone --depth=3 git://git.savannah.gnu.org/gnulib.git "$GNULIB_DIR"
 then
@@ -85,7 +85,10 @@ cd "$GNULIB_DIR" || exit 1
 echo "Copying Gnulib sources"
 if ! ./gnulib-tool --create-testdir --dir=../"$GNULIB_TEST_DIR" --avoid=gettext --single-configure --without-privileged-tests;
 then
+    echo ""
+    echo "*****************************"
     echo "Failed to copy Gnulib sources"
+    echo "*****************************"
     exit 1
 fi
 
@@ -95,9 +98,10 @@ cd "$GNULIB_TEST_DIR" || exit 1
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "*****************************"
 echo "Configuring package"
-echo "**********************"
+echo "*****************************"
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -112,6 +116,7 @@ echo "**********************"
     --libdir="${INSTX_LIBDIR}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "Failed to configure Gnulib"
     exit 1
 fi
@@ -120,9 +125,10 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "*****************************"
 echo "Building package"
-echo "**********************"
+echo "*****************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
@@ -134,16 +140,18 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "*****************************"
 echo "Testing package"
-echo "**********************"
+echo "*****************************"
 
 MAKE_FLAGS=("check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "*****************************"
     echo "Failed to test Gnulib"
-    echo "**********************"
+    echo "*****************************"
     exit 1
 fi
 
