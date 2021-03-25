@@ -62,7 +62,6 @@ echo "**********************"
 
 echo ""
 echo "M4 ${M4_VER}..."
-echo ""
 
 if ! "$WGET" -q -O "$M4_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/m4/$M4_TAR"
@@ -78,6 +77,7 @@ cd "$M4_DIR" || exit 1
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -97,7 +97,12 @@ echo "**********************"
     --enable-c++
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "**********************"
     echo "Failed to configure M4"
+    echo "**********************"
+
+    bash ../collect-logs.sh "m4"
     exit 1
 fi
 
@@ -105,6 +110,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -112,13 +118,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "MAKEINFO=true" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "**********************"
     echo "Failed to build M4"
+    echo "**********************"
+
+    bash ../collect-logs.sh "m4"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
@@ -151,7 +163,6 @@ echo "**********************"
 
 echo ""
 echo "Autoconf ${AUTOCONF_VER}..."
-echo ""
 
 if ! "$WGET" -q -O "$AUTOCONF_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/autoconf/$AUTOCONF_TAR"
@@ -167,6 +178,7 @@ cd "$AUTOCONF_DIR" || exit 1
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -186,7 +198,12 @@ echo "**********************"
     --libdir="${INSTX_LIBDIR}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "****************************"
     echo "Failed to configure Autoconf"
+    echo "****************************"
+
+    bash ../collect-logs.sh "autoconf"
     exit 1
 fi
 
@@ -194,6 +211,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -201,13 +219,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "****************************"
     echo "Failed to build Autoconf"
+    echo "****************************"
+
+    bash ../collect-logs.sh "autoconf"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
@@ -240,7 +264,6 @@ echo "**********************"
 
 echo ""
 echo "Automake ${AUTOMAKE_VER}..."
-echo ""
 
 if ! "$WGET" -q -O "$AUTOMAKE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/automake/$AUTOMAKE_TAR"
@@ -256,6 +279,7 @@ cd "$AUTOMAKE_DIR" || exit 1
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -274,7 +298,12 @@ echo "**********************"
     --libdir="${INSTX_LIBDIR}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "****************************"
     echo "Failed to configure Automake"
+    echo "****************************"
+
+    bash ../collect-logs.sh "automake"
     exit 1
 fi
 
@@ -282,6 +311,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -289,13 +319,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "MAKEINFO=true" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "****************************"
     echo "Failed to build Automake"
+    echo "****************************"
+
+    bash ../collect-logs.sh "automake"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

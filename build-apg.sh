@@ -52,9 +52,9 @@ echo "================= APG ================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "***********************"
 echo "Downloading package"
-echo "**********************"
+echo "***********************"
 
 echo ""
 echo "libapg ${APG_VER}..."
@@ -76,17 +76,17 @@ cd "$APG_DIR" || exit 1
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/apg.patch ]]; then
     echo ""
-    echo "**********************"
+    echo "***********************"
     echo "Patching package"
-    echo "**********************"
+    echo "***********************"
 
     patch -u -p0 < ../patch/apg.patch
-    echo ""
 fi
 
-echo "**********************"
+echo ""
+echo "***********************"
 echo "Building package"
-echo "**********************"
+echo "***********************"
 
 # Since we call the makefile directly, we need to escape dollar signs.
 CPPFLAGS=$(echo "${INSTX_CPPFLAGS}" | sed 's/\$/\$\$/g')
@@ -108,21 +108,29 @@ if ! CPPFLAGS="${CPPFLAGS}" \
      LIBS="${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build APG"
+    echo ""
+    echo "***********************"
+    echo "Failed to configure APG"
+    echo "***********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "***********************"
 echo "Testing package"
-echo "**********************"
+echo "***********************"
 
-echo "**********************"
+echo ""
+echo "***********************"
 echo "Package not tested"
-echo "**********************"
+echo "***********************"
 
-echo "**********************"
-echo "Installing package"
-echo "**********************"
+echo ""
+echo "***********************"
+echo "Installing anyways..."
+echo "***********************"
 
 MAKE_FLAGS=("install" "APG_PREFIX=${INSTX_PREFIX}")
 if [[ -n "$SUDO_PASSWORD" ]]; then

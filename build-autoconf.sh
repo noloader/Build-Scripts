@@ -5,8 +5,8 @@
 # script is available for Autotools for brave souls.
 
 AUTOCONF_VER=2.70
-AUTOCONF_TAR="autoconf-${AUTOCONF_VER}.tar.gz"
-AUTOCONF_DIR="autoconf-${AUTOCONF_VER}"
+AUTOCONF_TAR=autoconf-${AUTOCONF_VER}.tar.gz
+AUTOCONF_DIR=autoconf-${AUTOCONF_VER}
 PKG_NAME=autoconf
 
 ###############################################################################
@@ -71,6 +71,7 @@ if [[ -e "${INSTX_PREFIX}/bin/m4" ]]; then
     CONFIG_M4="${INSTX_PREFIX}/bin/m4"
 fi
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -90,7 +91,12 @@ echo "**********************"
     --libdir="${INSTX_LIBDIR}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "****************************"
     echo "Failed to configure Autoconf"
+    echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -98,6 +104,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -105,13 +112,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "****************************"
     echo "Failed to build Autoconf"
+    echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

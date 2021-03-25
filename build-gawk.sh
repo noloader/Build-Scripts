@@ -89,6 +89,7 @@ cd "$GAWK_DIR" || exit 1
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -109,7 +110,12 @@ echo "**********************"
     --with-mpfr="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
-    echo "Failed to configure GNU Awk"
+    echo ""
+    echo "***********************"
+    echo "Failed to configure Awk"
+    echo "***********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -117,6 +123,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -124,13 +131,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build GNU Awk"
+    echo ""
+    echo "***********************"
+    echo "Failed to build Awk"
+    echo "***********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -138,10 +151,16 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to test GNU Awk"
+    echo ""
+    echo "***********************"
+    echo "Failed to test Awk"
+    echo "***********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
