@@ -215,6 +215,7 @@ then
     bash ../collect-logs "${PKG_NAME}"
     #exit 1
 
+    echo "*************************"
     echo "Installing anyways..."
     echo "*************************"
 fi
