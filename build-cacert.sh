@@ -28,9 +28,8 @@ fi
 
 ###############################################################################
 
-# Perform this action automatically for the user.
-# setup-cacert.sh writes the certs locally for the user so
-# we can download cacerts.pem from cURL. build-cacert.sh
+# setup-cacert.sh writes the certs locally for the user so we
+# can download cacerts.pem using cURL or Wget. build-cacert.sh
 # installs cacerts.pem in ${INSTX_CACERT_PATH}. Programs like
 # cURL, Git and Wget use cacerts.pem.
 if [[ ! -e "$HOME/.build-scripts/cacert/cacert.pem" ]]; then

@@ -2,8 +2,8 @@
 
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Boehm GC from sources. The version is
-# pinned at Boehm-GC ${BGC_VER}k to avoid the libatomics. Many
-# C++ compilers claim to be C++11 but lack all the features.
+# pinned at Boehm-GC 7.2k to avoid the libatomics. Many
+# C++ compilers claim to be C++11 but lack the features.
 
 BGC_VER=7.2k
 BGC_TAR=gc-7.2k.tar.gz
@@ -73,6 +73,7 @@ cd "$BGC_DIR"
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -92,7 +93,10 @@ echo "**********************"
     --enable-shared
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "****************************"
     echo "Failed to configure Boehm GC"
+    echo "****************************"
     exit 1
 fi
 
@@ -100,6 +104,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -107,13 +112,17 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "****************************"
     echo "Failed to build Boehm GC"
+    echo "****************************"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -121,10 +130,14 @@ echo "**********************"
 MAKE_FLAGS=("check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "****************************"
     echo "Failed to test Boehm GC"
+    echo "****************************"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

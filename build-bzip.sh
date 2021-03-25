@@ -82,7 +82,6 @@ if ! "$WGET" -q -O "$BZIP2_TAR" \
      "ftp://sourceware.org/pub/bzip2/$BZIP2_TAR"
 then
     echo "Failed to download Bzip"
-    echo "Maybe Wget is too old. Perhaps run setup-wget.sh?"
     exit 1
 fi
 
@@ -94,7 +93,7 @@ cd "$BZIP2_DIR" || exit 1
 if [[ -e ../patch/bzip-makefiles.zip ]]; then
     echo ""
     echo "****************************"
-    echo "Patching package"
+    echo "Updating makefiles"
     echo "****************************"
 
     cp ../patch/bzip-makefiles.zip .
@@ -103,14 +102,19 @@ fi
 
 # Now, patch them for this script.
 if [[ -e ../patch/bzip.patch ]]; then
-    patch -u -p0 < ../patch/bzip.patch
     echo ""
+    echo "****************************"
+    echo "Patching package"
+    echo "****************************"
+
+    patch -u -p0 < ../patch/bzip.patch
 fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "****************************"
 echo "Building package"
 echo "****************************"
@@ -137,6 +141,7 @@ MAKE_FLAGS+=("LIBS=${LDLIBS}")
 
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "****************************"
     echo "Failed to build Bzip archive"
     echo "****************************"
@@ -148,6 +153,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "****************************"
 echo "Testing package"
 echo "****************************"
@@ -165,6 +171,7 @@ MAKE_FLAGS+=("LIBS=${LDLIBS}")
 
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "****************************"
     echo "Failed to test Bzip"
     echo "****************************"
@@ -173,6 +180,7 @@ then
     exit 1
 fi
 
+echo ""
 echo "****************************"
 echo "Installing package"
 echo "****************************"
@@ -203,6 +211,7 @@ fi
 
 ###############################################################################
 
+echo ""
 echo "****************************"
 echo "Building package"
 echo "****************************"
@@ -226,6 +235,7 @@ MAKE_FLAGS+=("LIBS=${LDLIBS}")
 
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "****************************"
     echo "Failed to build Bzip library"
     echo "****************************"
@@ -234,6 +244,7 @@ then
     exit 1
 fi
 
+echo ""
 echo "****************************"
 echo "Installing package"
 echo "****************************"

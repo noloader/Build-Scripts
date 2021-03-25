@@ -6,8 +6,8 @@
 # Daniel turned over reigns to other developers.
 
 CARES_VER=1.17.1
-CARES_TAR="c-ares-${CARES_VER}.tar.gz"
-CARES_DIR="c-ares-${CARES_VER}"
+CARES_TAR=c-ares-${CARES_VER}.tar.gz
+CARES_DIR=c-ares-${CARES_VER}
 PKG_NAME=c-ares
 
 ###############################################################################
@@ -55,6 +55,9 @@ echo ""
 echo "**************************"
 echo "Downloading package"
 echo "**************************"
+
+echo ""
+echo "C-ares ${CARES_VER}..."
 
 if ! "$WGET" -q -O "$CARES_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://c-ares.haxx.se/download/$CARES_TAR"
@@ -161,6 +164,8 @@ then
     bash ../collect-logs.sh "${PKG_NAME}"
     # exit 1
 
+    echo ""
+    echo "**************************"
     echo "Installing anyways..."
     echo "**************************"
 fi

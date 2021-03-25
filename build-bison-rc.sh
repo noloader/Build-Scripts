@@ -8,10 +8,6 @@
 # tools are missing. Derp...
 
 BISON_VER=3.7.4.254
-#BISON_TAR=bison-${BISON_VER}-a0905.tar.gz
-#BISON_DIR=bison-${BISON_VER}-a0905
-#BISON_TAR=bison-${BISON_VER}-82133.tar.gz
-#BISON_DIR=bison-${BISON_VER}-a0905
 BISON_TAR=bison-${BISON_VER}-d85e.tar.gz
 BISON_DIR=bison-${BISON_VER}-a0905
 PKG_NAME=bison-rc
@@ -34,16 +30,6 @@ if [[ "${SUDO_PASSWORD_DONE}" != "yes" ]]; then
         echo "Failed to process password"
         exit 1
     fi
-fi
-
-###############################################################################
-
-# Autotools on Solaris is broken. Bison 3.7.1 and above fails to configure due
-# to a buggy strstr(). The rub is, Bison does not use the function. WTF???
-if [[ "${IS_SOLARIS}" -eq 1 ]]; then
-    BISON_VER=3.7
-    BISON_TAR=bison-${BISON_VER}.tar.gz
-    BISON_DIR=bison-${BISON_VER}
 fi
 
 ###############################################################################
@@ -94,13 +80,14 @@ if [[ -e ../patch/bison-rc.patch ]]; then
     echo "*************************"
     echo "Patching package"
     echo "*************************"
+
     patch -u -p0 < ../patch/bison-rc.patch
-    echo ""
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "*************************"
 echo "Configuring package"
 echo "*************************"
@@ -129,6 +116,7 @@ fi
     --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "*************************"
     echo "Failed to configure Bison"
     echo "*************************"
@@ -141,6 +129,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "*************************"
 echo "Building package"
 echo "*************************"
@@ -148,6 +137,7 @@ echo "*************************"
 MAKE_FLAGS=("MAKEINFO=true" "HELP2MAN=true" "-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*************************"
     echo "Failed to build Bison"
     echo "*************************"
@@ -159,24 +149,15 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "*************************"
 echo "Testing package"
 echo "*************************"
 
-# Testing with Akim
-if false; then
-
-make check-local TESTSUITEFLAGS='271 -d'
-TIME_LIMIT=1 ./src/bison -Tcex -Wcex ./tests/testsuite.dir/271/input.y >/tmp/271.log 2>&1
-zip -9 ~/271.log.zip /tmp/271.log
-
-exit 0
-
-fi
-
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*************************"
     echo "Failed to test Bison"
     echo "*************************"
@@ -185,6 +166,7 @@ then
     exit 1
 fi
 
+echo ""
 echo "*************************"
 echo "Installing package"
 echo "*************************"

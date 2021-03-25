@@ -106,7 +106,6 @@ if [[ -e ../patch/bison.patch ]]; then
     echo "*************************"
 
     patch -u -p0 < ../patch/bison.patch
-    echo ""
 fi
 
 # Fix sys_lib_dlsearch_path_spec
