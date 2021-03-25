@@ -52,9 +52,9 @@ echo "================= Make ================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 if ! "$WGET" -q -O "$MAKE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/make/$MAKE_TAR"
@@ -68,16 +68,21 @@ gzip -d < "$MAKE_TAR" | tar xf -
 cd "$MAKE_DIR"
 
 if [[ -e ../patch/gmake381.patch ]]; then
-    patch -u -p0 < ../patch/gmake381.patch
     echo ""
+    echo "************************"
+    echo "Patching package"
+    echo "************************"
+
+    patch -u -p0 < ../patch/gmake381.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Configuring package"
-echo "**********************"
+echo "************************"
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -95,7 +100,10 @@ echo "**********************"
     --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "************************"
     echo "Failed to configure Make"
+    echo "************************"
     exit 1
 fi
 
@@ -103,9 +111,10 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
@@ -117,21 +126,29 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 # Can't pass self tests...
 MAKE_FLAGS=("PERL_USE_UNSAFE_INC=1" "check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo "************************"
     echo "Failed to test Make"
+    echo "************************"
+
+    echo ""
+    echo "************************"
+    echo "Installing anyways..."
+    echo "************************"
     #exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
