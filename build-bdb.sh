@@ -75,7 +75,6 @@ if [[ -e ../patch/db.patch ]]; then
     echo "*******************************"
 
     patch -u -p0 < ../patch/db.patch
-    echo ""
 fi
 
 cd "${CURR_DIR}" || exit 1
@@ -169,7 +168,7 @@ echo "*******************************"
 
 echo ""
 echo "*******************************"
-echo "Installing package"
+echo "Installing anyways..."
 echo "*******************************"
 
 MAKE_FLAGS=("install")

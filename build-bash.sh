@@ -58,7 +58,6 @@ echo "**********************"
 
 echo ""
 echo "Bash ${BASH_VER}..."
-echo ""
 
 if ! "$WGET" -q -O "$BASH_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/bash/$BASH_TAR"
@@ -79,12 +78,12 @@ if [[ -e ../patch/bash.patch ]]; then
     echo "**********************"
 
     patch -u -p0 < ../patch/bash.patch
-    echo ""
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -121,6 +120,7 @@ fi
     --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "************************"
     echo "Failed to configure Bash"
     echo "************************"
@@ -133,6 +133,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -140,6 +141,7 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "************************"
     echo "Failed to build Bash"
     echo "************************"
@@ -151,10 +153,12 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
 
+echo ""
 echo "**********************"
 echo "Bash not tested"
 echo "**********************"
@@ -171,8 +175,9 @@ echo "**********************"
 #    exit 1
 #fi
 
+echo ""
 echo "**********************"
-echo "Installing package"
+echo "Installing anyways..."
 echo "**********************"
 
 MAKE_FLAGS=("install")

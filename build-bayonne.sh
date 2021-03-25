@@ -84,12 +84,12 @@ if [[ -e ../patch/sipwitch.patch ]]; then
     echo "**********************"
 
     patch -u -p0 < ../patch/sipwitch.patch
-    echo ""
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -111,7 +111,12 @@ echo "**********************"
     --with-libeXosip2=libeXosip2
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "*****************************"
     echo "Failed to configure SIP Witch"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -135,6 +140,7 @@ do
     rm "$file.timestamp.saved"
 done
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -142,13 +148,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "*****************************"
     echo "Failed to build SIP Witch"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -156,12 +168,16 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "*****************************"
     echo "Failed to test SIP Witch"
-    echo "**********************"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
