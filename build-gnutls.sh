@@ -175,6 +175,12 @@ if [[ "$have_padlock" -eq 0 ]]; then
     CONFIG_OPTS+=("--disable-padlock")
 fi
 
+# gnutls.patch un-defines _Thread_local in random.c
+# We need to disable threads hrere, too.
+if [[ "${OSX_10p5_OR_10p6}" -eq 1 ]]; then
+    CONFIG_OPTS+=("--disable-threads")
+fi
+
 # We should probably include --disable-anon-authentication below
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
