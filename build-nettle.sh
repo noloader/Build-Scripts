@@ -90,7 +90,6 @@ echo "**********************"
 
 echo ""
 echo "Nettle ${NETTLE_VER}..."
-echo ""
 
 if ! "$WGET" -q -O "$NETTLE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/nettle/$NETTLE_TAR"
@@ -104,13 +103,18 @@ gzip -d < "$NETTLE_TAR" | tar xf -
 cd "$NETTLE_DIR" || exit 1
 
 if [[ -e ../patch/nettle.patch ]]; then
-    patch -u -p0 < ../patch/nettle.patch
     echo ""
+    echo "***************************"
+    echo "Patching package"
+    echo "***************************"
+
+    patch -u -p0 < ../patch/nettle.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -179,9 +183,11 @@ fi
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "**************************"
     echo "Failed to configure Nettle"
     echo "**************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -193,6 +199,7 @@ bash ../fix-library-path.sh
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -200,9 +207,11 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "all" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "**************************"
     echo "Failed to build Nettle"
     echo "**************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -210,6 +219,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -222,26 +232,35 @@ if [[ -n "$(command -v xattr 2>/dev/null)" ]]; then
     find . -name '*-test' -exec xattr -d com.apple.quarantine {} 2>/dev/null \;
 fi
 
+# I wish the maintainer would test his shit...
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "**************************"
     echo "Failed to test Nettle"
     echo "**************************"
-    bash ../collect-logs.sh "${PKG_NAME}"
 
-    # I wish the maintainer would test his shit...
+    bash ../collect-logs.sh "${PKG_NAME}"
+    # exit 1
+
+    # Known problems on OS X, both old and new.
     if [[ "${IS_DARWIN}" -eq 1 ]]; then
-        echo "Continuing..."
-        echo "**********************"
+        :
     else
         exit 1
     fi
+
+    echo ""
+    echo "**************************"
+    echo "Installing anyways..."
+    echo "**************************"
 fi
 
 # Fix runpaths again
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
