@@ -151,6 +151,28 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+IFS= find . -name 'Makefile.in' -print | while read -r file
+do
+    echo "patching $file..."
+    touch -a -m -r "$file" "$file.timestamp"
+    cp -p "$file" "$file.fixed"
+    sed -e 's/ -Wno-pedantic//g' "$file" > "$file.fixed"
+    mv "$file.fixed" "$file"
+    touch -a -m -r "$file.timestamp" "$file"
+    rm -f "$file.timestamp"
+done
+
+IFS= find . -name 'Makefile.am' -print | while read -r file
+do
+    echo "patching $file..."
+    touch -a -m -r "$file" "$file.timestamp"
+    cp -p "$file" "$file.fixed"
+    sed -e 's/ -Wno-pedantic//g' "$file" > "$file.fixed"
+    mv "$file.fixed" "$file"
+    touch -a -m -r "$file.timestamp" "$file"
+    rm -f "$file.timestamp"
+done
+
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -229,13 +251,12 @@ bash ../fix-makefiles.sh
 
 IFS= find . -name 'Makefile' -print | while read -r file
 do
-    # Make console output more readable...
     echo "patching $file..."
     cp -p "$file" "$file.fixed"
-    sed -e 's|-Wtype-limits .*|-fno-common -Wall |g' "$file" > "$file.fixed"
-    mv "$file.fixed" "$file"
-    cp -p "$file" "$file.fixed"
-    sed -e 's|-fno-common .*|-fno-common -Wall |g' "$file" > "$file.fixed"
+    sed -e 's/-Wtype-limits .*/-fno-common -Wall /g' \
+        -e 's/-fno-common .*/-fno-common -Wall /g' \
+        -e 's/ -Wno-pedantic//g' \
+        "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
 done
 
@@ -244,7 +265,9 @@ do
     # Test suite does not compile with NDEBUG defined.
     echo "patching $file..."
     cp -p "$file" "$file.fixed"
-    sed -e 's| -DNDEBUG||g' "$file" > "$file.fixed"
+    sed -e 's/ -DNDEBUG//g' \
+        -e 's/ -Wno-pedantic//g' \
+        "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
 done
 
@@ -253,10 +276,10 @@ do
     # Make console output more readable...
     echo "patching $file..."
     cp -p "$file" "$file.fixed"
-    sed -e 's|-Wtype-limits .*|-fno-common -Wall |g' "$file" > "$file.fixed"
-    mv "$file.fixed" "$file"
-    cp -p "$file" "$file.fixed"
-    sed -e 's|-fno-common .*|-fno-common -Wall |g' "$file" > "$file.fixed"
+    sed -e 's/-Wtype-limits .*/-fno-common -Wall /g' \
+        -e 's/-fno-common .*/-fno-common -Wall /g' \
+        -e 's/ -Wno-pedantic//g' \
+        "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
 done
 
@@ -275,7 +298,7 @@ then
     echo "patching common.sh..."
     file=tests/scripts/common.sh
     cp -p "$file" "$file.fixed"
-    sed -e 's|PFCMD -anl|PFCMD -an|g' "$file" > "$file.fixed"
+    sed -e 's/PFCMD -anl/PFCMD -an/g' "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
 fi
 echo ""

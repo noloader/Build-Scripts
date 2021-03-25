@@ -278,6 +278,10 @@ IS_GCC=$(${CC} --version 2>&1 | ${EGREP} -i -c 'gnu|gcc')
 IS_CLANG=$(${CC} --version 2>&1 | ${EGREP} -i -c 'clang|llvm')
 IS_SUNC=$(${CC} -V 2>&1 | ${EGREP} -i -c 'sun|studio')
 
+if [[ "${IS_GCC}" -eq 1 ]]; then
+    GCC_4_OR_BELOW=$(${CC} --version 2>&1 | ${EGREP} -i -c '(GCC) 3\.|(GCC) 4\.')
+fi
+
 ###############################################################################
 
 # Where the package will run. We need to override for 64-bit Solaris.
