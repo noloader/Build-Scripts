@@ -122,15 +122,15 @@ IFS= find "./" -iname 'Makefile' -print | while read -r file
 do
     echo "$file" | sed 's/^\.\///g'
 
-    touch -a -m -r "$file" "$file.timestamp.saved"
+    touch -a -m -r "$file" "$file.timestamp"
     chmod a+w "$file"
     sed -e "s/ libosip2/ -leXosip2/g" \
         -e "s/ libeXosip2/ -leXosip2/g" \
         "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
     chmod go-w "$file"
-    touch -a -m -r "$file.timestamp.saved" "$file"
-    rm "$file.timestamp.saved"
+    touch -a -m -r "$file.timestamp" "$file"
+    rm "$file.timestamp"
 done
 
 echo "***************************"

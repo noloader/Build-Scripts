@@ -98,13 +98,13 @@ bash ../fix-configure.sh
 # Fix FreeBSD configure test
 if true; then
     file=configure
-    touch -a -m -r "$file" "$file.timestamp.saved"
+    touch -a -m -r "$file" "$file.timestamp"
     chmod a+w "$file"
     sed 's/__builtin_clzl//g' "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
     chmod a+x "$file"; chmod go-w "$file"
-    touch -a -m -r "$file.timestamp.saved" "$file"
-    rm -f "$file.timestamp.saved" "$file.fixed"
+    touch -a -m -r "$file.timestamp" "$file"
+    rm -f "$file.timestamp" "$file.fixed"
 fi
 
 echo ""
