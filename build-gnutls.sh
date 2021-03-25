@@ -175,9 +175,9 @@ if [[ "$have_padlock" -eq 0 ]]; then
     CONFIG_OPTS+=("--disable-padlock")
 fi
 
-# gnutls.patch un-defines _Thread_local in random.c
-# We need to disable threads hrere, too.
-if [[ "${OSX_10p5_OR_10p6}" -eq 1 ]]; then
+# gnutls.patch un-defines _Thread_local in random.c due to
+# PowerPC and old GCC. We need to disable threads here, too.
+if [[ "${OSX_10p5_OR_BELOW}" -eq 1 ]]; then
     CONFIG_OPTS+=("--disable-threads")
 fi
 
