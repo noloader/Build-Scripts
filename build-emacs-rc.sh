@@ -3,8 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Emacs and its dependencies from sources.
 
-EMACS_TAR=emacs-27.1-rc1.tar.gz
-EMACS_DIR=emacs-27.1
+EMACS_VER=27.2
+EMACS_TAR=emacs-${EMACS_VER}-rc1.tar.gz
+EMACS_DIR=emacs-${EMACS_VER}
 PKG_NAME=emacs-rc
 
 ###############################################################################
@@ -103,6 +104,9 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
+echo ""
+echo "Emacs ${EMACS_VER}..."
+
 if ! "$WGET" -q -O "$EMACS_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://alpha.gnu.org/gnu/emacs/pretest/$EMACS_TAR"
 then
@@ -117,6 +121,7 @@ cd "$EMACS_DIR"
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -155,6 +160,7 @@ fi
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "*************************"
     echo "Failed to configure emacs"
     echo "*************************"
@@ -167,6 +173,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -174,6 +181,7 @@ echo "**********************"
 MAKE_FLAGS=("V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*************************"
     echo "Failed to build emacs"
     echo "*************************"
@@ -185,6 +193,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -192,14 +201,19 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*************************"
     echo "Failed to test emacs"
     echo "*************************"
 
     bash ../collect-logs "${PKG_NAME}"
-    #exit 1
+    exit 1
 fi
 
+# Its a RC. Just bail.
+exit 0
+
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

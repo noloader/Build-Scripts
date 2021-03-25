@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds GNU Diffutils from sources.
+# This script builds Diffutils from sources.
 
 DIFFUTILS_VER=3.7
 DIFFUTILS_XZ=diffutils-${DIFFUTILS_VER}.tar.xz
@@ -58,12 +58,12 @@ echo "Downloading package"
 echo "**********************"
 
 echo ""
-echo "GNU Diffutils ${DIFFUTILS_VER}..."
+echo "Diffutils ${DIFFUTILS_VER}..."
 
 if ! "$WGET" -q -O "$DIFFUTILS_XZ" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/diffutils/$DIFFUTILS_XZ"
 then
-    echo "Failed to download GNU Diffutils"
+    echo "Failed to download Diffutils"
     exit 1
 fi
 
@@ -94,7 +94,12 @@ echo "**********************"
     --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
-    echo "Failed to configure GNU Diffutils"
+    echo ""
+    echo "*****************************"
+    echo "Failed to configure Diffutils"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -110,7 +115,12 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build GNU Diffutils"
+    echo ""
+    echo "*****************************"
+    echo "Failed to build Diffutils"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -125,7 +135,12 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to test GNU Diffutils"
+    echo ""
+    echo "*****************************"
+    echo "Failed to test Diffutils"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

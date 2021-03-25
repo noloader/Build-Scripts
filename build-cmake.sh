@@ -3,9 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds CMake and its dependencies from sources.
 
-CMAKE_VER="3.14.3"
-CMAKE_TAR=cmake-"$CMAKE_VER".tar.gz
-CMAKE_DIR=cmake-"$CMAKE_VER"
+CMAKE_VER=3.14.3
+CMAKE_TAR=cmake-${CMAKE_VER}.tar.gz
+CMAKE_DIR=cmake-${CMAKE_VER}
 PKG_NAME=cmake
 
 ###############################################################################
@@ -47,6 +47,9 @@ echo ""
 echo "**********************"
 echo "Downloading package"
 echo "**********************"
+
+echo ""
+echo "CMake ${CMAKE_VER}..."
 
 if ! "$WGET" -q -O "$CMAKE_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
      "https://github.com/Kitware/CMake/releases/download/v$CMAKE_VER/$CMAKE_TAR"
@@ -99,7 +102,11 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo "**********************"
     echo "Failed to build CMake"
+    echo "**********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -114,8 +121,12 @@ echo "**********************"
 MAKE_FLAGS=("test" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-   echo "Failed to test CMake"
-   exit 1
+    echo "**********************"
+    echo "Failed to test CMake"
+    echo "**********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
+    exit 1
 fi
 
 echo ""

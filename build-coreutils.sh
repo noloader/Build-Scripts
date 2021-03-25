@@ -3,8 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds coreutils from sources.
 
-CORE_TAR=coreutils-8.32.tar
-CORE_DIR=coreutils-8.32
+CORE_VER=
+CORE_TAR=coreutils-${CORE_VER}.tar
+CORE_DIR=coreutils-${CORE_VER}
 PKG_NAME=coreutils
 
 ###############################################################################
@@ -48,6 +49,14 @@ fi
 if ! ./build-pcre.sh
 then
     echo "Failed to build PCRE"
+    exit 1
+fi
+
+###############################################################################
+
+if ! ./build-openssl.sh
+then
+    echo "Failed to build OpenSSL"
     exit 1
 fi
 
@@ -99,7 +108,12 @@ echo "**********************"
     --with-openssl=yes
 
 if [[ "$?" -ne 0 ]]; then
-    echo "Failed to configure Core Utilities"
+    echo ""
+    echo "*****************************"
+    echo "Failed to configure Coreutils"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -115,7 +129,12 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build Core Utilities"
+    echo ""
+    echo "*****************************"
+    echo "Failed to build Coreutils"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -130,10 +149,16 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to test Core Utilities"
+    echo ""
+    echo "*****************************"
+    echo "Failed to test Coreutils"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

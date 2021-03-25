@@ -4,8 +4,8 @@
 # This script builds Expect from sources.
 
 EXPECT_VER=5.45.4
-EXPECT_TAR=expect$EXPECT_VER.tar.gz
-EXPECT_DIR=expect$EXPECT_VER
+EXPECT_TAR=expect${EXPECT_VER}.tar.gz
+EXPECT_DIR=expect${EXPECT_VER}
 PKG_NAME=expect
 
 ###############################################################################
@@ -54,6 +54,9 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
+echo ""
+echo "Expect ${EXPECT_VER}..."
+
 if ! "$WGET" -q -O "$EXPECT_TAR" --ca-certificate="$THE_CA_ZOO" \
      "https://downloads.sourceforge.net/project/expect/Expect/$EXPECT_VER/$EXPECT_TAR"
 then
@@ -68,6 +71,7 @@ cd "$EXPECT_DIR"
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -85,7 +89,12 @@ echo "**********************"
     --libdir="${INSTX_LIBDIR}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "**************************"
     echo "Failed to configure Expect"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -93,6 +102,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -100,13 +110,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "**************************"
     echo "Failed to build Expect"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -114,10 +130,16 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-   echo "Failed to test Expect"
-   exit 1
+    echo ""
+    echo "**************************"
+    echo "Failed to test Expect"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
+    exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

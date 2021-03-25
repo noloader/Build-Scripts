@@ -97,7 +97,12 @@ echo "**********************"
     --libdir="${INSTX_LIBDIR}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "***************************"
     echo "Failed to configure DejaGNU"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -113,7 +118,12 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "***************************"
     echo "Failed to build DejaGNU"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -128,8 +138,13 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-   echo "Failed to test DejaGNU"
-   exit 1
+    echo ""
+    echo "***************************"
+    echo "Failed to test DejaGNU"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
+    exit 1
 fi
 
 echo ""

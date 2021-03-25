@@ -60,7 +60,7 @@ echo "**********************"
 if ! "$WGET" -q -O "$FIND_XZ" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/findutils/$FIND_XZ"
 then
-    echo "Failed to download Find Utilities"
+    echo "Failed to download findutils"
     exit 1
 fi
 
@@ -91,7 +91,12 @@ echo "**********************"
     --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
-    echo "Failed to configure Find Utilities"
+    echo ""
+    echo "*****************************"
+    echo "Failed to configure findutils"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -107,7 +112,12 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build Find Utilities"
+    echo ""
+    echo "*****************************"
+    echo "Failed to build findutils"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -122,7 +132,12 @@ echo "**********************"
 MAKE_FLAGS=("check" " V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to test Find Utilities"
+    echo ""
+    echo "*****************************"
+    echo "Failed to test findutils"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

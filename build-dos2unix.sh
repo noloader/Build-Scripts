@@ -52,9 +52,9 @@ echo "=============== dos2unix ==============="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 echo ""
 echo "dos2unix ${DOS2UNIX_VER}..."
@@ -73,17 +73,17 @@ cd "$DOS2UNIX_DIR" || exit 1
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/dos2unix.patch ]]; then
     echo ""
-    echo "**********************"
+    echo "************************"
     echo "Patching package"
-    echo "**********************"
+    echo "************************"
 
     patch -u -p0 < ../patch/dos2unix.patch
 fi
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 # Since we call the makefile directly, we need to escape dollar signs.
 CPPFLAGS=$(echo "${INSTX_CPPFLAGS}" | sed 's/\$/\$\$/g')
@@ -100,28 +100,36 @@ if ! CPPFLAGS="${CPPFLAGS}" \
      LIBS="-liconv ${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "************************"
     echo "Failed to build dos2unix"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "************************"
     echo "Failed to test dos2unix"
-    echo "**********************"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install" "prefix=${INSTX_PREFIX}" "libdir=${INSTX_LIBDIR}")
 if [[ -n "$SUDO_PASSWORD" ]]; then
