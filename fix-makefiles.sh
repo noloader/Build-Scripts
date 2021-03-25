@@ -76,7 +76,4 @@ do
     rm "$file.timestamp"
 done
 
-# Add space for tidy output
-echo ""
-
 exit 0
