@@ -147,14 +147,22 @@ fi
 
 if [[ "$IS_ARM_NEON" -eq 1 ]]
 then
-    echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
-    CONFIG_OPTS+=("--enable-fat")
+    have_neon=$(${CC} ${CFLAGS} -dM -E - </dev/null 2>&1 | grep -i -c '__ARM_NEON')
+
+    if [[ "$have_neon" -eq 1 ]]
+    then
+        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+        CONFIG_OPTS+=("--enable-fat")
+    fi
 fi
 
 if [[ "$IS_ARMV8" -eq 1 ]]
 then
-    echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
-    CONFIG_OPTS+=("--enable-fat")
+    if [[ $(true) ]]
+    then
+        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+        CONFIG_OPTS+=("--enable-fat")
+    fi
 fi
 
 if [[ "$IS_ALTIVEC" -eq 1 ]]
