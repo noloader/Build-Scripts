@@ -277,9 +277,6 @@ echo "***********************"
 # See INSTALL for the formats and the requirements
 MAKE_FLAGS=("install")
 
-# Git builds things during install, and they end up root:root.
-# The chmod allows us to remove them at cleanup. Can't use octal
-# due to OS X 10.5 on PowerMac.
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"

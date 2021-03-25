@@ -73,8 +73,12 @@ cd "$GPGERR_DIR"
 #cp tests/t-logging.c tests/t-logging.c.orig
 
 if [[ -e ../patch/gpgerror.patch ]]; then
-    patch -u -p0 < ../patch/gpgerror.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/gpgerror.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
@@ -103,6 +107,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "********************************"
     echo "Failed to configure libgpg-error"
     echo "********************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -123,6 +128,7 @@ then
     echo "********************************"
     echo "Failed to build libgpg-error"
     echo "********************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -145,6 +151,7 @@ then
     echo "********************************"
     echo "Failed to test libgpg-error"
     echo "********************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi

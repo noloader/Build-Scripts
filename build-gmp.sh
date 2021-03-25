@@ -135,6 +135,8 @@ if [[ "$?" -ne 0 ]]; then
     echo "***********************"
     echo "Failed to configure GMP"
     echo "***********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -150,7 +152,12 @@ echo "***********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "***********************"
     echo "Failed to build GMP"
+    echo "***********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -168,6 +175,8 @@ then
     echo "***********************"
     echo "Failed to test GMP"
     echo "***********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

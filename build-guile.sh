@@ -109,9 +109,9 @@ echo "================ Guile ================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Downloading package"
-echo "**********************"
+echo "*************************"
 
 echo ""
 echo "Guile ${GUILE_VER}..."
@@ -131,9 +131,9 @@ cd "$GUILE_DIR" || exit 1
 bash ../fix-configure.sh
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Configuring package"
-echo "**********************"
+echo "*************************"
 
 CONFIG_OPTS=()
 CONFIG_OPTS+=("--enable-shared")
@@ -163,7 +163,12 @@ CONFIG_OPTS+=("--with-libintl-prefix=${INSTX_PREFIX}")
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "*************************"
     echo "Failed to configure Guile"
+    echo "*************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -172,14 +177,19 @@ fi
 bash ../fix-makefiles.sh
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Building package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "*************************"
     echo "Failed to build Guile"
+    echo "*************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -187,22 +197,32 @@ fi
 bash ../fix-pkgconfig.sh
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Testing package"
-echo "**********************"
+echo "*************************"
 
 # https://lists.gnu.org/archive/html/guile-devel/2017-10/msg00009.html
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "*************************"
     echo "Failed to test Guile"
+    echo "*************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     # exit 1
+
+    echo ""
+    echo "*************************"
+    echo "Installing anyways..."
+    echo "*************************"
 fi
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Installing package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then

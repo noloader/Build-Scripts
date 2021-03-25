@@ -104,6 +104,8 @@ if [[ "$?" -ne 0 ]]; then
     echo "************************"
     echo "Failed to configure Make"
     echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -119,7 +121,12 @@ echo "************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "************************"
     echo "Failed to build Make"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -138,11 +145,13 @@ then
     echo "Failed to test Make"
     echo "************************"
 
+    bash ../collect-logs.sh "${PKG_NAME}"
+    #exit 1
+
     echo ""
     echo "************************"
     echo "Installing anyways..."
     echo "************************"
-    #exit 1
 fi
 
 echo ""

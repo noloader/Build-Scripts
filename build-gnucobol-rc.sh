@@ -99,6 +99,8 @@ then
     echo "****************************"
     echo "Failed to download GnuCOBOL"
     echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -138,6 +140,8 @@ if [[ "$?" -ne 0 ]]; then
     echo "****************************"
     echo "Failed to configure GnuCOBOL"
     echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -156,6 +160,8 @@ then
     echo "****************************"
     echo "Failed to build GnuCOBOL"
     echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -174,6 +180,8 @@ then
     echo "****************************"
     echo "Failed to test GnuCOBOL"
     echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

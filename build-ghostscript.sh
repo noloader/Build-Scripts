@@ -69,9 +69,9 @@ echo "============== GhostScript ============="
 echo "========================================"
 
 echo ""
-echo "***************************"
+echo "*******************************"
 echo "Downloading package"
-echo "***************************"
+echo "*******************************"
 
 echo ""
 echo "GhostScript ${GS_VER}..."
@@ -90,9 +90,9 @@ cd "$GS_DIR" || exit 1
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/gs.patch ]]; then
     echo ""
-    echo "***************************"
+    echo "*******************************"
     echo "Patching package"
-    echo "***************************"
+    echo "*******************************"
 
     patch -u -p0 < ../patch/gs.patch
 fi
@@ -100,9 +100,10 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "***************************"
+echo ""
+echo "*******************************"
 echo "Configuring package"
-echo "***************************"
+echo "*******************************"
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -119,7 +120,12 @@ echo "***************************"
     --with-libiconv=native
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "*******************************"
     echo "Failed to configure GhostScript"
+    echo "*******************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -128,17 +134,19 @@ fi
 bash ../fix-makefiles.sh
 
 echo ""
-echo "***************************"
+echo "*******************************"
 echo "Building package"
-echo "***************************"
+echo "*******************************"
 
 MAKE_FLAGS=("MAKEINFO=true" "-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo ""
-    echo "***************************"
+    echo "*******************************"
     echo "Failed to build GhostScript"
-    echo "***************************"
+    echo "*******************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -146,24 +154,26 @@ fi
 bash ../fix-pkgconfig.sh
 
 echo ""
-echo "***************************"
+echo "*******************************"
 echo "Testing package"
-echo "***************************"
+echo "*******************************"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo ""
-    echo "***************************"
+    echo "*******************************"
     echo "Failed to test GhostScript"
-    echo "***************************"
+    echo "*******************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 echo ""
-echo "***************************"
+echo "*******************************"
 echo "Installing package"
-echo "***************************"
+echo "*******************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then

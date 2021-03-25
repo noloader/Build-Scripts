@@ -122,7 +122,6 @@ if ! "$WGET" -q -O "$GETTEXT_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/pub/gnu/gettext/$GETTEXT_TAR"
 then
     echo "Failed to download GetText"
-    echo "Maybe Wget is too old. Perhaps run setup-wget.sh?"
     exit 1
 fi
 
