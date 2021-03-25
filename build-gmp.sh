@@ -70,14 +70,23 @@ rm -rf "$GMP_DIR" &>/dev/null
 bzip2 -d < "$GMP_TAR" | tar xf -
 cd "$GMP_DIR" || exit 1
 
+if [[ -e ../patch/gmp.patch ]]; then
+    echo ""
+    echo "*************************"
+    echo "Patching package"
+    echo "*************************"
+
+    patch -u -p0 < ../patch/gmp.patch
+fi
+
 # Fix decades old compile and link errors on early Darwin.
 # https://gmplib.org/list-archives/gmp-bugs/2009-May/001423.html
 if [[ "$OSX_10p5_OR_BELOW" -ne 0 ]]; then
     if [[ -e ../patch/gmp-darwin.patch ]]; then
         echo ""
-        echo "***********************"
-        echo "Patching package"
-        echo "***********************"
+        echo "*************************"
+        echo "Patching package (Darwin)"
+        echo "*************************"
 
         patch -u -p0 < ../patch/gmp-darwin.patch
     fi

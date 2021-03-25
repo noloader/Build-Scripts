@@ -36,16 +36,6 @@ fi
 
 ###############################################################################
 
-# Nettle no longer builds Hogweed on PowerMacs for
-# some reason. This library is such junk...
-if [[ "${OSX_10p5_OR_BELOW}" -eq 1 ]]; then
-    NETTLE_VER=3.5
-    NETTLE_TAR=nettle-${NETTLE_VER}.tar.gz
-    NETTLE_DIR=nettle-${NETTLE_VER}
-fi
-
-###############################################################################
-
 if ! ./build-cacert.sh
 then
     echo "Failed to install CA Certs"
@@ -111,6 +101,15 @@ if [[ -e ../patch/nettle.patch ]]; then
     patch -u -p0 < ../patch/nettle.patch
 fi
 
+if [[ -e ../patch/nettle-darwin.patch ]]; then
+    echo ""
+    echo "***************************"
+    echo "Patching package (Darwin)"
+    echo "***************************"
+
+    patch -u -p0 < ../patch/nettle-darwin.patch
+fi
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
@@ -133,9 +132,6 @@ fi
 CONFIG_OPTS=()
 CONFIG_OPTS+=("--enable-shared")
 CONFIG_OPTS+=("--disable-documentation")
-
-# Work-around Solaris configuration bug. Nettle tries to build SHA,
-# even when the compiler does not support it.
 
 if [[ "$IS_IA32" -eq 1 ]]
 then
@@ -169,6 +165,9 @@ if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     nettle_cxxflags="${nettle_cxxflags} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NETTLE_DIR}"
 fi
 
+# ac_cv_lib_gmp___gmpn_zero_p=yes due to
+# https://lists.lysator.liu.se/pipermail/nettle-bugs/2021/009469.html
+
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
@@ -180,6 +179,7 @@ fi
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
+    ac_cv_lib_gmp___gmpn_zero_p=yes \
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
