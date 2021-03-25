@@ -87,7 +87,7 @@ cd "$IDN_DIR" || exit 1
 if [[ -e ../patch/idn.patch ]]; then
     echo ""
     echo "***********************"
-    echo "Downloading package"
+    echo "Patching package"
     echo "***********************"
 
     patch -u -p0 < ../patch/idn.patch
@@ -177,6 +177,7 @@ echo "***********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "***********************"
     echo "Failed to test IDN"
     echo "***********************"

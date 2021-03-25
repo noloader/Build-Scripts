@@ -171,15 +171,18 @@ echo "************************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "************************"
     echo "Failed to test IDN2"
     echo "************************"
-    bash ../collect-logs.sh "${PKG_NAME}"
 
+    bash ../collect-logs.sh "${PKG_NAME}"
+    #exit 1
+
+    echo ""
     echo "************************"
     echo "Installing anyways..."
     echo "************************"
-    #exit 1
 fi
 
 # Fix runpaths again
