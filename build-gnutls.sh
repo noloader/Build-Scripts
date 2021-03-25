@@ -333,7 +333,11 @@ then
     echo "**********************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
-    exit 1
+    # exit 1
+
+    echo "Installing anyways..."
+    echo "**********************"
+    echo ""
 fi
 
 echo "**********************"
