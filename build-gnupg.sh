@@ -147,8 +147,12 @@ tar xjf "$GNUPG_TAR"
 cd "$GNUPG_DIR"
 
 if [[ -e ../patch/gnupg.patch ]]; then
-    patch -u -p0 < ../patch/gnupg.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/gnupg.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
@@ -207,6 +211,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -249,6 +254,7 @@ fi
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
