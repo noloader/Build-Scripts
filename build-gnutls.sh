@@ -130,6 +130,7 @@ echo "**********************"
 
 echo ""
 echo "GnuTLS ${GNUTLS_VER}..."
+echo ""
 
 if ! "$WGET" -q -O "$GNUTLS_XZ" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/$GNUTLS_XZ"

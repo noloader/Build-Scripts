@@ -36,6 +36,16 @@ fi
 
 ###############################################################################
 
+# Nettle no longer builds Hogweed on PowerMacs for
+# some reason. This library is such junk...
+if [[ "${OSX_10p5_OR_10p6}" -eq 1 ]]; then
+    NETTLE_VER=3.5
+    NETTLE_TAR=nettle-${NETTLE_VER}.tar.gz
+    NETTLE_DIR=nettle-${NETTLE_VER}
+fi
+
+###############################################################################
+
 if ! ./build-cacert.sh
 then
     echo "Failed to install CA Certs"
@@ -77,6 +87,10 @@ echo ""
 echo "**********************"
 echo "Downloading package"
 echo "**********************"
+
+echo ""
+echo "Nettle ${NETTLE_VER}..."
+echo ""
 
 if ! "$WGET" -q -O "$NETTLE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/nettle/$NETTLE_TAR"
