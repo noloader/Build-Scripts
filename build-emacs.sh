@@ -180,6 +180,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -215,11 +216,13 @@ then
     bash ../collect-logs "${PKG_NAME}"
     #exit 1
 
+    echo ""
     echo "*************************"
     echo "Installing anyways..."
     echo "*************************"
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
