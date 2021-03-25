@@ -65,13 +65,14 @@ cd "$DATEFUDGE_DIR" || exit 1
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-#cp Makefile Makefile.orig
-#cp datefudge.c datefudge.c.orig
-
 if [[ "$IS_SOLARIS" -ne 0 ]]; then
     if [[ -e ../patch/datefudge-solaris.patch ]]; then
-        patch -u -p0 < ../patch/datefudge-solaris.patch
         echo ""
+        echo "**********************"
+        echo "Patching package"
+        echo "**********************"
+
+        patch -u -p0 < ../patch/datefudge-solaris.patch
     fi
 fi
 
@@ -79,6 +80,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -106,6 +108,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -117,6 +120,7 @@ then
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

@@ -43,9 +43,9 @@ echo "============== File Roller ============="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "**************************"
 echo "Downloading package"
-echo "**********************"
+echo "**************************"
 
 if ! "$WGET" -q -O "$FROLLER_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://gitlab.gnome.org/GNOME/file-roller/-/archive/3.36.3/$FROLLER_TAR"
@@ -60,8 +60,12 @@ cd "$FROLLER_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/froller.patch ]]; then
-    patch -u -p0 < ../patch/froller.patch
     echo ""
+    echo "**************************"
+    echo "Downloading package"
+    echo "**************************"
+
+    patch -u -p0 < ../patch/froller.patch
 fi
 
 if ! mkdir build; then
@@ -94,9 +98,9 @@ if false; then
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo "**************************"
 echo "Configuring package"
-echo "**********************"
+echo "**************************"
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -121,9 +125,10 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "**************************"
 echo "Building package"
-echo "**********************"
+echo "**************************"
 
 MAKE_FLAGS=("MAKEINFO=true" "-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
@@ -135,22 +140,25 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "**************************"
 echo "Testing package"
-echo "**********************"
+echo "**************************"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "**************************"
     echo "Failed to test File Roller"
-    echo "**********************"
+    echo "**************************"
     exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "**************************"
 echo "Installing package"
-echo "**********************"
+echo "**************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then

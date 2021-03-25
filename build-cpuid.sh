@@ -70,14 +70,19 @@ gzip -d < "$CPUID_TAR" | tar xf -
 cd "$CPUID_DIR"
 
 if [[ -e ../patch/cpuid.patch ]]; then
-    patch -u -p0 < ../patch/cpuid.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/cpuid.patch
 fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -102,10 +107,14 @@ MAKE_FLAGS+=("LIBS=${LIBS}")
 
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "**********************"
     echo "Failed to build cpuid"
+    echo "**********************"
     exit 1
 fi
 
+#echo ""
 #echo "**********************"
 #echo "Testing package"
 #echo "**********************"
@@ -118,6 +127,7 @@ fi
 #    exit 1
 #fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

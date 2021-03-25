@@ -60,6 +60,7 @@ gzip -d < "$CMAKE_TAR" | tar xf -
 
 cd "$CMAKE_DIR"
 
+echo ""
 echo "**********************"
 echo "Bootstrapping package"
 echo "**********************"
@@ -90,6 +91,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -104,6 +106,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -115,6 +118,7 @@ then
    exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

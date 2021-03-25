@@ -160,13 +160,18 @@ gzip -d < "$CURL_TAR" | tar xf -
 cd "$CURL_DIR" || exit 1
 
 if [[ -e ../patch/curl.patch ]]; then
-    patch -u -p0 < ../patch/curl.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/curl.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -239,6 +244,7 @@ fi
 
 if [[ "$?" -ne 0 ]]
 then
+    echo ""
     echo "************************"
     echo "Failed to configure cURL"
     echo "************************"
@@ -251,6 +257,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -258,6 +265,7 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "************************"
     echo "Failed to build cURL"
     echo "************************"
@@ -272,6 +280,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -282,17 +291,22 @@ echo "**********************"
 MAKE_FLAGS=("test" "TFLAGS=-n" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "************************"
     echo "Failed to test cURL"
     echo "************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
     #exit 1
+
+    echo "Installing anyways..."
+    echo "************************"
 fi
 
 # Fix runpaths again
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

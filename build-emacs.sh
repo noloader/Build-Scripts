@@ -117,13 +117,18 @@ cd "$EMACS_DIR"
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/emacs.patch ]]; then
-    patch -u -p0 < ../patch/emacs.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/emacs.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -162,6 +167,7 @@ fi
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "*************************"
     echo "Failed to configure emacs"
     echo "*************************"
@@ -181,6 +187,7 @@ echo "**********************"
 MAKE_FLAGS=("V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*************************"
     echo "Failed to build emacs"
     echo "*************************"
@@ -192,6 +199,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -199,12 +207,16 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*************************"
     echo "Failed to test emacs"
     echo "*************************"
 
     bash ../collect-logs "${PKG_NAME}"
     #exit 1
+
+    echo "Installing anyways..."
+    echo "*************************"
 fi
 
 echo "**********************"

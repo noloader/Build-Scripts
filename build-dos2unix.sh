@@ -72,9 +72,18 @@ cd "$DOS2UNIX_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/dos2unix.patch ]]; then
-    patch -u -p0 < ../patch/dos2unix.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/dos2unix.patch
 fi
+
+echo ""
+echo "**********************"
+echo "Building package"
+echo "**********************"
 
 # Since we call the makefile directly, we need to escape dollar signs.
 CPPFLAGS=$(echo "${INSTX_CPPFLAGS}" | sed 's/\$/\$\$/g')
@@ -95,6 +104,7 @@ then
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -108,6 +118,7 @@ then
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

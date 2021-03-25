@@ -51,9 +51,9 @@ echo "============== Crypto++ ================"
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 if ! "$WGET" -q -O "$CRYPTOPP_ZIP" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://www.cryptopp.com/$CRYPTOPP_ZIP"
@@ -70,9 +70,10 @@ cd "$CRYPTOPP_DIR"
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 # Since we call the makefile directly, we need to escape dollar signs.
 CPPFLAGS=$(echo "$INSTX_CPPFLAGS" | sed 's/\$/\$\$/g')
@@ -91,32 +92,42 @@ if ! CPPFLAGS="-I. ${CPPFLAGS}" \
      LIBS="${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo "************************"
     echo "Failed to build Crypto++"
+    echo "************************"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 if ! ./cryptest.exe v
 then
+    echo ""
+    echo "************************"
     echo "Failed to test Crypto++"
+    echo "************************"
     exit 1
 fi
 
 if ! ./cryptest.exe tv all
 then
+    echo ""
+    echo "************************"
     echo "Failed to test Crypto++"
+    echo "************************"
     exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install" "PREFIX=${INSTX_PREFIX}" "LIBDIR=${INSTX_LIBDIR}")
 if [[ -n "$SUDO_PASSWORD" ]]; then
