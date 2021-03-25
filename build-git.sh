@@ -150,24 +150,6 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-if command -v autoconf 2>/dev/null;
-then
-    echo ""
-    echo "***********************"
-    echo "Making configure"
-    echo "***********************"
-
-    if ! "${MAKE}" configure
-    then
-        echo "***********************"
-        echo "Failed to bootstrap Git"
-        echo "***********************"
-
-        bash ../collect-logs.sh "${PKG_NAME}"
-        exit 1
-    fi
-fi
-
 echo ""
 echo "***********************"
 echo "Configuring package"
