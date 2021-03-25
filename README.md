@@ -148,11 +148,11 @@ Once finished with testing perform `rm -rf /var/sanitize` so everything is delet
 
 ## Self Tests
 
-The scripts attempt to run the program's or library's self tests. Usually the recipe is `make check`, but it is `make test` on occasion. If the self tests are run and fails, then the script stops before installation.
+The scripts attempt to run the program's or library's self tests. Usually the recipe is `make check`, but it is `make test` on occasion.
 
-You have three choices on self-test failure. First, you can ignore the failure, `cd` into the program's directory, and then run `sudo make install`. Second, you can fix the failure, `cd` into the program's directory, run `make`, run `make check`, and then run `sudo make install`.
+Previous versions of the scripts: If the self tests are run and fail, then the script stops before installation. This is no longer the case because GNU Software has so many problems it is impossible to build some tools.
 
-Third, you can open the `build-prog.sh` script, comment the portion that runs `make check`, and then run the script again. Some libraries, like OpenSSL, use this strategy since the self tests don't work as expected on several platforms.
+Current versions of the scripts: If the self tests are run and fail, then the script collects the log files and continues the installation. You can find the log files by performing `ls *.log.zip`. After a failure start sending bug reports to the project.
 
 ## Git History
 
