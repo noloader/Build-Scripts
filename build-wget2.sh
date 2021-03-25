@@ -168,9 +168,14 @@ fi
 
 ###############################################################################
 
+echo ""
+echo "========================================"
+echo "================= Wget2 ================"
+echo "========================================"
+
 # Optional. For Solaris see https://community.oracle.com/thread/1915569.
 SKIP_WGET_TESTS=0
-if [[ -z $(command -v perl 2>/dev/null) ]]; then
+if [[ -z "$(command -v perl 2>/dev/null)" ]]; then
     SKIP_WGET_TESTS=1
 else
     if ! perl -MHTTP::Daemon -e1 2>/dev/null
@@ -189,13 +194,6 @@ else
          SKIP_WGET_TESTS=1
     fi
 fi
-
-###############################################################################
-
-echo ""
-echo "========================================"
-echo "================= Wget2 ================"
-echo "========================================"
 
 #if ! "$WGET" -q -O "$WGET_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
 #     "https://ftp.gnu.org/pub/gnu/wget/$WGET_TAR"
@@ -217,7 +215,11 @@ echo "*************************"
 
 if ! git clone https://gitlab.com/gnuwget/wget2.git;
 then
+    echo ""
+    echo "**************************"
     echo "Failed to clone Wget2"
+    echo "**************************"
+
     exit 1
 fi
 
@@ -225,26 +227,36 @@ cd "$WGET2_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/wget2.patch ]]; then
-    patch -u -p0 < ../patch/wget2.patch
     echo ""
+    echo "**************************"
+    echo "Patching Wget2"
+    echo "**************************"
+
+    patch -u -p0 < ../patch/wget2.patch
 fi
 
 # Hack for distro tools
 export MAKEINFO=true
 
+echo ""
 echo "*************************"
 echo "Bootstrapping package"
 echo "*************************"
 
 if ! ./bootstrap;
 then
+    echo ""
+    echo "**************************"
     echo "Failed to bootstrap Wget2"
+    echo "**************************"
+
     exit 1
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "*************************"
 echo "Configuring package"
 echo "*************************"
@@ -299,6 +311,7 @@ fi
 
 if [[ "$?" -ne 0 ]]
 then
+    echo ""
     echo "*************************"
     echo "Failed to configure Wget2"
     echo "*************************"
@@ -311,6 +324,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "*************************"
 echo "Building package"
 echo "*************************"
@@ -318,6 +332,7 @@ echo "*************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*************************"
     echo "Failed to build Wget2"
     echo "*************************"
@@ -329,6 +344,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "*************************"
 echo "Testing package"
 echo "*************************"
@@ -338,6 +354,7 @@ then
     MAKE_FLAGS=("check" "-k" "V=1")
     if ! PERL_USE_UNSAFE_INC=1 "${MAKE}" "${MAKE_FLAGS[@]}"
     then
+        echo ""
         echo "*************************"
         echo "Failed to test Wget2"
         echo "*************************"
@@ -346,11 +363,13 @@ then
         exit 1
     fi
 else
+    echo ""
     echo "*************************"
     echo "Wget2 not tested."
     echo "*************************"
 fi
 
+echo ""
 echo "*************************"
 echo "Installing package"
 echo "*************************"

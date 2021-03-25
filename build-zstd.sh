@@ -56,6 +56,9 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
+echo ""
+echo "Zstd ${ZSTD_VER}..."
+
 if ! "$WGET" -q -O "$ZSTD_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
      "https://github.com/facebook/zstd/releases/download/$ZSTD_VER/$ZSTD_TAR"
 then
@@ -69,10 +72,15 @@ cd "$ZSTD_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/zstd.patch ]]; then
-    patch -u -p0 < ../patch/zstd.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/zstd.patch
 fi
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -91,13 +99,19 @@ export LIBDIR="${INSTX_LIBDIR}"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "**********************"
     echo "Failed to build Zstd"
+    echo "**********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -105,12 +119,16 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "**********************"
     echo "Failed to test Zstd"
     echo "**********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

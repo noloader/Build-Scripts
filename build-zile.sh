@@ -3,8 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Zile from sources.
 
-ZILE_TAR=zile-2.4.14.tar.gz
-ZILE_DIR=zile-2.4.14
+ZILE_VER=2.4.14
+ZILE_TAR=zile-${ZILE_VER}.tar.gz
+ZILE_DIR=zile-${ZILE_VER}
 PKG_NAME=zile
 
 ###############################################################################
@@ -46,9 +47,9 @@ fi
 ###############################################################################
 
 echo ""
-echo "========================================"
-echo "================= Zile ================="
-echo "========================================"
+echo "=================================================="
+echo "====================== Zile ======================"
+echo "=================================================="
 
 echo ""
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
@@ -57,9 +58,9 @@ echo "@@ not recommended for use by its maintainer. @@"
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 if ! "$WGET" -q -O "$ZILE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/zile/$ZILE_TAR"
@@ -73,14 +74,21 @@ gzip -d < "$ZILE_TAR" | tar xf -
 cd "$ZILE_DIR"
 
 if [[ -e ../patch/zile.patch ]]; then
-    patch -u -p0 < ../patch/zile.patch
     echo ""
+    echo "************************"
+    echo "Patching package"
+    echo "************************"
+
+    patch -u -p0 < ../patch/zile.patch
 fi
 
 if ! "$WGET" -q -O m4/pkg.m4 --ca-certificate="$GITHUB_CA_ZOO" \
      https://raw.githubusercontent.com/pkgconf/pkgconf/master/pkg.m4
 then
+    echo ""
+    echo "************************"
     echo "Failed to update pkg.m4"
+    echo "************************"
 else
     chmod u+rw m4/pkg.m4
     chmod go+r m4/pkg.m4
@@ -89,9 +97,10 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Configuring package"
-echo "**********************"
+echo "************************"
 
 CONFIG_OPTS=()
 CONFIG_OPTS+=("--with-ncurses")
@@ -118,7 +127,12 @@ fi
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne "0" ]]; then
+    echo ""
+    echo "************************"
     echo "Failed to configure Zile"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -142,14 +156,19 @@ if true; then
     mv "$file.fixed" "$file"
 fi
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "************************"
     echo "Failed to build Zile"
+    echo "************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -157,28 +176,32 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 #MAKE_FLAGS=("check")
 #if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 #then
-#    echo "**********************"
+#    echo ""
+#    echo "************************"
 #    echo "Failed to test Zile"
-#    echo "**********************"
+#    echo "************************"
 #    bash ../collect-logs.sh "${PKG_NAME}"
 #    exit 1
 #fi
 
 # Zile is impossible to test. It breaks the current terminal.
-echo "**********************"
+echo ""
+echo "************************"
 echo "Zile not tested"
-echo "**********************"
+echo "************************"
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then

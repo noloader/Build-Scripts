@@ -140,6 +140,11 @@ fi
 
 ###############################################################################
 
+echo ""
+echo "========================================"
+echo "================= Wget ================="
+echo "========================================"
+
 # Optional. For Solaris see https://community.oracle.com/thread/1915569.
 SKIP_WGET_TESTS=0
 if [[ -z "$(command -v perl 2>/dev/null)" ]]; then
@@ -162,13 +167,6 @@ else
     fi
 fi
 
-###############################################################################
-
-echo ""
-echo "========================================"
-echo "================= Wget ================="
-echo "========================================"
-
 echo ""
 echo "************************"
 echo "Downloading package"
@@ -178,7 +176,6 @@ if ! "$WGET" -q -O "$WGET_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/pub/gnu/wget/$WGET_TAR"
 then
     echo "Failed to download Wget"
-    echo "Maybe Wget is too old. Perhaps run setup-wget.sh?"
     exit 1
 fi
 
@@ -188,8 +185,12 @@ cd "$WGET_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/wget.patch ]]; then
-    patch -u -p0 < ../patch/wget.patch
     echo ""
+    echo "**************************"
+    echo "Patching package"
+    echo "**************************"
+
+    patch -u -p0 < ../patch/wget.patch
 fi
 
 # https://lists.gnu.org/archive/html/bug-gnulib/2019-07/msg00058.html
@@ -231,6 +232,7 @@ mv "${file}.fixed" "${file}"
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "************************"
 echo "Configuring package"
 echo "************************"
@@ -271,6 +273,7 @@ fi
 
 if [[ "$?" -ne 0 ]]
 then
+    echo ""
     echo "************************"
     echo "Failed to configure Wget"
     echo "************************"
@@ -283,6 +286,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "************************"
 echo "Building package"
 echo "************************"
@@ -290,6 +294,7 @@ echo "************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "************************"
     echo "Failed to build Wget"
     echo "************************"
@@ -304,6 +309,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "************************"
 echo "Testing package"
 echo "************************"
@@ -321,20 +327,27 @@ then
     MAKE_FLAGS=("check" "-k" "V=1")
     if ! PERL_USE_UNSAFE_INC=1 "${MAKE}" "${MAKE_FLAGS[@]}"
     then
+        echo ""
         echo "************************"
         echo "Failed to test Wget"
-        echo "Installing anyway..."
         echo "************************"
 
         bash ../collect-logs.sh "${PKG_NAME}"
         # exit 1
+
+        echo ""
+        echo "************************"
+        echo "Installing anyway..."
+        echo "************************"
     fi
 else
+    echo ""
     echo "************************"
     echo "Wget not tested."
     echo "************************"
 fi
 
+echo ""
 echo "************************"
 echo "Installing package"
 echo "************************"

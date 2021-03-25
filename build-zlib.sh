@@ -59,9 +59,9 @@ echo "================= zLib ================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 if ! "$WGET" -q -O "$ZLIB_TAR" \
      "http://www.zlib.net/$ZLIB_TAR"
@@ -81,16 +81,21 @@ cd "$ZLIB_DIR" || exit 1
 # cp configure configure.orig
 
 if [[ -e ../patch/zlib.patch ]]; then
-    patch -u -p0 < ../patch/zlib.patch
     echo ""
+    echo "************************"
+    echo "Patching package"
+    echo "************************"
+
+    patch -u -p0 < ../patch/zlib.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Configuring package"
-echo "**********************"
+echo "************************"
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     zlib_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${ZLIB_DIR}"
@@ -114,7 +119,11 @@ fi
     --static --shared
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "************************"
     echo "Failed to configure zLib"
+    echo "************************"
+
     exit 1
 fi
 
@@ -122,34 +131,45 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "all")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "************************"
     echo "Failed to build zLib"
+    echo "************************"
+
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build zLib"
+    echo ""
+    echo "************************"
+    echo "Failed to test zLib"
+    echo "************************"
+
     exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install")
 MAKE_FLAGS+=("prefix=${INSTX_PREFIX}")

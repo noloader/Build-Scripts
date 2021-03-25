@@ -3,8 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds xz from sources.
 
-XZ_TAR=xz-5.2.5.tar.gz
-XZ_DIR=xz-5.2.5
+XZ_VER=5.2.5
+XZ_TAR=xz-${XZ_VER}.tar.gz
+XZ_DIR=xz-${XZ_VER}
 PKG_NAME=xz
 
 ###############################################################################
@@ -53,6 +54,9 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
+echo ""
+echo "Xz ${XZ_VER}..."
+
 if ! "$WGET" -q -O "$XZ_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://tukaani.org/xz/$XZ_TAR"
 then
@@ -65,13 +69,18 @@ gzip -d < "$XZ_TAR" | tar xf -
 cd "$XZ_DIR" || exit 1
 
 if [[ -e ../patch/xz.patch ]]; then
-    patch -u -p0 < ../patch/xz.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/xz.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -91,7 +100,12 @@ echo "**********************"
     --disable-doc
 
 if [[ "$?" -ne 0 ]]; then
-    echo "Failed to configure xz"
+    echo ""
+    echo "**********************"
+    echo "Failed to configure Xz"
+    echo "**********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -99,6 +113,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -106,13 +121,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build xz"
+    echo ""
+    echo "**********************"
+    echo "Failed to build Xz"
+    echo "**********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -120,14 +141,16 @@ echo "**********************"
 MAKE_FLAGS=("check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "**********************"
-    echo "Failed to test xz"
+    echo "Failed to test Xz"
     echo "**********************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

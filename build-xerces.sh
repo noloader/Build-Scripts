@@ -3,8 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Xerces from sources.
 
-XERCES_TAR=xerces-c-3.2.2.tar.gz
-XERCES_DIR=xerces-c-3.2.2
+XERCES_VER=3.2.2
+XERCES_TAR=xerces-c-${XERCES_VER}.tar.gz
+XERCES_DIR=xerces-c-${XERCES_VER}
 PKG_NAME=xerces
 
 ###############################################################################
@@ -65,9 +66,9 @@ echo "================ Xerces ================"
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "**************************"
 echo "Downloading package"
-echo "**********************"
+echo "**************************"
 
 if ! "$WGET" -q -O "$XERCES_TAR" \
      "http://apache.mirrors.tds.net/xerces/c/3/sources/$XERCES_TAR"
@@ -80,12 +81,22 @@ rm -rf "$XERCES_DIR" &>/dev/null
 gzip -d < "$XERCES_TAR" | tar xf -
 cd "$XERCES_DIR"
 
+if [[ -e ../patch/xerces.patch ]]; then
+    echo ""
+    echo "**************************"
+    echo "Patching package"
+    echo "**************************"
+
+    patch -u -p0 < ../patch/xerces.patch
+fi
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "**************************"
 echo "Configuring package"
-echo "**********************"
+echo "**************************"
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -105,7 +116,12 @@ echo "**********************"
     # --enable-msgloader-iconv
 
 if [[ "$?" -ne 0 ]]; then
-    echo "Failed to configure xerces"
+    echo ""
+    echo "**************************"
+    echo "Failed to configure Xerces"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -113,34 +129,47 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "**************************"
 echo "Building package"
-echo "**********************"
+echo "**************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build xerces"
+    echo ""
+    echo "**************************"
+    echo "Failed to build Xerces"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "**************************"
 echo "Testing package"
-echo "**********************"
+echo "**************************"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to test xerces"
+    echo ""
+    echo "**************************"
+    echo "Failed to test Xerces"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "**************************"
 echo "Installing package"
-echo "**********************"
+echo "**************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
