@@ -132,8 +132,12 @@ cd "$GETTEXT_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/gettext.patch ]]; then
-    patch -u -p0 < ../patch/gettext.patch
     echo ""
+    echo "***************************"
+    echo "Patching package"
+    echo "***************************"
+
+    patch -u -p0 < ../patch/gettext.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
@@ -147,6 +151,7 @@ do
     mv "$file.fixed" "$file"
 done
 
+echo ""
 echo "***************************"
 echo "Configuring package"
 echo "***************************"
@@ -182,6 +187,7 @@ fi
 
 if [[ "$?" -ne 0 ]]
 then
+    echo ""
     echo "***************************"
     echo "Failed to configure GetText"
     echo "***************************"
@@ -194,6 +200,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "***************************"
 echo "Building package"
 echo "***************************"
@@ -201,6 +208,7 @@ echo "***************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "***************************"
     echo "Failed to build GetText"
     echo "***************************"
@@ -215,6 +223,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "***************************"
 echo "Testing package"
 echo "***************************"
@@ -222,6 +231,7 @@ echo "***************************"
 MAKE_FLAGS=("check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "***************************"
     echo "Failed to test GetText"
     echo "***************************"
@@ -232,11 +242,17 @@ then
     # Darwin fails copy-acl-2.sh
     # https://lists.gnu.org/archive/html/bug-gawk/2018-01/msg00026.html
     # exit 1
+
+    echo ""
+    echo "***************************"
+    echo "Installing anyways..."
+    echo "***************************"
 fi
 
 # Fix runpaths again
 bash ../fix-runpath.sh
 
+echo ""
 echo "***************************"
 echo "Installing package"
 echo "***************************"

@@ -89,13 +89,18 @@ cd "$GDBM_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/gdbm.patch ]]; then
-    patch -u -p0 < ../patch/gdbm.patch
     echo ""
+    echo "************************"
+    echo "Patching package"
+    echo "************************"
+
+    patch -u -p0 < ../patch/gdbm.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "************************"
 echo "Configuring package"
 echo "************************"
@@ -123,6 +128,7 @@ echo "************************"
     --with-readline-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "************************"
     echo "Failed to configure GDBM"
     echo "************************"
@@ -135,6 +141,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "************************"
 echo "Building package"
 echo "************************"
@@ -142,6 +149,7 @@ echo "************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "************************"
     echo "Failed to build GDBM"
     echo "************************"
@@ -153,6 +161,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "************************"
 echo "Testing package"
 echo "************************"
@@ -160,6 +169,7 @@ echo "************************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "************************"
     echo "Failed to test GDBM"
     echo "************************"
@@ -168,6 +178,7 @@ then
     exit 1
 fi
 
+echo ""
 echo "************************"
 echo "Installing package"
 echo "************************"

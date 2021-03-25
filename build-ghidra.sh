@@ -63,13 +63,18 @@ cd "$GHIDRA_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/ghidra.patch ]]; then
-    patch -u -p0 < ../patch/ghidra.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/ghidra.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -78,6 +83,7 @@ echo "**********************"
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -97,13 +103,17 @@ if ! CPPFLAGS="${CPPFLAGS}" \
      LIBS="${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "**********************"
     echo "Failed to build Ghidra"
+    echo "**********************"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -111,12 +121,20 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "**********************"
     echo "Failed to test Ghidra"
     echo "**********************"
+
     # exit 1
+
+    echo ""
+    echo "**********************"
+    echo "Installing anyways..."
+    echo "**********************"
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
