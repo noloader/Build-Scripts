@@ -135,8 +135,8 @@ CONFIG_OPTS+=("--disable-documentation")
 
 if [[ "$IS_IA32" -eq 1 ]]
 then
-    have_aes=$(${CC} ${CFLAGS} -maes -dM -E - </dev/null 2>/dev/null | grep -i -c '__AES__')
-    have_sha=$(${CC} ${CFLAGS} -msha -dM -E - </dev/null 2>/dev/null | grep -i -c '__SHA__')
+    have_aes=$(${CC} ${CFLAGS} -maes -dM -E - </dev/null 2>&1 | grep -i -c '__AES__')
+    have_sha=$(${CC} ${CFLAGS} -msha -dM -E - </dev/null 2>&1 | grep -i -c '__SHA__')
 
     if [[ "$have_aes" -eq 1 && "$have_sha" -eq 1 ]]
     then
@@ -159,7 +159,7 @@ fi
 
 if [[ "$IS_ALTIVEC" -eq 1 ]]
 then
-    have_altivec=$(${CC} ${CFLAGS} -maltivec -dM -E - </dev/null 2>/dev/null | grep -i -c '__ALTIVEC__')
+    have_altivec=$(${CC} ${CFLAGS} -maltivec -dM -E - </dev/null 2>&1 | grep -i -c '__ALTIVEC__')
 
     if [[ "$have_altivec" -eq 1 ]]
     then
