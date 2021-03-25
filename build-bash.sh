@@ -58,6 +58,7 @@ echo "**********************"
 
 echo ""
 echo "Bash ${BASH_VER}..."
+echo ""
 
 if ! "$WGET" -q -O "$BASH_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/bash/$BASH_TAR"
@@ -72,6 +73,11 @@ gzip -d < "$BASH_TAR" | tar xf -
 cd "$BASH_DIR"
 
 if [[ -e ../patch/bash.patch ]]; then
+    echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
     patch -u -p0 < ../patch/bash.patch
     echo ""
 fi

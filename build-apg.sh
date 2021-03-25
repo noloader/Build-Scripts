@@ -75,6 +75,11 @@ cd "$APG_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/apg.patch ]]; then
+    echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
     patch -u -p0 < ../patch/apg.patch
     echo ""
 fi

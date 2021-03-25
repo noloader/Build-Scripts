@@ -64,6 +64,11 @@ cd "$BC_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/bc.patch ]]; then
+    echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
     patch -u -p0 < ../patch/bc.patch
     echo ""
 fi

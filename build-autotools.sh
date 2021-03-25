@@ -62,6 +62,7 @@ echo "**********************"
 
 echo ""
 echo "M4 ${M4_VER}..."
+echo ""
 
 if ! "$WGET" -q -O "$M4_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/m4/$M4_TAR"
@@ -150,6 +151,7 @@ echo "**********************"
 
 echo ""
 echo "Autoconf ${AUTOCONF_VER}..."
+echo ""
 
 if ! "$WGET" -q -O "$AUTOCONF_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/autoconf/$AUTOCONF_TAR"
@@ -238,6 +240,7 @@ echo "**********************"
 
 echo ""
 echo "Automake ${AUTOMAKE_VER}..."
+echo ""
 
 if ! "$WGET" -q -O "$AUTOMAKE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/automake/$AUTOMAKE_TAR"

@@ -92,6 +92,11 @@ cd "$BZIP2_DIR" || exit 1
 
 # The Makefiles needed so much work it was easier to rewrite them.
 if [[ -e ../patch/bzip-makefiles.zip ]]; then
+    echo ""
+    echo "****************************"
+    echo "Patching package"
+    echo "****************************"
+
     cp ../patch/bzip-makefiles.zip .
     unzip -oq bzip-makefiles.zip
 fi

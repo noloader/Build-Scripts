@@ -75,6 +75,11 @@ gzip -d < "$B2SUM_TAR" | tar xf -
 cd "$B2SUM_DIR"
 
 if [[ -e ../patch/b2sum.patch ]]; then
+    echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
     patch -u -p0 < ../patch/b2sum.patch
     echo ""
 fi

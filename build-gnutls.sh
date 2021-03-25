@@ -130,7 +130,6 @@ echo "**********************"
 
 echo ""
 echo "GnuTLS ${GNUTLS_VER}..."
-echo ""
 
 if ! "$WGET" -q -O "$GNUTLS_XZ" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/$GNUTLS_XZ"
@@ -144,8 +143,12 @@ unxz "$GNUTLS_XZ" && tar -xf "$GNUTLS_TAR"
 cd "$GNUTLS_DIR"
 
 if [[ -e ../patch/gnutls.patch ]]; then
-    patch -u -p0 < ../patch/gnutls.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/gnutls.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
@@ -153,7 +156,10 @@ bash ../fix-configure.sh
 
 IFS= find . -name 'Makefile.in' -print | while read -r file
 do
-    echo "patching $file..."
+    # Display filename, strip leading "./"
+    this_file=$(echo "$file" | tr -s '/' | cut -c 3-)
+    echo "patching ${this_file}..."
+
     touch -a -m -r "$file" "$file.timestamp"
     cp -p "$file" "$file.fixed"
     sed -e 's/ -Wno-pedantic//g' "$file" > "$file.fixed"
@@ -164,7 +170,10 @@ done
 
 IFS= find . -name 'Makefile.am' -print | while read -r file
 do
-    echo "patching $file..."
+    # Display filename, strip leading "./"
+    this_file=$(echo "$file" | tr -s '/' | cut -c 3-)
+    echo "patching ${this_file}..."
+
     touch -a -m -r "$file" "$file.timestamp"
     cp -p "$file" "$file.fixed"
     sed -e 's/ -Wno-pedantic//g' "$file" > "$file.fixed"
@@ -173,6 +182,7 @@ do
     rm -f "$file.timestamp"
 done
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -251,7 +261,10 @@ bash ../fix-makefiles.sh
 
 IFS= find . -name 'Makefile' -print | while read -r file
 do
-    echo "patching $file..."
+    # Display filename, strip leading "./"
+    this_file=$(echo "$file" | tr -s '/' | cut -c 3-)
+    echo "patching ${this_file}..."
+
     cp -p "$file" "$file.fixed"
     sed -e 's/-Wtype-limits .*/-fno-common -Wall /g' \
         -e 's/-fno-common .*/-fno-common -Wall /g' \
@@ -263,7 +276,9 @@ done
 IFS= find ./tests -name 'Makefile' -print | while read -r file
 do
     # Test suite does not compile with NDEBUG defined.
-    echo "patching $file..."
+    this_file=$(echo "$file" | tr -s '/' | cut -c 3-)
+    echo "patching ${this_file}..."
+
     cp -p "$file" "$file.fixed"
     sed -e 's/ -DNDEBUG//g' \
         -e 's/ -Wno-pedantic//g' \
@@ -273,8 +288,10 @@ done
 
 IFS= find . -name '*.la' -print | while read -r file
 do
-    # Make console output more readable...
-    echo "patching $file..."
+    # Display filename, strip leading "./"
+    this_file=$(echo "$file" | tr -s '/' | cut -c 3-)
+    echo "patching ${this_file}..."
+
     cp -p "$file" "$file.fixed"
     sed -e 's/-Wtype-limits .*/-fno-common -Wall /g' \
         -e 's/-fno-common .*/-fno-common -Wall /g' \
@@ -285,8 +302,10 @@ done
 
 IFS= find . -name '*.sh' -print | while read -r file
 do
-    # Fix shell
-    echo "patching $file..."
+    # Display filename, strip leading "./"
+    this_file=$(echo "$file" | tr -s '/' | cut -c 3-)
+    echo "patching ${this_file}..."
+
     cp -p "$file" "$file.fixed"
     sed -e 's|#!/bin/sh|#!/usr/bin/env bash|g' "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
@@ -297,12 +316,14 @@ then
     # Solaris netstat is different then GNU netstat
     echo "patching common.sh..."
     file=tests/scripts/common.sh
+
     cp -p "$file" "$file.fixed"
     sed -e 's/PFCMD -anl/PFCMD -an/g' "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
 fi
 echo ""
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -310,6 +331,7 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "**********************"
     echo "Failed to build GnuTLS"
     echo "**********************"
@@ -321,6 +343,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -328,6 +351,7 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "**********************"
     echo "Failed to test GnuTLS"
     echo "**********************"
@@ -337,9 +361,9 @@ then
 
     echo "Installing anyways..."
     echo "**********************"
-    echo ""
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

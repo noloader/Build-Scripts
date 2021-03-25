@@ -69,6 +69,11 @@ gzip -d < "$BDB_TAR" | tar xf -
 cd "$BDB_DIR" || exit 1
 
 if [[ -e ../patch/db.patch ]]; then
+    echo ""
+    echo "*******************************"
+    echo "Patching package"
+    echo "*******************************"
+
     patch -u -p0 < ../patch/db.patch
     echo ""
 fi

@@ -78,6 +78,11 @@ cd "$SIPW_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/sipwitch.patch ]]; then
+    echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
     patch -u -p0 < ../patch/sipwitch.patch
     echo ""
 fi

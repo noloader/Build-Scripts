@@ -51,6 +51,7 @@ echo "**********************"
 
 echo ""
 echo "Automake ${AUTOMAKE_VER}..."
+echo ""
 
 if ! "$WGET" -q -O "$AUTOMAKE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/automake/$AUTOMAKE_TAR"
