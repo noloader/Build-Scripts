@@ -71,8 +71,8 @@ cd "$CRYPTOPP_DIR"
 bash ../fix-makefiles.sh
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
-    cryptopp_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${FLEX_DIR}"
-    cryptopp_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${FLEX_DIR}"
+    cryptopp_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${CRYPTOPP_DIR}"
+    cryptopp_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${CRYPTOPP_DIR}"
 else
     cryptopp_cflags="${INSTX_CFLAGS}"
     cryptopp_cxxflags="${INSTX_CXXFLAGS}"
