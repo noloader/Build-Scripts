@@ -1432,3 +1432,17 @@
  /****************************************************************************
  *																			*
  *								Utility Functions							*
+--- crypt/osconfig.h
++++ crypt/osconfig.h
+@@ -374,6 +374,11 @@
+ 	  #define BN_LLONG
+ 	  #define DES_RISC1
+ 	#endif /* 64- vs. 32-bit ARM */
++  #elif defined( __aarch64__ ) || defined( __arm64 )
++          #define SYSTEM_NAME   "OS X Arm64"
++          #undef SIXTY_FOUR_BIT
++          #define SIXTY_FOUR_BIT_LONG
++          #define RC4_CHAR
+   #elif defined( __ppc__ )
+ 	#define SYSTEM_NAME		"OS X PowerPC"
+ 	#define B_ENDIAN
