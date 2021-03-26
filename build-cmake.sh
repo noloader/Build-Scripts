@@ -61,7 +61,7 @@ fi
 rm -rf "$CMAKE_DIR" &>/dev/null
 gzip -d < "$CMAKE_TAR" | tar xf -
 
-cd "$CMAKE_DIR"
+cd "$CMAKE_DIR" || exit 1
 
 echo ""
 echo "*************************"
