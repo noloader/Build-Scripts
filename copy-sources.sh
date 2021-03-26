@@ -8,6 +8,12 @@ if [[ $(uname -s | grep -i -c 'linux') -eq 0 ]]; then
     exit 0
 fi
 
+# Exit if INSTX_DEBUG_MAP is not set
+INSTX_DEBUG_MAP=${INSTX_DEBUG_MAP:-0}
+if [[ "${INSTX_DEBUG_MAP}" -eq 0 ]]; then
+    exit 0
+fi
+
 echo ""
 echo "**********************"
 echo "Copying source files"

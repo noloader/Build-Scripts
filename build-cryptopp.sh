@@ -70,6 +70,14 @@ cd "$CRYPTOPP_DIR"
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
+    cryptopp_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${FLEX_DIR}"
+    cryptopp_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${FLEX_DIR}"
+else
+    cryptopp_cflags="${INSTX_CFLAGS}"
+    cryptopp_cxxflags="${INSTX_CXXFLAGS}"
+fi
+
 echo ""
 echo "************************"
 echo "Building package"
@@ -78,8 +86,8 @@ echo "************************"
 # Since we call the makefile directly, we need to escape dollar signs.
 CPPFLAGS=$(echo "$INSTX_CPPFLAGS" | sed 's/\$/\$\$/g')
 ASFLAGS=$(echo "$INSTX_ASFLAGS" | sed 's/\$/\$\$/g')
-CFLAGS=$(echo "${INSTX_CFLAGS}" | sed 's/\$/\$\$/g')
-CXXFLAGS=$(echo "${INSTX_CXXFLAGS}" | sed 's/\$/\$\$/g')
+CFLAGS=$(echo "${cryptopp_cflags}" | sed 's/\$/\$\$/g')
+CXXFLAGS=$(echo "${cryptopp_cxxflags}" | sed 's/\$/\$\$/g')
 LDFLAGS=$(echo "${INSTX_LDFLAGS}" | sed 's/\$/\$\$/g')
 LIBS="${INSTX_LDLIBS}"
 
@@ -134,9 +142,11 @@ MAKE_FLAGS=("install" "PREFIX=${INSTX_PREFIX}" "LIBDIR=${INSTX_LIBDIR}")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${CRYPTOPP_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${CRYPTOPP_DIR}"
 fi
 
 cd "${CURR_DIR}" || exit 1
