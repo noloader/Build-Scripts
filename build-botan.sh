@@ -66,7 +66,7 @@ fi
 
 echo ""
 echo "========================================"
-echo "============== Botan ================"
+echo "================ Botan ================="
 echo "========================================"
 
 echo ""
@@ -107,14 +107,13 @@ CONFIG_OPTS=()
 CONFIG_OPTS+=("--prefix=${INSTX_PREFIX}")
 CONFIG_OPTS+=("--libdir=${INSTX_LIBDIR}")
 CONFIG_OPTS+=("--cc-bin=${CXX}")
-CONFIG_OPTS+=("--cc-abi-flags=${INSTX_CPPFLAGS} ${INSTX_CXXFLAGS}")
+CONFIG_OPTS+=("--cxxflags=${INSTX_CPPFLAGS} ${INSTX_CXXFLAGS}")
 CONFIG_OPTS+=("--ldflags=${INSTX_LDFLAGS}")
 CONFIG_OPTS+=("--system-cert-bundle=${INSTX_CACERT_FILE}")
 CONFIG_OPTS+=("--with-bzip2")
 CONFIG_OPTS+=("--with-zlib")
 
-if ! ./configure.py \
-     ${CONFIG_OPTS[@]};
+if ! ./configure.py "${CONFIG_OPTS[@]}";
 then
     echo ""
     echo "*************************"
