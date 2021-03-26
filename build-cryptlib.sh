@@ -84,24 +84,6 @@ if [[ -e ../patch/cryptlib.patch ]]; then
     patch -u -p0 < ../patch/cryptlib.patch
 fi
 
-if false; then
-convert=$(command -v dos2unix 2>/dev/null)
-IFS= find "$PWD" -name '*.sh' -print | while read -r file
-do
-    touch -a -m -r "$file" "$file.timestamp"
-    chmod +x "$file"
-    if [[ -n "${convert}" ]]; then
-        ${convert} "$file" &>/dev/null
-    fi
-    touch -a -m -r "$file.timestamp" "$file"
-    rm "$file.timestamp"
-done
-fi
-
-# Escape dollar sign for $ORIGIN in makefiles. Required so
-# $ORIGIN works in both configure tests and makefiles.
-bash ../fix-makefiles.sh
-
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -113,9 +95,10 @@ CFLAGS=$(echo "${INSTX_CFLAGS}" | sed 's/\$/\$\$/g')
 CXXFLAGS=$(echo "${INSTX_CXXFLAGS}" | sed 's/\$/\$\$/g')
 LDFLAGS=$(echo "${INSTX_LDFLAGS}" | sed 's/\$/\$\$/g')
 LIBS="${INSTX_LDLIBS} -lz"
+LDLIBS="${INSTX_LDLIBS} -lz"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
-if ! CPPFLAGS="-I. ${CPPFLAGS}" \
+if ! CPPFLAGS="${CPPFLAGS}" \
      ASFLAGS="${ASFLAGS}" \
      CFLAGS="${CFLAGS}" \
      CXXFLAGS="${CXXFLAGS}" \
@@ -135,7 +118,7 @@ echo "Testing package"
 echo "**********************"
 
 MAKE_FLAGS=("testlib" "-j" "${INSTX_JOBS}")
-if ! CPPFLAGS="-I. ${CPPFLAGS}" \
+if ! CPPFLAGS${CPPFLAGS}" \
      ASFLAGS="${ASFLAGS}" \
      CFLAGS="${CFLAGS}" \
      CXXFLAGS="${CXXFLAGS}" \
