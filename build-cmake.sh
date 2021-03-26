@@ -44,9 +44,9 @@ echo "================ Cmake ================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Downloading package"
-echo "**********************"
+echo "*************************"
 
 echo ""
 echo "CMake ${CMAKE_VER}..."
@@ -64,9 +64,9 @@ gzip -d < "$CMAKE_TAR" | tar xf -
 cd "$CMAKE_DIR"
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Bootstrapping package"
-echo "**********************"
+echo "*************************"
 
 if [[ "$IS_AIX" -ne 0 ]]; then
   AIX_TOC=-Wl,-bbigtoc
@@ -75,18 +75,23 @@ else
 fi
 
 # Bootstrap does not honor these, but we need to try...
-export PKG_CONFIG_PATH="${INSTX_PKGCONFIG}"
 export CPPFLAGS="${INSTX_CPPFLAGS}"
 export ASFLAGS="${INSTX_ASFLAGS}"
 export CFLAGS="${INSTX_CFLAGS}"
 export CXXFLAGS="${INSTX_CXXFLAGS}"
 export LDFLAGS="${INSTX_LDFLAGS} ${AIX_TOC}"
+export LDLIBS="${INSTX_LDLIBS}"
 export LIBS="${INSTX_LDLIBS}"
 
 # This is the CMake build command per https://cmake.org/install/
 if ! ./bootstrap --no-system-libs --prefix="${INSTX_PREFIX}"
 then
+    echo ""
+    echo "*************************"
     echo "Failed to bootstrap CMake"
+    echo "*************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -95,16 +100,17 @@ fi
 bash ../fix-makefiles.sh
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Building package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "*************************"
     echo "Failed to build CMake"
-    echo "**********************"
+    echo "*************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
@@ -114,25 +120,26 @@ fi
 bash ../fix-pkgconfig.sh
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Testing package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("test" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "*************************"
     echo "Failed to test CMake"
-    echo "**********************"
+    echo "*************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Installing package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
