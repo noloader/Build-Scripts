@@ -133,6 +133,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "************************"
 echo "Testing package"
 echo "************************"
@@ -141,6 +142,7 @@ echo "************************"
 MAKE_FLAGS=("PERL_USE_UNSAFE_INC=1" "check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "************************"
     echo "Failed to test Make"
     echo "************************"

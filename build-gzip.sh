@@ -50,9 +50,9 @@ echo "================= Gzip ================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 echo ""
 echo "Gzip ${GZIP_VER}..."
@@ -72,15 +72,23 @@ cd "$GZIP_DIR"
 bash ../fix-configure.sh
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Configuring package"
-echo "**********************"
+echo "************************"
+
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
+    gzip_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GZIP_DIR}"
+    gzip_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GZIP_DIR}"
+else
+    gzip_cflags="${INSTX_CFLAGS}"
+    gzip_cxxflags="${INSTX_CXXFLAGS}"
+fi
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    CFLAGS="${gzip_cflags}" \
+    CXXFLAGS="${gzip_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
@@ -89,7 +97,12 @@ echo "**********************"
     --libdir="${INSTX_LIBDIR}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "************************"
     echo "Failed to configure Gzip"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -98,14 +111,19 @@ fi
 bash ../fix-makefiles.sh
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "************************"
     echo "Failed to build Gzip"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -113,30 +131,37 @@ fi
 bash ../fix-pkgconfig.sh
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 # https://github.com/gzip/gzip/issues/160
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-   echo "Failed to test Gzip"
-   exit 1
+    echo ""
+    echo "************************"
+    echo "Failed to test Gzip"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
+    exit 1
 fi
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GZIP_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GZIP_DIRGZIP_DIR}"
 fi
 
 ###############################################################################

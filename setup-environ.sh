@@ -635,7 +635,7 @@ if [[ -z "$opt_optimize" ]]; then
     fi
 fi
 
-# Location to install the sources
+# Location to install the sources. Limit to Linux for the moment.
 # https://alex.dzyoba.com/blog/gdb-source-path/
 if [[ "${IS_LINUX}" -ne 0 ]]; then
     cc_result=$(${TEST_CC} -g -fdebug-prefix-map=${PWD}=${PWD} -o "${outfile}" "${infile}" 2>&1 | wc -w)

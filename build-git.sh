@@ -135,6 +135,7 @@ rm -rf "$GIT_DIR" &>/dev/null
 gzip -d < "$GIT_TAR" | tar xf -
 cd "$GIT_DIR" || exit 1
 
+# Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/git.patch ]]; then
     echo ""
     echo "***********************"
@@ -170,6 +171,14 @@ then
     done
 fi
 
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
+    git_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GIT_DIR}"
+    git_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GIT_DIR}"
+else
+    git_cflags="${INSTX_CFLAGS}"
+    git_cxxflags="${INSTX_CXXFLAGS}"
+fi
+
 if [[ -e /usr/local/bin/perl ]]; then
     GIT_PERL=/usr/local/bin/perl
 elif [[ -e /usr/bin/perl ]]; then
@@ -183,8 +192,8 @@ fi
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS} -DNO_UNALIGNED_LOADS=1" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    CFLAGS="${git_cflags}" \
+    CXXFLAGS="${git_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="-lssl -lcrypto -lz ${INSTX_LDLIBS}" \
 ./configure \
@@ -278,9 +287,11 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GIT_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GIT_DIR}"
 fi
 
 ###############################################################################

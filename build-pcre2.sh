@@ -84,6 +84,16 @@ rm -rf "$PCRE2_DIR" &>/dev/null
 gzip -d < "$PCRE2_TAR" | tar xf -
 cd "$PCRE2_DIR"
 
+# Patches are created with 'diff -u' from the pkg root directory.
+if [[ -e ../patch/pcre2.patch ]]; then
+    echo ""
+    echo "***************************"
+    echo "Patching package"
+    echo "***************************"
+
+    patch -u -p0 < ../patch/pcre2.patch
+fi
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 

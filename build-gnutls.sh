@@ -140,6 +140,7 @@ rm -rf "$GNUTLS_TAR" "$GNUTLS_DIR" &>/dev/null
 unxz "$GNUTLS_XZ" && tar -xf "$GNUTLS_TAR"
 cd "$GNUTLS_DIR"
 
+# Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/gnutls.patch ]]; then
     echo ""
     echo "**********************"
@@ -185,10 +186,15 @@ echo "**********************"
 echo "Configuring package"
 echo "**********************"
 
-gnutls_cflags="${INSTX_CFLAGS}"
-gnutls_cxxflags="${INSTX_CXXFLAGS}"
-gnutls_ldflags="${INSTX_LDFLAGS}"
-CONFIG_OPTS=()
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
+    gnutls_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GNUTLS_DIR}"
+    gnutls_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GNUTLS_DIR}"
+    gnutls_ldflags="${INSTX_LDFLAGS}"
+else
+    gnutls_cflags="${INSTX_CFLAGS}"
+    gnutls_cxxflags="${INSTX_CXXFLAGS}"
+    gnutls_ldflags="${INSTX_LDFLAGS}"
+fi
 
 # Solaris is a tab bit stricter than libc
 if [[ "$IS_SOLARIS" -ne 0 ]]; then
@@ -201,6 +207,8 @@ have_padlock=0
 if [[ -d /proc/cpuinfo ]]; then
     have_padlock=$(grep -i -c -E 'rng_en|ace_en|ace2_en|phe_en|pmm_en' /proc/cpuinfo)
 fi
+
+CONFIG_OPTS=()
 if [[ "$have_padlock" -eq 0 ]]; then
     CONFIG_OPTS+=("--disable-padlock")
 fi
@@ -372,9 +380,11 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GNUTLS_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GNUTLS_DIR}"
 fi
 
 ###############################################################################

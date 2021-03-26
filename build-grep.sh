@@ -85,6 +85,16 @@ rm -rf "$GREP_TAR" "$GREP_DIR" &>/dev/null
 unxz "$GREP_XZ" && tar -xf "$GREP_TAR"
 cd "$GREP_DIR" || exit 1
 
+# Patches are created with 'diff -u' from the pkg root directory.
+if [[ -e ../patch/grep.patch ]]; then
+    echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/grep.patch
+fi
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 

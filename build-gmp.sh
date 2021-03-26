@@ -60,6 +60,7 @@ echo "GMP ${GMP_VER}..."
 if ! "$WGET" -q -O "$GMP_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/gmp/$GMP_TAR"
 then
+    echo ""
     echo "***********************"
     echo "Failed to download GMP"
     echo "***********************"
@@ -173,6 +174,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "***********************"
 echo "Testing package"
 echo "***********************"

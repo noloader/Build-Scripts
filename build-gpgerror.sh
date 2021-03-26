@@ -72,6 +72,7 @@ cd "$GPGERR_DIR"
 #cp tests/Makefile.in tests/Makefile.in.orig
 #cp tests/t-logging.c tests/t-logging.c.orig
 
+# Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/gpgerror.patch ]]; then
     echo ""
     echo "**********************"

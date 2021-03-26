@@ -84,9 +84,14 @@ rm -rf "$PCRE_DIR" &>/dev/null
 gzip -d < "$PCRE_TAR" | tar xf -
 cd "$PCRE_DIR"
 
+# Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/pcre.patch ]]; then
-    patch -u -p0 < ../patch/pcre.patch
     echo ""
+    echo "***************************"
+    echo "Patching package"
+    echo "***************************"
+
+    patch -u -p0 < ../patch/pcre.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec

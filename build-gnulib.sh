@@ -76,7 +76,10 @@ echo "*****************************"
 
 if ! git clone --depth=3 git://git.savannah.gnu.org/gnulib.git "$GNULIB_DIR"
 then
+    echo ""
+    echo "*****************************"
     echo "Failed to clone Gnulib"
+    echo "*****************************"
     exit 1
 fi
 
@@ -117,7 +120,11 @@ echo "*****************************"
 
 if [[ "$?" -ne 0 ]]; then
     echo ""
+    echo "*****************************"
     echo "Failed to configure Gnulib"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -133,7 +140,12 @@ echo "*****************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "*****************************"
     echo "Failed to build Gnulib"
+    echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -152,6 +164,8 @@ then
     echo "*****************************"
     echo "Failed to test Gnulib"
     echo "*****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 

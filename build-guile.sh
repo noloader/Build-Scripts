@@ -127,6 +127,16 @@ rm -rf "$GUILE_DIR" &>/dev/null
 gzip -d < "$GUILE_TAR" | tar xf -
 cd "$GUILE_DIR" || exit 1
 
+# Patches are created with 'diff -u' from the pkg root directory.
+if [[ -e ../patch/guile.patch ]]; then
+    echo ""
+    echo "***********************"
+    echo "Patching package"
+    echo "***********************"
+
+    patch -u -p0 < ../patch/guile.patch
+fi
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
@@ -149,11 +159,19 @@ CONFIG_OPTS+=("--with-libintl-prefix=${INSTX_PREFIX}")
 # --with-bdw-gc="${INSTX_PKGCONFIG}/"
 # --disable-posix --disable-networking
 
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
+    guile_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GUILE_DIR}"
+    guile_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GUILE_DIR}"
+else
+    guile_cflags="${INSTX_CFLAGS}"
+    guile_cxxflags="${INSTX_CXXFLAGS}"
+fi
+
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    CFLAGS="${guile_cflags}" \
+    CXXFLAGS="${guile_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
@@ -228,9 +246,11 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GUILE_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GUILE_DIR}"
 fi
 
 ###############################################################################
