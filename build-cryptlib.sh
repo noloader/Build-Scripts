@@ -123,7 +123,7 @@ echo "Testing package"
 echo "************************"
 
 MAKE_FLAGS=("testlib" "-j" "${INSTX_JOBS}")
-if ! CPPFLAGS${CPPFLAGS}" \
+if ! CPPFLAGS="${CPPFLAGS}" \
      ASFLAGS="${ASFLAGS}" \
      CFLAGS="${CFLAGS}" \
      CXXFLAGS="${CXXFLAGS}" \
