@@ -63,7 +63,7 @@ then
 fi
 
 rm -rf "$CRYPTOPP_DIR" &>/dev/null
-unzip -oq "$CRYPTOPP_ZIP" -d "$CRYPTOPP_DIR"
+unzip -aoq "$CRYPTOPP_ZIP" -d "$CRYPTOPP_DIR"
 cd "$CRYPTOPP_DIR"
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
