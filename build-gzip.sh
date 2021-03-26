@@ -161,7 +161,7 @@ if [[ -n "$SUDO_PASSWORD" ]]; then
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
-    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GZIP_DIRGZIP_DIR}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GZIP_DIR}"
 fi
 
 ###############################################################################
