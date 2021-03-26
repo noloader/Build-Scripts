@@ -45,6 +45,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-zlib.sh
+then
+    echo "Failed to build zLib"
+    exit 1
+fi
+
+###############################################################################
+
 echo ""
 echo "========================================"
 echo "============== Cryptlib ================"
@@ -66,6 +74,17 @@ rm -rf "$CRYPTLIB_DIR" &>/dev/null
 unzip -aoq "$CRYPTLIB_ZIP" -d "$CRYPTLIB_DIR"
 cd "$CRYPTLIB_DIR"
 
+# Patches are created with 'diff -u' from the pkg root directory.
+if [[ -e ../patch/cryptlib.patch ]]; then
+    echo ""
+    echo "***************************"
+    echo "Patching package"
+    echo "***************************"
+
+    patch -u -p0 < ../patch/cryptlib.patch
+fi
+
+if false; then
 convert=$(command -v dos2unix 2>/dev/null)
 IFS= find "$PWD" -name '*.sh' -print | while read -r file
 do
@@ -77,6 +96,7 @@ do
     touch -a -m -r "$file.timestamp" "$file"
     rm "$file.timestamp"
 done
+fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
@@ -92,13 +112,12 @@ ASFLAGS=$(echo "$INSTX_ASFLAGS" | sed 's/\$/\$\$/g')
 CFLAGS=$(echo "${INSTX_CFLAGS}" | sed 's/\$/\$\$/g')
 CXXFLAGS=$(echo "${INSTX_CXXFLAGS}" | sed 's/\$/\$\$/g')
 LDFLAGS=$(echo "${INSTX_LDFLAGS}" | sed 's/\$/\$\$/g')
-LIBS="${INSTX_LDLIBS}"
+LIBS="${INSTX_LDLIBS} -lz"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! CPPFLAGS="-I. ${CPPFLAGS}" \
      ASFLAGS="${ASFLAGS}" \
      CFLAGS="${CFLAGS}" \
-     XCFLAGS="${CFLAGS}" \
      CXXFLAGS="${CXXFLAGS}" \
      LDFLAGS="${LDFLAGS}" \
      LIBS="${LIBS}" \
@@ -119,7 +138,6 @@ MAKE_FLAGS=("testlib" "-j" "${INSTX_JOBS}")
 if ! CPPFLAGS="-I. ${CPPFLAGS}" \
      ASFLAGS="${ASFLAGS}" \
      CFLAGS="${CFLAGS}" \
-     XCFLAGS="${CFLAGS}" \
      CXXFLAGS="${CXXFLAGS}" \
      LDFLAGS="${LDFLAGS}" \
      LIBS="${LIBS}" \
