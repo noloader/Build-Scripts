@@ -107,11 +107,11 @@ if ! CPPFLAGS="${CPPFLAGS}" \
      LIBS="${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-     echo ""
-     echo "************************"
-     echo "Failed to build Cryptlib"
-     echo "************************"
-     exit 1
+    echo ""
+    echo "************************"
+    echo "Failed to build Cryptlib"
+    echo "************************"
+    exit 1
 fi
 
 # Fix flags in *.pc files
@@ -131,10 +131,10 @@ if ! CPPFLAGS="${CPPFLAGS}" \
      LIBS="${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-     echo ""
-     echo "************************"
+    echo ""
+    echo "************************"
     echo "Failed to test Cryptlib"
-     echo "************************"
+    echo "************************"
     exit 1
 fi
 
@@ -144,10 +144,10 @@ echo "Running test"
 echo "************************"
 if ! ./testlib
 then
-     echo ""
-     echo "************************"
+    echo ""
+    echo "************************"
     echo "Failed to test Cryptlib"
-     echo "************************"
+    echo "************************"
     exit 1
 fi
 
