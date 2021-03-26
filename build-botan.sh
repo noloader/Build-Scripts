@@ -189,7 +189,7 @@ cd "${CURR_DIR}" || exit 1
 # Set to false to retain artifacts
 if true;
 then
-    ARTIFACTS=("$BOTAN_TAR" "$BOTAN_DIR")
+    ARTIFACTS=("$BOTAN_XZ" "$BOTAN_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
