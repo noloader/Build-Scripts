@@ -1447,3 +1447,15 @@
    #elif defined( __ppc__ )
  	#define SYSTEM_NAME		"OS X PowerPC"
  	#define B_ENDIAN
+--- random/unix.c
++++ random/unix.c
+@@ -503,7 +503,9 @@
+ 									   amount of output so typically gets
+ 									   truncated at SYSCTL_BUFFER_SIZE */
+ #endif /* KERN_PROC2 */
++#ifdef GPROF_COUNT
+ 	{ 3, { CTL_KERN, KERN_PROF, GPROF_COUNT }, 10 },
++#endif
+ 									/* If kernel is compiled for profiling, 
+ 									   an array of statistical program 
+ 									   counter counts.  This typically isn't
