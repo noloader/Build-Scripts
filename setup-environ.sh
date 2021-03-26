@@ -257,8 +257,8 @@ if [[ -z "$(command -v "${CXX}" 2>/dev/null)" ]]; then CXX= ; fi;
 
 # Use Clang as default on Darwin
 if [[ "${IS_DARWIN}" -ne 0 ]]; then
-    if [[ -z "${CC}" ]] && [[ -n "$(command -v clang 2>/dev/null)" ]]; then CC='clang'; fi
-    if [[ -z "${CXX}" ]] && [[ -n "$(command -v clang++ 2>/dev/null)" ]]; then CXX='clang++'; fi
+    if [[ -n "$(command -v clang 2>/dev/null)" ]]; then CC='clang'; fi
+    if [[ -n "$(command -v clang++ 2>/dev/null)" ]]; then CXX='clang++'; fi
 fi
 
 # Use GCC as default elsewhere, or on Darwin if Clang fails
