@@ -89,7 +89,6 @@ if ! "$WGET" -q -O "$NCURSES_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/pub/gnu/ncurses/$NCURSES_TAR"
 then
     echo "Failed to download Ncurses"
-    echo "Maybe Wget is too old. Perhaps run setup-wget.sh?"
     exit 1
 fi
 
@@ -129,7 +128,13 @@ fi
 
 fi
 
+# Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/ncurses${NCURSES_VER}.patch ]]; then
+    echo ""
+    echo "***************************"
+    echo "Patching package"
+    echo "***************************"
+
     patch -u -p0 < ../patch/ncurses${NCURSES_VER}.patch
     echo ""
 fi
@@ -137,6 +142,7 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "***************************"
 echo "Configuring package"
 echo "***************************"
@@ -180,9 +186,12 @@ fi
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "***************************"
-    echo "Failed to configure ncurses"
+    echo "Failed to configure Ncurses"
     echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -198,6 +207,7 @@ do
     mv "$file.fixed" "$file"
 done
 
+echo ""
 echo "***************************"
 echo "Building package"
 echo "***************************"
@@ -205,9 +215,12 @@ echo "***************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "***************************"
-    echo "Failed to build ncurses"
+    echo "Failed to build Ncurses"
     echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -217,6 +230,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "***************************"
 echo "Testing package"
 echo "***************************"
@@ -224,15 +238,19 @@ echo "***************************"
 MAKE_FLAGS=("test")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "***************************"
-    echo "Failed to test ncurses"
+    echo "Failed to test Ncurses"
     echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix runpaths again
 bash ../fix-runpath.sh
 
+echo ""
 echo "***************************"
 echo "Installing package"
 echo "***************************"

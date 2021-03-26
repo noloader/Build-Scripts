@@ -76,8 +76,12 @@ cd "$READLN_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/readline.patch ]]; then
-    patch -u -p0 < ../patch/readline.patch
     echo ""
+    echo "****************************"
+    echo "Patching package"
+    echo "****************************"
+
+    patch -u -p0 < ../patch/readline.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
@@ -97,6 +101,7 @@ do
     rm "$file.timestamp"
 done
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -132,7 +137,12 @@ fi
     --disable-install-examples
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "****************************"
     echo "Failed to configure Readline"
+    echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -140,6 +150,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -147,13 +158,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to test Readline"
+    echo ""
+    echo "****************************"
+    echo "Failed to build Readline"
+    echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -161,10 +178,16 @@ echo "**********************"
 MAKE_FLAGS=("check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "****************************"
     echo "Failed to test Readline"
+    echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

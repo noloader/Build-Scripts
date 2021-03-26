@@ -61,9 +61,9 @@ echo "=============== uCommon ================"
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "***************************"
 echo "Downloading package"
-echo "**********************"
+echo "***************************"
 
 if ! "$WGET" -q -O "$UCOMMON_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/commoncpp/$UCOMMON_TAR"
@@ -78,10 +78,15 @@ cd "$UCOMMON_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/ucommon.patch ]]; then
-    patch -u -p0 < ../patch/ucommon.patch
     echo ""
+    echo "***************************"
+    echo "Patching package"
+    echo "***************************"
+
+    patch -u -p0 < ../patch/ucommon.patch
 fi
 
+echo ""
 echo "******************************"
 echo "Fixing C++ throw specification"
 echo "******************************"
@@ -109,9 +114,10 @@ done
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Configuring package"
-echo "**********************"
+echo "***************************"
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -128,7 +134,12 @@ echo "**********************"
     --with-sslstack=openssl
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "***************************"
     echo "Failed to configure uCommon"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -136,14 +147,20 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Building package"
-echo "**********************"
+echo "***************************"
 
 MAKE_FLAGS=("-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "***************************"
     echo "Failed to build uCommon"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -153,25 +170,30 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Testing package"
-echo "**********************"
+echo "***************************"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "***************************"
     echo "Failed to test uCommon"
-    echo "**********************"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix runpaths
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Installing package"
-echo "**********************"
+echo "***************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
