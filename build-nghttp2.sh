@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds NGHTTP2 from sources.
 
-NGHTTP2_VER=1.41.0
+NGHTTP2_VER=1.43.0
 NGHTTP2_TAR=nghttp2-$NGHTTP2_VER.tar.gz
 NGHTTP2_DIR=nghttp2-$NGHTTP2_VER
 PKG_NAME=nghttp2
@@ -91,6 +91,9 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
+echo ""
+echo "NGHTTP2 ${NGHTTP2_VER}..."
+
 if ! "$WGET" -q -O "$NGHTTP2_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
      "https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2_VER/$NGHTTP2_TAR"
 then
@@ -104,13 +107,18 @@ cd "$NGHTTP2_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/nghttp2.patch ]]; then
-    patch -u -p0 < ../patch/nghttp2.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/nghttp2.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -133,7 +141,12 @@ echo "**********************"
     # --enable-lib-only
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "***************************"
     echo "Failed to configure NGHTTP2"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -141,6 +154,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -148,13 +162,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "***************************"
     echo "Failed to build NGHTTP2"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -162,12 +182,16 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "***************************"
     echo "Failed to test NGHTTP2"
-    echo "**********************"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
