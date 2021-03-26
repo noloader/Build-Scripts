@@ -66,9 +66,9 @@ echo "================= PCRE ================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 echo ""
 echo "PCRE ${PCRE_VER}..."
@@ -92,9 +92,10 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Configuring package"
-echo "**********************"
+echo "************************"
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     pcre_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${PCRE_DIR}"
@@ -121,7 +122,12 @@ fi
     --enable-pcregrep-libbz2
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "************************"
     echo "Failed to configure PCRE"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -129,16 +135,19 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
-    echo "Failed to build pcre"
-    echo "**********************"
+    echo ""
+    echo "************************"
+    echo "Failed to build PCRE"
+    echo "************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -149,28 +158,42 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 if [[ "$IS_LINUX" -ne 0 ]]; then
     MAKE_FLAGS=("check" "-k" "V=1")
     if ! "${MAKE}" "${MAKE_FLAGS[@]}"
     then
-        echo "**********************"
-        echo "Failed to test pcre"
-        echo "**********************"
+        echo ""
+        echo "************************"
+        echo "Failed to test PCRE"
+        echo "************************"
+
         bash ../collect-logs.sh "${PKG_NAME}"
         exit 1
     fi
+else
+    echo ""
+    echo "************************"
+    echo "PCRE not tested"
+    echo "************************"
+
+    echo ""
+    echo "************************"
+    echo "Installing anyways..."
+    echo "************************"
 fi
 
 # Fix runpaths again
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then

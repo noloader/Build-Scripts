@@ -66,9 +66,9 @@ echo "================= PCRE2 ================"
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Downloading package"
-echo "**********************"
+echo "*************************"
 
 echo ""
 echo "PCRE2 ${PCRE2_VER}..."
@@ -87,9 +87,10 @@ cd "$PCRE2_DIR"
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "*************************"
 echo "Configuring package"
-echo "**********************"
+echo "*************************"
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     pcre2_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${PCRE2_DIR}"
@@ -117,7 +118,12 @@ fi
     --enable-pcre2-32
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "*************************"
     echo "Failed to configure PCRE2"
+    echo "*************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -125,16 +131,19 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "*************************"
 echo "Building package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "*************************"
     echo "Failed to build PCRE2"
-    echo "**********************"
+    echo "*************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -145,9 +154,10 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo ""
+echo "*************************"
 echo "Testing package"
-echo "**********************"
+echo "*************************"
 
 # PCRE2 fails one self test on older systems, like Fedora 1
 # and Ubuntu 4. Allow the failure but print the result.
@@ -155,28 +165,44 @@ if [[ "$IS_LINUX" -ne 0 ]]; then
     MAKE_FLAGS=("check" "-k" "V=1")
     if ! "${MAKE}" "${MAKE_FLAGS[@]}"
     then
-        echo "**********************"
-        echo "Failed to test pcre2"
-        echo "**********************"
+        echo ""
+        echo "*************************"
+        echo "Failed to test PCRE2"
+        echo "*************************"
+
         bash ../collect-logs.sh "${PKG_NAME}"
         # exit 1
+
+        echo ""
+        echo "*************************"
+        echo "Installing anyways..."
+        echo "*************************"
     fi
+else
+    echo ""
+    echo "*************************"
+    echo "PCRE2 not tested"
+    echo "*************************"
+
+    echo ""
+    echo "************************"
+    echo "Installing anyways..."
+    echo "************************"
 fi
 
 # Fix runpaths again
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo ""
+echo "*************************"
 echo "Installing package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
-    if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
-        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${PCRE2_DIR}"
-    fi
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${PCRE2_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
