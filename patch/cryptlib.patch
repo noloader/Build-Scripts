@@ -1434,11 +1434,12 @@
  *								Utility Functions							*
 --- crypt/osconfig.h
 +++ crypt/osconfig.h
-@@ -374,6 +374,12 @@
+@@ -374,6 +374,13 @@
  	  #define BN_LLONG
  	  #define DES_RISC1
  	#endif /* 64- vs. 32-bit ARM */
 +  #elif defined( __aarch64__ ) || defined( __arm64 )
++          /* Apple M1 */
 +          #define SYSTEM_NAME   "OS X Arm64"
 +          #define L_ENDIAN
 +          #undef SIXTY_FOUR_BIT
