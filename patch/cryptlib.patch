@@ -1417,3 +1417,18 @@
  
  #****************************************************************************
  #*																			*
+--- test/certs.c
++++ test/certs.c
+@@ -53,6 +53,12 @@
+   #endif /* CERTTIME_DATETEST <= MIN_TIME_VALUE */
+ #endif /* Safety check of time test value against MIN_TIME_VALUE */
+ 
++/* Per PG in private email */
++#ifdef MIN_TIME_VALUE
++# undef CERTTIME_DATETEST
++# define CERTTIME_DATETEST       MIN_TIME_VALUE + 1
++#endif
++
+ /****************************************************************************
+ *																			*
+ *								Utility Functions							*
