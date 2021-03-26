@@ -228,8 +228,11 @@ then
     echo "Failed to test Guile"
     echo "*************************"
 
+    # We can't install. Installing Guile results in errors like
+    #   Throw to key misc-error with args ("primitive-load-path" "Unable
+    #   to find file ~S in load path" ("ice-9/boot-9") #f)
     bash ../collect-logs.sh "${PKG_NAME}"
-    # exit 1
+    exit 1
 
     echo ""
     echo "*************************"
