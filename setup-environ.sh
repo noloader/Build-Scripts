@@ -243,6 +243,9 @@ fi
 
 export MAKE MAKEOPTS
 
+USER_CC=${CC}
+USER_CXX=${CXX}
+
 # If CC and CXX are not set, then use default or assume Clang or GCC
 if [[ -z "${CC}" ]]; then
     CC=$(make -p 2>/dev/null | ${EGREP} '^CC.*=' | head -n 1 | cut -f 2 -d '=' | awk '{$1=$1};1')
@@ -264,6 +267,10 @@ fi
 # Use GCC as default elsewhere, or on Darwin if Clang fails
 if [[ -z "${CC}" ]] && [[ -n "$(command -v gcc 2>/dev/null)" ]]; then CC='gcc'; fi
 if [[ -z "${CXX}" ]] && [[ -n "$(command -v g++ 2>/dev/null)" ]]; then CXX='g++'; fi
+
+# After all the gyrations, use the user's choice
+if [[ -n "${USER_CC}" ]]; then CC=${USER_CC}; fi
+if [[ -n "${USER_CXX}" ]]; then CXX=${USER_CXX}; fi
 
 # Finally, use the full path
 CC="$(command -v "${CC}" 2>/dev/null)"
