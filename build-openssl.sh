@@ -3,8 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds OpenSSL from sources.
 
-OPENSSL_TAR=openssl-1.1.1k.tar.gz
-OPENSSL_DIR=openssl-1.1.1k
+OPENSSL_VER=1.1.1k
+OPENSSL_TAR=openssl-${OPENSSL_VER}.tar.gz
+OPENSSL_DIR=openssl-${OPENSSL_VER}
 PKG_NAME=openssl
 
 ###############################################################################
@@ -106,7 +107,6 @@ if ! "$WGET" -q -O "$OPENSSL_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://www.openssl.org/source/$OPENSSL_TAR"
 then
     echo "Failed to download OpenSSL"
-    echo "Maybe Wget is too old. Perhaps run setup-wget.sh?"
     exit 1
 fi
 
