@@ -9,7 +9,7 @@
 GUILE_VER=3.0.5
 GUILE_TAR=guile-${GUILE_VER}.tar.gz
 GUILE_DIR=guile-${GUILE_VER}
-PKG_NAME=guile
+PKG_NAME=guile3
 
 ###############################################################################
 

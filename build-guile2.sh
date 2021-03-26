@@ -12,7 +12,7 @@
 GUILE_VER=2.2.7
 GUILE_TAR=guile-${GUILE_VER}.tar.gz
 GUILE_DIR=guile-${GUILE_VER}
-PKG_NAME=guile
+PKG_NAME=guile2
 
 ###############################################################################
 
