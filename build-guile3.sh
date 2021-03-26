@@ -4,12 +4,9 @@
 # This script builds Guile from sources. Guile has a lot of issues
 # and I am not sure all of them can be worked around.
 #
-# Guile 2.2.7 is the last of the 2.2.x series. Use Guile 3.x if
-# something more recent is needed.
-#
 # Requires libtool-ltdl-devel on Fedora.
 
-GUILE_VER=2.2.7
+GUILE_VER=3.0.5
 GUILE_TAR=guile-${GUILE_VER}.tar.gz
 GUILE_DIR=guile-${GUILE_VER}
 PKG_NAME=guile
@@ -131,13 +128,13 @@ gzip -d < "$GUILE_TAR" | tar xf -
 cd "$GUILE_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
-if [[ -e ../patch/guile2.patch ]]; then
+if [[ -e ../patch/guile3.patch ]]; then
     echo ""
     echo "***********************"
     echo "Patching package"
     echo "***********************"
 
-    patch -u -p0 < ../patch/guile2.patch
+    patch -u -p0 < ../patch/guile3.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
