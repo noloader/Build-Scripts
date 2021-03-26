@@ -59,9 +59,9 @@ echo "============== Cryptlib ================"
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 if ! "$WGET" -q -O "$CRYPTLIB_ZIP" --ca-certificate="$THE_CA_ZOO" \
      "https://cryptlib-release.s3-ap-southeast-1.amazonaws.com/$CRYPTLIB_ZIP"
@@ -84,9 +84,10 @@ if [[ -e ../patch/cryptlib.patch ]]; then
     patch -u -p0 < ../patch/cryptlib.patch
 fi
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 # Since we call the makefile directly, we need to escape dollar signs.
 CPPFLAGS=$(echo "$INSTX_CPPFLAGS" | sed 's/\$/\$\$/g')
@@ -106,16 +107,20 @@ if ! CPPFLAGS="${CPPFLAGS}" \
      LIBS="${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build Cryptlib"
-    exit 1
+     echo ""
+     echo "************************"
+     echo "Failed to build Cryptlib"
+     echo "************************"
+     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("testlib" "-j" "${INSTX_JOBS}")
 if ! CPPFLAGS${CPPFLAGS}" \
@@ -126,22 +131,29 @@ if ! CPPFLAGS${CPPFLAGS}" \
      LIBS="${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+     echo ""
+     echo "************************"
     echo "Failed to test Cryptlib"
+     echo "************************"
     exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Running test"
-echo "**********************"
+echo "************************"
 if ! ./testlib
 then
+     echo ""
+     echo "************************"
     echo "Failed to test Cryptlib"
+     echo "************************"
     exit 1
 fi
 
-echo "**********************"
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install" "PREFIX=${INSTX_PREFIX}" "LIBDIR=${INSTX_LIBDIR}")
 if [[ -n "$SUDO_PASSWORD" ]]; then
