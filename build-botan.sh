@@ -112,7 +112,6 @@ CONFIG_OPTS+=("--ldflags=${INSTX_LDFLAGS}")
 CONFIG_OPTS+=("--system-cert-bundle=${INSTX_CACERT_FILE}")
 CONFIG_OPTS+=("--with-bzip2")
 CONFIG_OPTS+=("--with-zlib")
-CONFIG_OPTS+=("--with-lzma")
 
 echo "CONFIG_OPTS: ${CONFIG_OPTS[@]}"
 if ! ./configure.py \
@@ -158,6 +157,7 @@ then
     exit 1
 fi
 
+echo ""
 echo "*************************"
 echo "Installing package"
 echo "*************************"

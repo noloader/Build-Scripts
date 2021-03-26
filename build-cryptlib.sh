@@ -154,6 +154,7 @@ then
     exit 1
 fi
 
+echo ""
 echo "************************"
 echo "Installing package"
 echo "************************"

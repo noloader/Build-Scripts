@@ -92,6 +92,7 @@ if ! CPPFLAGS="-I. ${CPPFLAGS}" \
      LIBS="${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "************************"
     echo "Failed to build Crypto++"
     echo "************************"
