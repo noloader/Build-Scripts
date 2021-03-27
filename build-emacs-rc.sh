@@ -137,6 +137,7 @@ fi
 CONFIG_OPTS=()
 CONFIG_OPTS+=("--without-all")
 CONFIG_OPTS+=("--with-xml2")
+CONFIG_OPTS+=("--with-json")
 CONFIG_OPTS+=("--with-libgmp")
 CONFIG_OPTS+=("--with-zlib")
 
