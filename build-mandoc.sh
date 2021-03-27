@@ -70,13 +70,18 @@ cd "$MANDOC_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/mandoc.patch ]]; then
-    patch -u -p0 < ../patch/mandoc.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/mandoc.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -113,7 +118,12 @@ echo "" > configure.local
     --libdir="${INSTX_LIBDIR}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "**************************"
     echo "Failed to configure MANDOC"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -121,6 +131,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -128,10 +139,16 @@ echo "**********************"
 MAKE_FLAGS=("MAKEINFO=true" "-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "**************************"
     echo "Failed to build MANDOC"
+    echo "**************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

@@ -67,10 +67,15 @@ gzip -d < "$MG_TAR" | tar xf -
 cd "$MG_DIR"
 
 if [[ -e ../patch/mg.patch ]]; then
-    patch -u -p0 < ../patch/mg.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/mg.patch
 fi
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -92,15 +97,19 @@ if ! CPPFLAGS="${CPPFLAGS}" \
      LIBS="${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "**********************"
     echo "Failed to build mg"
     echo "**********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -114,12 +123,16 @@ if ! CPPFLAGS="${CPPFLAGS}" \
      LIBS="${LIBS}" \
      "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "**********************"
     echo "Failed to test mg"
     echo "**********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

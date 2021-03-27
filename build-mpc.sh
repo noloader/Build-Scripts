@@ -66,13 +66,14 @@ echo "================== MPC ================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "***********************"
 echo "Downloading package"
-echo "**********************"
+echo "***********************"
 
 if ! "$WGET" -q -O "$MPC_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/mpc/$MPC_TAR"
 then
+    echo ""
     echo "Failed to download MPC"
     exit 1
 fi
@@ -93,9 +94,10 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "***********************"
 echo "Configuring package"
-echo "**********************"
+echo "***********************"
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -112,7 +114,12 @@ echo "**********************"
     --with-mpfr="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "***********************"
     echo "Failed to configure MPC"
+    echo "***********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -120,14 +127,20 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "***********************"
 echo "Building package"
-echo "**********************"
+echo "***********************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "***********************"
     echo "Failed to build MPC"
+    echo "***********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -137,23 +150,30 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo ""
+echo "***********************"
 echo "Testing package"
-echo "**********************"
+echo "***********************"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "***********************"
     echo "Failed to test MPC"
+    echo "***********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix runpaths
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo ""
+echo "***********************"
 echo "Installing package"
-echo "**********************"
+echo "***********************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then

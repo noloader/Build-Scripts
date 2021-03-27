@@ -90,9 +90,13 @@ gzip -d < "$HTTPD_TAR" | tar xf -
 cd "$HTTPD_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
-if [[ -e ../patch/httpd.patch ]]; then
-    patch -u -p0 < ../patch/httpd.patch
+if [[ -e ../patch/microhttpd.patch ]]; then
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/microhttpd.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec

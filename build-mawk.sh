@@ -52,9 +52,9 @@ echo "================= Mawk ================="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "************************"
 echo "Downloading package"
-echo "**********************"
+echo "************************"
 
 if ! "$WGET" -q -O "$MAWK_TAR" --ca-certificate="$THE_CA_ZOO" \
      "http://invisible-island.net/datafiles/release/$MAWK_TAR"
@@ -67,12 +67,22 @@ rm -rf "$MAWK_DIR" &>/dev/null
 gzip -d < "$MAWK_TAR" | tar xf -
 cd "$MAWK_DIR" || exit 1
 
+if [[ -e ../patch/mawk.patch ]]; then
+    echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/mawk.patch
+fi
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Configuring package"
-echo "**********************"
+echo "************************"
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -87,7 +97,12 @@ echo "**********************"
     --libdir="${INSTX_LIBDIR}"
 
 if [[ "$?" -ne 0 ]]; then
-    echo "Failed to configure mawk"
+    echo ""
+    echo "************************"
+    echo "Failed to configure Mawk"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -95,34 +110,47 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Building package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to build mawk"
+    echo ""
+    echo "************************"
+    echo "Failed to build Mawk"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Testing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "Failed to test mawk"
+    echo ""
+    echo "************************"
+    echo "Failed to test Mawk"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "************************"
 echo "Installing package"
-echo "**********************"
+echo "************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then

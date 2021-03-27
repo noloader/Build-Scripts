@@ -75,6 +75,7 @@ cd "$MPFR_DIR" || exit 1
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -94,7 +95,12 @@ echo "**********************"
     --with-gmp-lib="${INSTX_LIBDIR}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "************************"
     echo "Failed to configure MPFR"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -102,6 +108,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -109,7 +116,12 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "************************"
     echo "Failed to build MPFR"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -119,6 +131,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -126,13 +139,19 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "************************"
     echo "Failed to test MPFR"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"

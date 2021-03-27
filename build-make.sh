@@ -68,13 +68,18 @@ gzip -d < "$MAKE_TAR" | tar xf -
 cd "$MAKE_DIR"
 
 if [[ -e ../patch/make.patch ]]; then
-    patch -u -p0 < ../patch/make.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/make.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -94,7 +99,12 @@ echo "**********************"
     --with-libintl-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "************************"
     echo "Failed to configure Make"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -102,6 +112,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -109,13 +120,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "************************"
     echo "Failed to build Make"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -124,10 +141,21 @@ echo "**********************"
 MAKE_FLAGS=("PERL_USE_UNSAFE_INC=1" "check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "************************"
     echo "Failed to test Make"
-    #exit 1
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
+    # exit 1
+
+    echo ""
+    echo "************************"
+    echo "Installing anyways..."
+    echo "************************"
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
