@@ -136,7 +136,8 @@ CONFIG_OPTS+=("--with-libgmp")
 CONFIG_OPTS+=("--with-zlib")
 
 if [[ "${IS_DARWIN}" -eq 1 ]]; then
-    CONFIG_OPTS+=('--with-toolkit-scroll-bars')
+    # Disable NextStep app
+    CONFIG_OPTS+=('--without-ns')
 fi
 if [[ $(command -v gnutls-cli 2>/dev/null) ]]; then
     CONFIG_OPTS+=('--with-gnutls')
@@ -170,6 +171,14 @@ if [[ "$?" -ne 0 ]]; then
 
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
+fi
+
+# I'm not sure why we need to set DO_CODESIGN=yes.
+if [[ "${IS_DARWIN}" -eq 1 ]]; then
+    file=src/Makefile
+    sed 's/DO_CODESIGN=.*/DO_CODESIGN=yes/g' "${file}" > "${file}.fixed"
+    mv "${file}.fixed" "${file}"
+    chmod u=rw,go=r "${file}"
 fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
@@ -210,7 +219,12 @@ then
     echo "*************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
-    exit 1
+    # exit 1
+
+    echo ""
+    echo "*************************"
+    echo "Installing anyways..."
+    echo "*************************"
 fi
 
 echo ""
