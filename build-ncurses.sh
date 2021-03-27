@@ -331,7 +331,7 @@ else
     echo ''
 
     echo 'rm -vf                     ${lib_dir}/libcursesw.so'
-    echo 'rm -vf                     ${lib_dir}/libcurses.dylib'
+    echo 'rm -vf                     ${lib_dir}/libcurses.so'
     echo 'ln -sfv libcursesw.so      ${lib_dir}/libcurses.so'
     echo 'ln -sfv libncurses.so      ${lib_dir}/libcurses.so'
     echo ''
