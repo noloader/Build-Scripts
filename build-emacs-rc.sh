@@ -165,7 +165,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure emacs"
     echo "*************************"
 
-    bash ../collect-logs "${PKG_NAME}"
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -186,7 +186,7 @@ then
     echo "Failed to build emacs"
     echo "*************************"
 
-    bash ../collect-logs "${PKG_NAME}"
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -206,7 +206,7 @@ then
     echo "Failed to test emacs"
     echo "*************************"
 
-    bash ../collect-logs "${PKG_NAME}"
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
