@@ -202,9 +202,11 @@ bash ../fix-makefiles.sh
 # Remove unneeded warning
 IFS= find "$PWD" -name 'Makefile' -print | while read -r file
 do
-    cp -p "$file" "$file.fixed"
-    sed 's/ --param max-inline-insns-single=1200//g' "$file" > "$file.fixed"
+    sed -e 's/ --param max-inline-insns-single=1200//g' \
+        -e 's/ -no-cpp-precomp//g' \
+        "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
+    chmod u=rw,go=r "$file"
 done
 
 echo ""
@@ -280,27 +282,50 @@ echo "***************************"
     echo "include_dir=${INSTX_PREFIX}/include"
     echo "lib_dir=${INSTX_LIBDIR}"
 
+    echo ''
     echo 'cd ${lib_dir}'
     echo ''
 
 # JW added ncurses++ and tinfo
-if [[ "IS_LINUX" -eq 1 ]]; then
+if [[ "${IS_LINUX}" -eq 1 ]]; then
+
     echo 'for lib in ncurses ncurses++ form panel menu tinfo ; do'
     echo '    rm -vf                    ${lib_dir}/lib${lib}.so'
+    echo '    rm -vf                    ${lib_dir}/lib${lib}.so.6'
     echo '    echo "INPUT(-l${lib}w)" > ${lib_dir}/lib${lib}.so'
-    echo '    ln -sfv lib${lib}.so.6    ${lib_dir}/lib${lib}.so'
+    echo '    ln -sfv lib${lib}.so.6    ${lib_dir}/lib${lib}.so.6'
     echo 'done'
     echo ''
 
     echo 'rm -vf                     ${lib_dir}/libcursesw.so'
+    echo 'rm -vf                     ${lib_dir}/libcurses.so'
     echo 'echo "INPUT(-lncursesw)" > ${lib_dir}/libcursesw.so'
     echo 'ln -sfv libncurses.so      ${lib_dir}/libcurses.so'
     echo ''
-else
+
+elif [[ "${IS_DARWIN}" -eq 1 ]]; then
+
     echo 'for lib in ncurses ncurses++ form panel menu tinfo ; do'
-    echo '    rm -vf                     ${lib_dir}/lib${lib}.so'
-    echo '    ln -sfv lib${lib}w.so      ${lib_dir}/lib${lib}.so'
-    echo '    ln -sfv lib${lib}w.so.6    ${lib_dir}/lib${lib}.so'
+    echo '    rm -vf                       ${lib_dir}/lib${lib}.dylib'
+    echo '    rm -vf                       ${lib_dir}/lib${lib}.6.dylib'
+    echo '    ln -sfv lib${lib}w.dylib     ${lib_dir}/lib${lib}.dylib'
+    echo '    ln -sfv lib${lib}w.6.dylib   ${lib_dir}/lib${lib}.6.dylib'
+    echo 'done'
+    echo ''
+
+    echo 'rm -vf                     ${lib_dir}/libcursesw.dylib'
+    echo 'rm -vf                     ${lib_dir}/libcurses.dylib'
+    echo 'ln -sfv libcursesw.dylib   ${lib_dir}/libcurses.dylib'
+    echo 'ln -sfv libncurses.dylib   ${lib_dir}/libcurses.dylib'
+    echo ''
+
+else
+
+    echo 'for lib in ncurses ncurses++ form panel menu tinfo ; do'
+    echo '    rm -vf                    ${lib_dir}/lib${lib}.so'
+    echo '    rm -vf                    ${lib_dir}/lib${lib}.so.6'
+    echo '    ln -sfv lib${lib}w.so     ${lib_dir}/lib${lib}.so'
+    echo '    ln -sfv lib${lib}w.so.6   ${lib_dir}/lib${lib}.so.6'
     echo 'done'
     echo ''
 
@@ -311,6 +336,7 @@ else
 fi
 
     # JW added cd to pkgconfig
+    echo ''
     echo 'cd ${lib_dir}/pkgconfig'
     echo ''
 
@@ -320,6 +346,7 @@ fi
     echo 'done'
     echo ''
 
+    echo ''
     echo 'cd ${include_dir}'
     echo ''
     echo 'ln -sfv ncursesw      ${include_dir}/ncurses'
