@@ -155,7 +155,7 @@ CONFIG_OPTS+=("--with-shared")
 CONFIG_OPTS+=("--with-cxx-shared")
 CONFIG_OPTS+=("--enable-widec")
 CONFIG_OPTS+=("--without-debug")
-CONFIG_OPTS+=("--with-termlib")
+# CONFIG_OPTS+=("--with-termlib")
 CONFIG_OPTS+=("--enable-pc-files")
 CONFIG_OPTS+=("--disable-root-environ")
 CONFIG_OPTS+=("--with-pkg-config-libdir=${INSTX_PKGCONFIG}")
@@ -199,7 +199,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-# Remove unneeded warning
+# Remove unneeded warnings
 IFS= find "$PWD" -name 'Makefile' -print | while read -r file
 do
     sed -e 's/ --param max-inline-insns-single=1200//g' \
@@ -268,6 +268,7 @@ else
     bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${NCURSES_DIR}"
 fi
 
+echo ""
 echo "***************************"
 echo "Extra commands"
 echo "***************************"
@@ -330,12 +331,12 @@ else
     echo ''
 
     echo 'rm -vf                     ${lib_dir}/libcursesw.so'
+    echo 'rm -vf                     ${lib_dir}/libcurses.dylib'
     echo 'ln -sfv libcursesw.so      ${lib_dir}/libcurses.so'
     echo 'ln -sfv libncurses.so      ${lib_dir}/libcurses.so'
     echo ''
 fi
 
-    # JW added cd to pkgconfig
     echo ''
     echo 'cd ${lib_dir}/pkgconfig'
     echo ''

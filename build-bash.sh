@@ -106,8 +106,8 @@ fi
     CFLAGS="${bash_cflags}" \
     CXXFLAGS="${bash_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
-    LDLIBS="-ltinfow ${INSTX_LDLIBS}" \
-    LIBS="-ltinfow ${INSTX_LDLIBS}" \
+    LDLIBS="${INSTX_LDLIBS}" \
+    LIBS="${INSTX_LDLIBS}" \
 ./configure \
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \

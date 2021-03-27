@@ -87,20 +87,6 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-# Fix missing -ltinfo for *.pc files
-IFS= find "$PWD" -name '*.pc.in' -print | while read -r file
-do
-    touch -a -m -r "$file" "$file.timestamp"
-    chmod u+w "$file" && cp -p "$file" "$file.fixed"
-
-    sed -e 's/-lreadline/-lreadline -ltinfow/g' "$file" > "$file.fixed"
-    mv "$file.fixed" "$file"
-
-    chmod a+r "$file" && chmod go-w "$file"
-    touch -a -m -r "$file.timestamp" "$file"
-    rm "$file.timestamp"
-done
-
 echo ""
 echo "**********************"
 echo "Configuring package"
@@ -126,8 +112,8 @@ fi
     CFLAGS="${readline_cflags}" \
     CXXFLAGS="${readline_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
-    LDLIBS="-ltinfow ${INSTX_LDLIBS}" \
-    LIBS="-ltinfow ${INSTX_LDLIBS}" \
+    LDLIBS="${INSTX_LDLIBS}" \
+    LIBS="${INSTX_LDLIBS}" \
 ./configure \
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
