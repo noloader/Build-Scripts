@@ -44,6 +44,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-base.sh
+then
+    echo "Failed to build GNU base packages"
+    exit 1
+fi
+
+###############################################################################
+
 if ! ./build-libgcrypt.sh
 then
     echo "Failed to install Libgcrypt"
@@ -123,8 +131,10 @@ echo "**********************"
     --enable-shared=yes \
     --enable-static=yes \
     --enable-https \
+    --with-libiconv-prefix="${INSTX_PREFIX}" \
+    --with-libintl-prefix="${INSTX_PREFIX}" \
+    --with-gnutls="${INSTX_PREFIX}" \
     --with-libgcrypt-prefix="${INSTX_PREFIX}" \
-    --with-libgnutls="${INSTX_PREFIX}" \
     --with-libcurl="${INSTX_PREFIX}" \
     --disable-doc \
     --disable-examples
