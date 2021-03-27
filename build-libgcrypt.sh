@@ -85,16 +85,19 @@ rm -rf "$GCRYPT_DIR" &>/dev/null
 tar xjf "$GCRYPT_TAR"
 cd "$GCRYPT_DIR"
 
-# cp tests/Makefile.in tests/Makefile.in.orig
-
 if [[ -e ../patch/libgcrypt.patch ]]; then
-    patch -u -p0 < ../patch/libgcrypt.patch
     echo ""
+    echo "****************************"
+    echo "Patching package"
+    echo "****************************"
+
+    patch -u -p0 < ../patch/libgcrypt.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "*****************************"
 echo "Configuring package"
 echo "*****************************"
@@ -124,9 +127,11 @@ fi
 
 if [[ "$?" -ne 0 ]]
 then
+    echo ""
     echo "*****************************"
     echo "Failed to configure libgcrypt"
     echo "*****************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -135,6 +140,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "*****************************"
 echo "Building package"
 echo "*****************************"
@@ -142,9 +148,11 @@ echo "*****************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*****************************"
     echo "Failed to build libgcrypt"
     echo "*****************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -155,6 +163,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "*****************************"
 echo "Testing package"
 echo "*****************************"
@@ -165,16 +174,22 @@ echo "*****************************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}" 2>&1 | tee "${GCRYPT_LOG}"
 then
+    echo ""
     echo "*****************************"
-    echo "Failed to test libgcrypt (1)"
+    echo "Failed to test libgcrypt"
     echo "*****************************"
-    bash ../collect-logs.sh "${PKG_NAME}"
 
     # This package only works on Linux...
     if [[ "${IS_DARWIN}" -eq 1 ]]; then
-        echo "Continuing..."
+        bash ../collect-logs.sh "${PKG_NAME}"
+        # exit 1
+
+        echo ""
+        echo "*****************************"
+        echo "Installing anyways..."
         echo "*****************************"
     else
+        bash ../collect-logs.sh "${PKG_NAME}"
         exit 1
     fi
 fi
@@ -182,6 +197,7 @@ fi
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "*****************************"
 echo "Installing package"
 echo "*****************************"
