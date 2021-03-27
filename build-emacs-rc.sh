@@ -156,7 +156,7 @@ fi
 if [[ "$?" -ne 0 ]]; then
     echo ""
     echo "*************************"
-    echo "Failed to configure emacs"
+    echo "Failed to configure Emacs"
     echo "*************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
@@ -185,7 +185,7 @@ if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo ""
     echo "*************************"
-    echo "Failed to build emacs"
+    echo "Failed to build Emacs"
     echo "*************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
@@ -205,7 +205,7 @@ if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo ""
     echo "*************************"
-    echo "Failed to test emacs"
+    echo "Failed to test Emacs"
     echo "*************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
