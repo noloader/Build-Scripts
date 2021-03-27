@@ -5,9 +5,9 @@
 # cannot handle the extra options in pkg config files. For example,
 # Zile fails to find Ncurses because Ncurses uses the following in
 # its *.pc file:
-#     Libs: -L<path> -Wl,-rpath,<path> -lncursesw -ltinfo
+#     Libs: -L<path> -Wl,-rpath,<path> -lncurses
 # Zile can find the libraries when using:
-#     Libs: -L<path> -lncursesw -ltinfo
+#     Libs: -L<path> -lncurses
 
 echo ""
 echo "**********************"
