@@ -93,9 +93,9 @@ echo "=============== OpenLDAP ==============="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "****************************"
 echo "Downloading package"
-echo "**********************"
+echo "****************************"
 
 if ! "$WGET" --ca-certificate="$GO_DADDY_ROOT" -O "$LDAP_TAR" \
      "https://gpl.savoirfairelinux.net/pub/mirrors/openldap/openldap-release/$LDAP_TAR"
@@ -109,16 +109,21 @@ gzip -d < "$LDAP_TAR" | tar xf -
 cd "$LDAP_DIR" || exit 1
 
 if [[ -e ../patch/openldap.patch ]]; then
-    patch -u -p0 < ../patch/openldap.patch
     echo ""
+    echo "****************************"
+    echo "Patching package"
+    echo "****************************"
+
+    patch -u -p0 < ../patch/openldap.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "****************************"
 echo "Configuring package"
-echo "**********************"
+echo "****************************"
 
 # Fix Berkeley DB version test
 cp -p configure configure.new
@@ -151,7 +156,12 @@ CONFIG_OPTS+=("--enable-mdb=no")
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "****************************"
     echo "Failed to configure OpenLDAP"
+    echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -159,14 +169,20 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "****************************"
 echo "Building package"
-echo "**********************"
+echo "****************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "****************************"
     echo "Failed to build OpenLDAP"
+    echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -176,24 +192,36 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo ""
+echo "****************************"
 echo "Testing package"
-echo "**********************"
+echo "****************************"
 
 # Can't pass self tests on ARM
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "****************************"
     echo "Failed to test OpenLDAP"
+    echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     # exit 1
+
+    echo ""
+    echo "****************************"
+    echo "Installing anyways..."
+    echo "****************************"
 fi
 
 # Fix runpaths again
 bash ../fix-runpath.sh
 
-echo "**********************"
+echo ""
+echo "****************************"
 echo "Installing package"
-echo "**********************"
+echo "****************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
