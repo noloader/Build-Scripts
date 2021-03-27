@@ -1,10 +1,10 @@
 # Written and placed in public domain by Jeffrey Walton.
-# This patch fixes some issues with GnuPG.
+# This patch fixes some issues with libgcrypt.
 --- mpi/mpiutil.c
 +++ mpi/mpiutil.c
-@@ -28,10 +28,22 @@
- #include "mpi-internal.h"
- #include "mod-source-info.h"
+@@ -43,10 +43,22 @@
+ #endif
+ 
  
 -/* Constants allocated right away at startup.  */
 -static gcry_mpi_t constants[MPI_NUMBER_OF_CONSTANTS];
@@ -28,7 +28,7 @@
  
  const char *
  _gcry_mpi_get_hw_config (void)
-@@ -45,25 +57,6 @@
+@@ -60,25 +72,6 @@
  gcry_err_code_t
  _gcry_mpi_init (void)
  {
@@ -54,7 +54,7 @@
    return 0;
  }
  
-@@ -737,7 +732,5 @@
+@@ -774,7 +767,5 @@
  {
    if ((int)no < 0 || no > MPI_NUMBER_OF_CONSTANTS)
      log_bug("invalid mpi_const selector %d\n", no);
@@ -63,20 +63,6 @@
 -  return constants[no];
 +  return &constants[no];
  }
---- tests/Makefile.in
-+++ tests/Makefile.in
-@@ -896,6 +896,10 @@
- check-TESTS: $(TESTS)
- 	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
- 	srcdir=$(srcdir); export srcdir; \
-+	gcrypt_libdir=`dirname $$PWD`/src/.libs; \
-+	LD_LIBRARY_PATH=`echo "$$gcrypt_libdir:$$LD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
-+	DYLD_LIBRARY_PATH=`echo "$$gcrypt_libdir:$$DYLD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
-+	export LD_LIBRARY_PATH; export DYLD_LIBRARY_PATH; \
- 	list=' $(TESTS) '; \
- 	$(am__tty_colors); \
- 	if test -n "$$list"; then \
-# https://github.com/macports/macports-ports/blob/7c793c22a431
 --- random/rndlinux.c
 +++ random/rndlinux.c
 @@ -48,6 +48,10 @@
@@ -90,24 +76,16 @@
  #include "types.h"
  #include "g10lib.h"
  #include "rand-internal.h"
---- tests/t-common.h
-+++ tests/t-common.h
-@@ -149,16 +149,8 @@
- #endif
- }
- 
--
--/* Convenience macro for initializing gcrypt with error checking.  */
--#define xgcry_control(cmd)                                      \
--  do {                                                          \
--    gcry_error_t err__ = gcry_control cmd;                      \
--    if (err__)                                                  \
--      die ("line %d: gcry_control (%s) failed: %s",             \
--           __LINE__, #cmd, gcry_strerror (err__));              \
--  } while (0)
--
-+/* Avoid compile failures */
-+#define xgcry_control gcry_control
- 
- /* Split a string into colon delimited fields A pointer to each field
-  * is stored in ARRAY.  Stop splitting at ARRAYSIZE fields.  The
+--- tests/Makefile.in
++++ tests/Makefile.in
+@@ -942,6 +942,10 @@
+ check-TESTS: $(TESTS)
+ 	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
+ 	srcdir=$(srcdir); export srcdir; \
++	gcrypt_libdir=`dirname $$PWD`/src/.libs; \
++	LD_LIBRARY_PATH=`echo "$$gcrypt_libdir:$$LD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
++	DYLD_LIBRARY_PATH=`echo "$$gcrypt_libdir:$$DYLD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
++	export LD_LIBRARY_PATH; export DYLD_LIBRARY_PATH; \
+ 	list=' $(TESTS) '; \
+ 	$(am__tty_colors); \
+ 	if test -n "$$list"; then \
