@@ -90,8 +90,7 @@ then
     echo "Failed to update pkg.m4"
     echo "************************"
 else
-    chmod u+rw m4/pkg.m4
-    chmod go+r m4/pkg.m4
+    chmod u=rw,go=r m4/pkg.m4
 fi
 
 # Fix sys_lib_dlsearch_path_spec
@@ -105,14 +104,9 @@ echo "************************"
 CONFIG_OPTS=()
 CONFIG_OPTS+=("--without-ncurses")
 CONFIG_OPTS+=("--without-ncursesw")
+CONFIG_OPTS+=("--disable-threads")
 CONFIG_OPTS+=("--disable-valgrind-tests")
 CONFIG_OPTS+=("HELP2MAN=true")
-
-if [[ "$IS_SOLARIS" -ne 0 ]]; then
-    CONFIG_OPTS+=("--enable-threads=solaris")
-else
-    CONFIG_OPTS+=("--enable-threads=posix")
-fi
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -141,6 +135,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+if false; then
 echo "patching Makefiles..."
 IFS= find "$PWD" -name 'Makefile' -print | while read -r file
 do
@@ -155,6 +150,7 @@ if true; then
     cp -p "$file" "$file.fixed"
     sed 's/<term.h>/"ncurses\/term.h"/g' "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
+fi
 fi
 
 echo ""
