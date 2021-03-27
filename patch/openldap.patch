@@ -1,19 +1,5 @@
 # Written and placed in public domain by Jeffrey Walton.
 # This patch fixes some issues with OpenLDAP.
---- servers/slapd/back-mdb/back-mdb.h
-+++ servers/slapd/back-mdb/back-mdb.h
-@@ -173,11 +173,7 @@
- #define CACHELINE	64
- #endif
- 
--#if defined(__i386) || defined(__x86_64)
--#define MISALIGNED_OK	1
--#else
- #define	ALIGNER	(sizeof(size_t)-1)
--#endif
- 
- typedef struct IndexRbody {
- 	AttrInfo *ai;
 --- libraries/libldap/cyrus.c
 +++ libraries/libldap/cyrus.c
 @@ -41,6 +41,10 @@
@@ -29,7 +15,7 @@
  #else
 --- libraries/liblmdb/mdb.c
 +++ libraries/liblmdb/mdb.c
-@@ -184,10 +187,6 @@
+@@ -187,10 +187,6 @@
  #define BIG_ENDIAN	__BIG_ENDIAN
  #endif
  
@@ -40,7 +26,7 @@
  #include "lmdb.h"
  #include "midl.h"
  
-@@ -767,7 +766,7 @@
+@@ -770,7 +766,7 @@
  #endif
  		char pad[(MNAME_LEN+CACHELINE-1) & ~(CACHELINE-1)];
  	} mt2;
@@ -49,7 +35,7 @@
  } MDB_txninfo;
  
  	/** Lockfile format signature: version, features and field layout */
-@@ -830,7 +829,7 @@
+@@ -833,7 +829,7 @@
  		} pb;
  		uint32_t	pb_pages;	/**< number of overflow pages */
  	} mp_pb;
@@ -58,7 +44,7 @@
  } MDB_page;
  
  	/** Size of the page header, excluding dynamic data at the end */
-@@ -913,7 +912,7 @@
+@@ -916,7 +912,7 @@
  /** @} */
  	unsigned short	mn_flags;		/**< @ref mdb_node */
  	unsigned short	mn_ksize;		/**< key size */
@@ -67,7 +53,7 @@
  } MDB_node;
  
  	/** Size of the node header, excluding dynamic data at the end */
-@@ -964,9 +963,13 @@
+@@ -967,9 +963,13 @@
  #else
  #if SIZE_MAX > 4294967295UL
  #define COPY_PGNO(dst,src)	do { \
@@ -84,7 +70,7 @@
  	*d++ = *s++;	\
  	*d++ = *s++;	\
  	*d++ = *s++;	\
-@@ -974,9 +977,11 @@
+@@ -977,9 +977,11 @@
  } while (0)
  #else
  #define COPY_PGNO(dst,src)	do { \
@@ -109,3 +95,17 @@
  static tls_impl *tls_imp = &ldap_int_tls_impl;
  #define HAS_TLS( sb )	ber_sockbuf_ctrl( sb, LBER_SB_OPT_HAS_IO, \
  				(void *)tls_imp->ti_sbio )
+--- servers/slapd/back-mdb/back-mdb.h
++++ servers/slapd/back-mdb/back-mdb.h
+@@ -173,11 +173,7 @@
+ #define CACHELINE	64
+ #endif
+ 
+-#if defined(__i386) || defined(__x86_64)
+-#define MISALIGNED_OK	1
+-#else
+ #define	ALIGNER	(sizeof(size_t)-1)
+-#endif
+ 
+ typedef struct IndexRbody {
+ 	AttrInfo *ai;
