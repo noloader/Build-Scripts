@@ -46,6 +46,14 @@ fi
 
 ###############################################################################
 
+if ! ./build-gnutls.sh
+then
+    echo "Failed to build GnuTLS"
+    exit 1
+fi
+
+###############################################################################
+
 echo ""
 echo "========================================"
 echo "============ GNU Mailutils ============="
@@ -91,6 +99,9 @@ echo "**********************"
     --libdir="${INSTX_LIBDIR}" \
     --enable-static \
     --enable-shared \
+    --with-libiconv-prefix="${INSTX_PREFIX}" \
+    --with-libintl-prefix="${INSTX_PREFIX}" \
+    --with-gnutls \
     --enable-ipv6 \
     --disable-radius \
     --disable-python
