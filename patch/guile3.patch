@@ -14,30 +14,14 @@
  
  
  
-@@ -120,9 +124,13 @@
-    it's compiled down to native code.  But the existence of native code
-    is a detail that's fully encapsulated; systems-oriented Guile Scheme
-    can walk stacks, throw errors, reinstate partial continuations, and
--   so on without being aware of the existence of the JIT.  */
--
-+   so on without being aware of the existence of the JIT.
- 
-+   For JIT on Apple hardware see the following articles.
-+     * https://www.wwdcnotes.com/notes/wwdc20/10686/
-+     * https://developer.apple.com/documentation/apple-silicon/porting-just-in-time-compilers-to-apple-silicon
-+   */
-+   
- 
- 
- static const uint32_t default_jit_threshold = 1000;
-@@ -292,3 +300,6 @@
+@@ -292,6 +300,37 @@
  #define LENGTH_DOP3(a,b,c) 3
  #define LENGTH_DOP4(a,b,c,d) 4
  
 +#define GUILE_UNUSED(x) ((void)(x))
 +
 +inline int
-apple_mmap_write (void *base, size_t len)
++apple_mmap_write (void *base, size_t len)
 +{
 +  GUILE_UNUSED(base); GUILE_UNUSED(len);
 +#if defined(TARGET_OSX)
@@ -50,7 +34,7 @@ apple_mmap_write (void *base, size_t len)
 +}
 +
 +inline int
-apple_mmap_execute (void *base, size_t len)
++apple_mmap_execute (void *base, size_t len)
 +{
 +  GUILE_UNUSED(base); GUILE_UNUSED(len);
 +#if defined(TARGET_OSX)
