@@ -28,6 +28,11 @@ fi
 
 ###############################################################################
 
+echo ""
+echo "========================================"
+echo "=========== Mozilla Root CAs ==========="
+echo "========================================"
+
 # setup-cacert.sh writes the certs locally for the user so we
 # can download cacerts.pem using cURL or Wget. build-cacert.sh
 # installs cacerts.pem in ${INSTX_CACERT_PATH}. Programs like
@@ -52,13 +57,6 @@ else
     #echo "$PKG_NAME is already installed."
     exit 0
 fi
-
-###############################################################################
-
-echo ""
-echo "========================================"
-echo "=========== Mozilla Root CAs ==========="
-echo "========================================"
 
 echo ""
 echo "Installed cacert.pem"
