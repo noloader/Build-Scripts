@@ -102,6 +102,19 @@ echo "************************"
 echo "Configuring package"
 echo "************************"
 
+CONFIG_OPTS=()
+CONFIG_OPTS+=("--enable-pcregrep-libz")
+CONFIG_OPTS+=("--enable-pcregrep-libbz2")
+
+# Disable JIT for Apple M1's. The Guile devs need to port it.
+# https://www.wwdcnotes.com/notes/wwdc20/10686/
+apple_silicon=$(sysctl machdep.cpu.brand_string 2>/dev/null | grep -i -c "Apple M1")
+if [[ "${apple_silicon}" -eq 1 ]]; then
+    CONFIG_OPTS+=("--disable-jit")
+else
+    CONFIG_OPTS+=("--enable-jit")
+fi
+
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     pcre_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${PCRE_DIR}"
     pcre_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${PCRE_DIR}"
@@ -121,10 +134,9 @@ fi
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
     --libdir="${INSTX_LIBDIR}" \
+    --enable-static \
     --enable-shared \
-    --enable-pcregrep-libz \
-    --enable-jit \
-    --enable-pcregrep-libbz2
+    "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
     echo ""

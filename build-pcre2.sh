@@ -102,6 +102,20 @@ echo "*************************"
 echo "Configuring package"
 echo "*************************"
 
+CONFIG_OPTS=()
+CONFIG_OPTS+=("--enable-pcre2-8")
+CONFIG_OPTS+=("--enable-pcre2-16")
+CONFIG_OPTS+=("--enable-pcre2-32")
+
+# Disable JIT for Apple M1's. The Guile devs need to port it.
+# https://www.wwdcnotes.com/notes/wwdc20/10686/
+apple_silicon=$(sysctl machdep.cpu.brand_string 2>/dev/null | grep -i -c "Apple M1")
+if [[ "${apple_silicon}" -eq 1 ]]; then
+    CONFIG_OPTS+=("--disable-jit")
+else
+    CONFIG_OPTS+=("--enable-jit")
+fi
+
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     pcre2_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${PCRE2_DIR}"
     pcre2_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${PCRE2_DIR}"
@@ -123,9 +137,7 @@ fi
     --libdir="${INSTX_LIBDIR}" \
     --enable-static \
     --enable-shared \
-    --enable-pcre2-8 \
-    --enable-pcre2-16 \
-    --enable-pcre2-32
+    "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
     echo ""
