@@ -78,6 +78,9 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
+echo ""
+echo "MicroHTTPD ${HTTPD_VER}..."
+
 if ! "$WGET" -q -O "$HTTPD_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/libmicrohttpd/$HTTPD_TAR"
 then
