@@ -46,14 +46,6 @@ fi
 
 ###############################################################################
 
-if ! ./build-bzip.sh
-then
-    echo "Failed to build Bzip2"
-    exit 1
-fi
-
-###############################################################################
-
 if ! ./build-base.sh
 then
     echo "Failed to build GNU base packages"
@@ -73,14 +65,6 @@ fi
 if ! ./build-gmp.sh
 then
     echo "Failed to build GMP"
-    exit 1
-fi
-
-###############################################################################
-
-if ! ./build-gpgerror.sh
-then
-    echo "Failed to build Libgpg-error"
     exit 1
 fi
 
