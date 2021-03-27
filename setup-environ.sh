@@ -319,6 +319,10 @@ elif [[ "${IS_SUN_SPARCv9}" -eq 1 ]]; then
     AUTOCONF_BUILD=$(${SED} 's/sparc/sparcv9/g' <<< "${AUTOCONF_BUILD}")
 fi
 
+# Apple M1 fixup
+if [[ $(sysctl machdep.cpu.brand_string 2>/dev/null | "${GREP}" -i -c "Apple M1") -eq 1 ]]; then
+    AUTOCONF_BUILD="aarch64-apple-darwin"
+fi
 export AUTOCONF_BUILD
 
 ###############################################################################
