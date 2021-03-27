@@ -148,7 +148,7 @@ CONFIG_OPTS=()
 CONFIG_OPTS+=("--without-all")
 CONFIG_OPTS+=("--with-xml2")
 CONFIG_OPTS+=("--with-libgmp")
-CONFIG_OPTS+=("--without-zlib")
+CONFIG_OPTS+=("--with-zlib")
 
 if [[ "${IS_DARWIN}" -eq 1 ]]; then
     CONFIG_OPTS+=('--with-toolkit-scroll-bars')
