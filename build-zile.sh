@@ -103,7 +103,6 @@ echo "Configuring package"
 echo "************************"
 
 CONFIG_OPTS=()
-# CONFIG_OPTS+=("--with-ncurses")
 CONFIG_OPTS+=("--without-ncurses")
 CONFIG_OPTS+=("--without-ncursesw")
 CONFIG_OPTS+=("--disable-valgrind-tests")
