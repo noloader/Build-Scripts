@@ -288,6 +288,7 @@ if [[ "IS_LINUX" -eq 1 ]]; then
     echo 'for lib in ncurses ncurses++ form panel menu tinfo ; do'
     echo '    rm -vf                    ${lib_dir}/lib${lib}.so'
     echo '    echo "INPUT(-l${lib}w)" > ${lib_dir}/lib${lib}.so'
+    echo '    ln -sfv lib${lib}.so.6    ${lib_dir}/lib${lib}.so'
     echo 'done'
     echo ''
 
@@ -299,6 +300,7 @@ else
     echo 'for lib in ncurses ncurses++ form panel menu tinfo ; do'
     echo '    rm -vf                     ${lib_dir}/lib${lib}.so'
     echo '    ln -sfv lib${lib}w.so      ${lib_dir}/lib${lib}.so'
+    echo '    ln -sfv lib${lib}w.so.6    ${lib_dir}/lib${lib}.so'
     echo 'done'
     echo ''
 

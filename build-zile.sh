@@ -135,24 +135,6 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-if false; then
-echo "patching Makefiles..."
-IFS= find "$PWD" -name 'Makefile' -print | while read -r file
-do
-    cp -p "$file" "$file.fixed"
-    sed 's/-lncurses/-lncursesw -ltinfo/g' "$file" > "$file.fixed"
-    mv "$file.fixed" "$file"
-done
-
-echo "patching source files..."
-if true; then
-    file="src/term_curses.c"
-    cp -p "$file" "$file.fixed"
-    sed 's/<term.h>/"ncurses\/term.h"/g' "$file" > "$file.fixed"
-    mv "$file.fixed" "$file"
-fi
-fi
-
 echo ""
 echo "************************"
 echo "Building package"
