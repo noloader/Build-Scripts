@@ -159,8 +159,16 @@ CONFIG_OPTS+=("--with-libiconv-prefix=${INSTX_PREFIX}")
 CONFIG_OPTS+=("--with-libltdl-prefix=${INSTX_PREFIX}")
 CONFIG_OPTS+=("--with-libintl-prefix=${INSTX_PREFIX}")
 
-# --with-bdw-gc="${INSTX_PKGCONFIG}/"
-# --disable-posix --disable-networking
+# Maybe?
+#   --with-bdw-gc="${INSTX_PKGCONFIG}"
+#   --disable-posix --disable-networking
+
+# Disable JIT for Apple M1's. The Guile devs need to port it.
+# https://www.wwdcnotes.com/notes/wwdc20/10686/
+apple_silicon=$(sysctl machdep.cpu.brand_string 2>/dev/null | grep -i -c "Apple M1")
+if [[ "${apple_silicon}" -eq 1 ]]; then
+    CONFIG_OPTS+=("--enable-jit=no")
+fi
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     guile_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GUILE_DIR}"
