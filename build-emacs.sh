@@ -144,15 +144,23 @@ else
     emacs_cxxflags="${INSTX_CXXFLAGS}"
 fi
 
-CONFIG_OPTS=('--with-xml2' '--with-libgmp' '--with-gnutls=no'
-    '--without-x' '--without-sound' '--without-xpm'
-    '--without-jpeg' '--without-tiff' '--without-gif' '--without-png'
-    '--without-rsvg' '--without-imagemagick' '--without-xft' '--without-libotf'
-    '--without-m17n-flt' '--without-xaw3d' '--without-toolkit-scroll-bars'
-    '--without-gpm' '--without-dbus' '--without-gconf' '--without-gsettings'
-    '--without-makeinfo' '--without-compress-install')
+CONFIG_OPTS=()
+CONFIG_OPTS+=("--without-all")
+CONFIG_OPTS+=("--with-xml2")
+CONFIG_OPTS+=("--with-libgmp")
+CONFIG_OPTS+=("--without-zlib")
 
-if [[ ! -e "/usr/include/selinux/context.h" ]]; then
+if [[ "${IS_DARWIN}" -eq 1 ]]; then
+    CONFIG_OPTS+=('--with-toolkit-scroll-bars')
+fi
+if [[ $(command -v gnutls-cli 2>/dev/null) ]]; then
+    CONFIG_OPTS+=('--with-gnutls')
+else
+    CONFIG_OPTS+=('--without-gnutls')
+fi
+if [[ -e "/usr/include/selinux/context.h" ]]; then
+    CONFIG_OPTS+=('--with-selinux')
+else
     CONFIG_OPTS+=('--without-selinux')
 fi
 
