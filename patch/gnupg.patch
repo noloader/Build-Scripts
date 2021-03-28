@@ -2,7 +2,7 @@
 # This patch fixes some issues with GnuPG.
 --- g10/keylist.c
 +++ g10/keylist.c
-@@ -1636,8 +1636,8 @@
+@@ -1681,8 +1681,8 @@
            char *issuer_fpr = NULL;
            char *reason_text = NULL;
            char *reason_comment = NULL;
@@ -25,7 +25,7 @@
  /* ADJ is enough slack to align cells in a TYPE_BITS-bit boundary */
 --- sm/certdump.c
 +++ sm/certdump.c
-@@ -695,9 +695,13 @@
+@@ -774,9 +774,13 @@
        gpg_err_set_errno (c->error);
        return -1;
      }
