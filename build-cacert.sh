@@ -42,24 +42,23 @@ bootstrap_cacert=$(sed '4!d' "bootstrap/cacert.pem")
 installed_cacert=$(sed '4!d' "$INSTX_CACERT_FILE" 2>/dev/null)
 
 # The bootstrap cacert.pem is the latest
-if [[ "x$bootstrap_cacert" != "x$installed_cacert" ]]; then
-    echo ""
-    echo "========================================"
-    echo "=========== Mozilla Root CAs ==========="
-    echo "========================================"
-
-    echo ""
-    echo "Installing cacert.pem"
-    echo "  installed: $(cut -f 2-5 -d ':' <<< $installed_cacert)"
-    echo "  available: $(cut -f 2-5 -d ':' <<< $bootstrap_cacert)"
-
-else
+if [[ "x$bootstrap_cacert" == "x$installed_cacert" ]]; then
     #echo ""
     #echo "$PKG_NAME is already installed."
     exit 0
 fi
 
 ###############################################################################
+
+echo ""
+echo "========================================"
+echo "=========== Mozilla Root CAs ==========="
+echo "========================================"
+
+echo ""
+echo "Installing cacert.pem"
+echo "  installed: $(cut -f 2-5 -d ':' <<< $installed_cacert)"
+echo "  available: $(cut -f 2-5 -d ':' <<< $bootstrap_cacert)"
 
 BOOTSTRAP_CACERT_FILE="bootstrap/cacert.pem"
 
