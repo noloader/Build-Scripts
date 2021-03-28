@@ -1,5 +1,6 @@
 # Written and placed in public domain by Jeffrey Walton.
 # This patch fixes some issues with GnuPG on Apple M1.
+# Also see https://dev.gnupg.org/T5370
 --- mpi/aarch64/mpih-add1.S
 +++ mpi/aarch64/mpih-add1.S
 @@ -36,7 +36,13 @@

@@ -1,5 +1,6 @@
 # Written and placed in public domain by Jeffrey Walton.
 # This patch fixes some issues with ntbTLS
+# Also see https://dev.gnupg.org/T5368
 --- src/protocol.c
 +++ src/protocol.c
 @@ -687,7 +687,7 @@
