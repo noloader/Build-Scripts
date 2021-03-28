@@ -295,6 +295,7 @@ do
 
     sed -e "s/$origin_bad/$origin_good/g" \
         -e "s/$miniperl_bad/$miniperl_good/g" \
+        -e "s/ -no-cpp-precomp//g" \
         "$file" > "$file.fixed" && \
     mv "$file.fixed" "$file"
 
