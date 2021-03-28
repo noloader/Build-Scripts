@@ -2,16 +2,7 @@
 # This patch fixes some issues with GnuPG.
 --- src/argparse.c
 +++ src/argparse.c
-@@ -56,7 +56,7 @@
- 
- 
- /* Hidden argparse flag used to mark the object as initialized.  */
--#define ARGPARSE_FLAG__INITIALIZED  (1<< ((8*SIZEOF_INT)-1))
-+#define ARGPARSE_FLAG__INITIALIZED  (1U<< ((8*SIZEOF_INT)-1))
- 
- /* Special short options which are auto-inserterd.  Must fit into an
-  * unsigned short.  */
-@@ -1905,7 +1905,7 @@
+@@ -1941,7 +1941,7 @@
    int argc;
    char **argv;
    char *s, *s2;
@@ -20,6 +11,19 @@
  
    if (no_init)
      ;
+--- tests/Makefile.in
++++ tests/Makefile.in
+@@ -647,6 +647,10 @@
+ check-TESTS: $(TESTS)
+ 	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
+ 	srcdir=$(srcdir); export srcdir; \
++	gpgerror_libdir=`dirname $$PWD`/src/.libs; \
++	LD_LIBRARY_PATH=`echo "$$gpgerror_libdir:$$LD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
++	DYLD_LIBRARY_PATH=`echo "$$gpgerror_libdir:$$DYLD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
++	export LD_LIBRARY_PATH; export DYLD_LIBRARY_PATH; \
+ 	list=' $(TESTS) '; \
+ 	$(am__tty_colors); \
+ 	if test -n "$$list"; then \
 --- tests/t-logging.c
 +++ tests/t-logging.c
 @@ -76,15 +76,21 @@
@@ -213,16 +217,3 @@
      }
    gpgrt_argparse (NULL, &pargs, NULL);
  
---- tests/Makefile.in
-+++ tests/Makefile.in
-@@ -646,6 +646,10 @@
- check-TESTS: $(TESTS)
- 	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
- 	srcdir=$(srcdir); export srcdir; \
-+	gpgerror_libdir=`dirname $$PWD`/src/.libs; \
-+	LD_LIBRARY_PATH=`echo "$$gpgerror_libdir:$$LD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
-+	DYLD_LIBRARY_PATH=`echo "$$gpgerror_libdir:$$DYLD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
-+	export LD_LIBRARY_PATH; export DYLD_LIBRARY_PATH; \
- 	list=' $(TESTS) '; \
- 	$(am__tty_colors); \
- 	if test -n "$$list"; then \
