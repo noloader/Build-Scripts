@@ -20,7 +20,7 @@
 #   libgettextlib.so: libiconv.so
 #   libgettextpo.so:  libiconv.so, libiunistring.so
 #   libgettextsrc.so: libz.so, libiconv.so, libiunistring.so, libxml2.so,
-#                     libtinfow.so, libgettextlib.so, libtextstyle.so
+#                     libgettextlib.so, libtextstyle.so
 #   libiconv.so:      libgettextlib.so
 #   libiunistring.so: libiconv.so
 
