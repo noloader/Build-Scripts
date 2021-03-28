@@ -97,9 +97,20 @@ rm -rf "$NTBTLS_DIR" &>/dev/null
 tar xjf "$NTBTLS_TAR"
 cd "$NTBTLS_DIR"
 
+# Patches are created with 'diff -u' from the pkg root directory.
+if [[ -e ../patch/ntbtls.patch ]]; then
+    echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/ntbtls.patch
+fi
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -122,9 +133,11 @@ echo "**********************"
     --with-ksba-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "**************************"
     echo "Failed to configure ntbTLS"
     echo "**************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -133,6 +146,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -140,9 +154,11 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "**************************"
     echo "Failed to build ntbTLS"
     echo "**************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -153,6 +169,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -160,13 +177,16 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "**************************"
     echo "Failed to test ntbTLS"
     echo "**************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
