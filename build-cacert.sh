@@ -43,8 +43,13 @@ set +x
 bootstrap_cacert="$(sed '4!d' "bootstrap/cacert.pem" 2>/dev/null | cut -b 40- | awk '$1=$1')"
 installed_cacert="$(sed '4!d' "$INSTX_CACERT_FILE" 2>/dev/null | cut -b 40- | awk '$1=$1')"
 
+# Wipe installed if the key is not present
+if [[ ! -f "${INSTX_PKG_CACHE}/${PKG_NAME}" ]]; then
+    installed_cacert=""
+fi
+
 if [[ -z "${installed_cacert}" ]]; then
-    installed_cacert="not available"
+    installed_cacert="Not available"
 fi
 
 # The bootstrap cacert.pem is the latest
