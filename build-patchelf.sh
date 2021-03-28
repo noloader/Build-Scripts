@@ -91,9 +91,18 @@ cd "$PATCHELF_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/patchelf.patch ]]; then
-    patch -u -p0 < ../patch/patchelf.patch
     echo ""
+    echo "****************************"
+    echo "Patching package"
+    echo "****************************"
+
+    patch -u -p0 < ../patch/patchelf.patch
 fi
+
+echo ""
+echo "****************************"
+echo "Bootstrapping package"
+echo "****************************"
 
 if ! ./bootstrap.sh
 then
@@ -112,9 +121,9 @@ echo "****************************"
 echo "Configuring package"
 echo "****************************"
 
-# patchelf does not have regular dependencies, like libbzip2,
+# patchelf does not have regular dependencies, like zLib,
 # so we don't need LDFLAGS. We can omit the variable since
-# our standard LDFLAGS mucks with the self tests.
+# our standard LDFLAGS mucks with patchelf self tests.
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -133,6 +142,8 @@ if [[ "$?" -ne 0 ]]; then
     echo "****************************"
     echo "Failed to configure patchelf"
     echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -152,6 +163,8 @@ then
     echo "****************************"
     echo "Failed to build patchelf"
     echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -170,7 +183,14 @@ then
     echo "****************************"
     echo "Failed to test patchelf"
     echo "****************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     # exit 1
+
+    echo ""
+    echo "****************************"
+    echo "Installing anyways"
+    echo "****************************"
 fi
 
 echo ""
