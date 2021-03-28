@@ -21,6 +21,27 @@
  #ifndef STR
  # define STR(v) #v
  #endif
+--- src/cms.c
++++ src/cms.c
+@@ -1393,6 +1393,9 @@
+   const unsigned char *der;
+   size_t derlen;
+
++  /* Unitialized finding */
++  n = n2 = NULL;
++
+   if (!cms)
+     return NULL;
+   if (!cms->recp_info)
+@@ -1482,7 +1485,7 @@
+       /* gpgrt_log_debug ("%s: encryptedKey:\n", __func__); */
+       /* dbg_print_sexp (string); */
+     }
+-  else if (!strcmp (n->name, "kekri"))
++  else if (n && !strcmp (n->name, "kekri"))
+     return NULL; /*GPG_ERR_UNSUPPORTED_CMS_OBJ*/
+   else
+     return NULL; /*GPG_ERR_INV_CMS_OBJ*/
 --- tests/Makefile.in
 +++ tests/Makefile.in
 @@ -631,6 +631,10 @@
