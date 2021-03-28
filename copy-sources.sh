@@ -38,6 +38,7 @@ if [[ -z "${dest_dir}" ]]; then
 fi
 
 cd "${src_dir}" || exit 1
+rm -rf "${dest_dir}"
 mkdir -p "${dest_dir}"
 
 IFS= find "./" \( -name '*.h' -o -name '*.hpp' -o -name '*.hxx' -o \
