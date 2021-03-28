@@ -78,16 +78,22 @@ fi
 cd "$UNISTR_DIR" || exit 1
 
 if [[ -e ../patch/unistring-git.patch ]]; then
-    patch -u -p0 < ../patch/unistring-git.patch
     echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
+
+    patch -u -p0 < ../patch/unistring-git.patch
 fi
 
+echo ""
 echo "**********************"
 echo "Bootstrapping package"
 echo "**********************"
 
 if ! ./gitsub.sh pull;
 then
+    echo ""
     echo "*****************************"
     echo "Failed to bootstrap Unistring"
     echo "*****************************"
@@ -97,6 +103,7 @@ fi
 
 if ! ./autogen.sh;
 then
+    echo ""
     echo "*****************************"
     echo "Failed to bootstrap Unistring"
     echo "*****************************"
@@ -107,6 +114,7 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -135,6 +143,7 @@ fi
     --with-libiconv-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "*****************************"
     echo "Failed to configure Unistring"
     echo "*****************************"
@@ -147,6 +156,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "*****************************"
 echo "Building package"
 echo "*****************************"
@@ -154,6 +164,7 @@ echo "*****************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*****************************"
     echo "Failed to build Unistring"
     echo "*****************************"
@@ -168,6 +179,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "*****************************"
 echo "Testing package"
 echo "*****************************"
@@ -178,17 +190,24 @@ echo "*****************************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*****************************"
     echo "Failed to test Unistring"
     echo "*****************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
     # exit 1
+
+    echo ""
+    echo "*****************************"
+    echo "Installing anyways..."
+    echo "*****************************"
 fi
 
 # Fix runpaths again
 bash ../fix-runpath.sh
 
+echo ""
 echo "*****************************"
 echo "Installing package"
 echo "*****************************"
