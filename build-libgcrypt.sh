@@ -172,16 +172,10 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-# Fix runpaths
-bash ../fix-runpath.sh
-
 echo ""
 echo "*****************************"
 echo "Testing package"
 echo "*****************************"
-
-# libgcrypt fails random tests on OS X. Allow one failure
-# in random due to SIP. Also see https://dev.gnupg.org/T5009.
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}" 2>&1 | tee "${GCRYPT_LOG}"
@@ -191,19 +185,8 @@ then
     echo "Failed to test libgcrypt"
     echo "*****************************"
 
-    # This package only works on Linux...
-    if [[ "${IS_DARWIN}" -eq 1 ]]; then
-        bash ../collect-logs.sh "${PKG_NAME}"
-        # exit 1
-
-        echo ""
-        echo "*****************************"
-        echo "Installing anyways..."
-        echo "*****************************"
-    else
-        bash ../collect-logs.sh "${PKG_NAME}"
-        exit 1
-    fi
+    bash ../collect-logs.sh "${PKG_NAME}"
+    exit 1
 fi
 
 # Fix runpaths

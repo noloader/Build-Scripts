@@ -82,10 +82,10 @@ cd "$LIBKSBA_DIR"
 #cp tests/Makefile.in tests/Makefile.in.orig
 
 if [[ -e ../patch/libksba.patch ]]; then
-	echo ""
-	echo "**********************"
-	echo "Patching package"
-	echo "**********************"
+    echo ""
+    echo "**********************"
+    echo "Patching package"
+    echo "**********************"
 
     patch -u -p0 < ../patch/libksba.patch
 fi
