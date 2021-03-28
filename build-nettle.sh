@@ -140,15 +140,15 @@ then
     have_aes=$(${CC} ${CFLAGS} -maes -dM -E - </dev/null 2>&1 | grep -i -c '__AES__')
     have_sha=$(${CC} ${CFLAGS} -msha -dM -E - </dev/null 2>&1 | grep -i -c '__SHA__')
 
-    if [[ "$have_aes" -eq 1 || "$have_sha" -eq 1 ]]; then
-        CONFIG_OPTS+=("--enable-fat")
-    fi
-
-    if [[ "$have_aes" -eq 0 ]]; then
+    if [[ "$have_aes" -eq 0 || "$have_sha" -eq 0 ]]; then
+        CONFIG_OPTS+=("--disable-fat")
+		CONFIG_OPTS+=("--disable-x86-aesni")
+		CONFIG_OPTS+=("--disable-x86-sha-ni")
+    elif [[ "$have_aes" -eq 0 ]]; then
+		CONFIG_OPTS+=("--disable-fat")
         CONFIG_OPTS+=("--disable-x86-aesni")
-    fi
-
-    if [[ "$have_sha" -eq 0 ]]; then
+    elif [[ "$have_sha" -eq 0 ]]; then
+		CONFIG_OPTS+=("--disable-fat")
         CONFIG_OPTS+=("--disable-x86-sha-ni")
     fi
 fi
@@ -215,7 +215,7 @@ if [[ "$?" -ne 0 ]]; then
 fi
 
 # Fix LD_LIBRARY_PATH and DYLD_LIBRARY_PATH
-bash ../fix-library-path.sh
+# bash ../fix-library-path.sh
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
