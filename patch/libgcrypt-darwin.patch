@@ -3,14 +3,14 @@
 --- mpi/aarch64/mpih-mul1.S
 +++ mpi/aarch64/mpih-mul1.S
 @@ -34,9 +34,9 @@
-
+ 
  .text
-
+ 
 -.globl _gcry_mpih_mul_1
-+GLOBL   C_SYMBOL_NAME(_gcry_mpih_mul_1)
++.globl   C_SYMBOL_NAME(_gcry_mpih_mul_1)
  ELF(.type  _gcry_mpih_mul_1,%function)
 -_gcry_mpih_mul_1:
 +C_SYMBOL_NAME(_gcry_mpih_mul_1:)
-        CFI_STARTPROC()
-        and     w5, w2, #3;
-        mov     x4, xzr;
+ 	CFI_STARTPROC()
+ 	and	w5, w2, #3;
+ 	mov	x4, xzr;
