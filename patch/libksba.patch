@@ -1,3 +1,26 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with GnuPG.
+--- src/gen-help.h
++++ src/gen-help.h
+@@ -38,13 +38,15 @@
+ #define xtrymalloc(a) malloc ((a))
+
+ char *gen_help_stpcpy (char *a, const char *b);
+-#define stpcpy(a, b)  gen_help_stpcpy ((a), (b))
+-
+-
+
++#ifdef stpcpy
++# undef stpcpy
++#endif
++#define stpcpy(a, b)  gen_help_stpcpy ((a), (b))
+
+ #define DIM(v) (sizeof(v)/sizeof((v)[0]))
+ #define DIMof(type,member)   DIM(((type *)0)->member)
++
+ #ifndef STR
+ # define STR(v) #v
+ #endif
 --- tests/Makefile.in
 +++ tests/Makefile.in
 @@ -631,6 +631,10 @@
