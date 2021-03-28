@@ -265,9 +265,7 @@ then
     # exit 1
 
     # Known problems on OS X, both old and new.
-    if [[ "${IS_DARWIN}" -eq 1 ]]; then
-        :
-    else
+    if [[ "${IS_DARWIN}" -ne 1 ]]; then
         exit 1
     fi
 
