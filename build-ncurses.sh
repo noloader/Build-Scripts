@@ -51,11 +51,11 @@ fi
 
 # Remove old Termcap/libtinfo{w}
 if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S find ${INSTX_LIBDIR} -name 'libtinfo*' -exec rm -f {} ;
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S find ${INSTX_PREFIX}/include -name 'termcap*' -exec rm -f {} ;
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S find ${INSTX_LIBDIR} -name 'libtinfo*' -exec rm -f {} \;
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S find ${INSTX_PREFIX}/include -name 'termcap*' -exec rm -f {} \;
 else
-    find ${INSTX_LIBDIR} -name 'libtinfo*' -exec rm -f {} ;
-    find ${INSTX_PREFIX}/include -name 'termcap*' -exec rm -f {} ;
+    find ${INSTX_LIBDIR} -name 'libtinfo*' -exec rm -f {} \;
+    find ${INSTX_PREFIX}/include -name 'termcap*' -exec rm -f {} \;
 fi
 
 ###############################################################################
