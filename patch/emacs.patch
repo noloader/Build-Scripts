@@ -22,3 +22,16 @@
      .fdiag = buffer + size_b + 1,
      .bdiag = buffer + diags + size_b + 1,
      .heuristic = true,
+--- test/lisp/autorevert-tests.el
++++ test/lisp/autorevert-tests.el
+@@ -131,7 +131,9 @@
+                        (format-message
+                         "Reverting buffer `%s'\\." (buffer-name buffer))
+                        auto-revert--messages)))
+-      (if (with-current-buffer buffer auto-revert-use-notify)
++      (if (and (or file-notify--library
++                   (file-remote-p temporary-file-directory)
++               (with-current-buffer buffer auto-revert-use-notify))
+           (read-event nil nil 0.1)
+         (sleep-for 0.1)))))
+ 
