@@ -131,6 +131,7 @@ if [[ "$IS_SOLARIS" -ne 0 && "$IS_SUNC" -eq 0 ]]; then
 fi
 
 CONFIG_OPTS=()
+CONFIG_OPTS+=("--enable-static")
 CONFIG_OPTS+=("--enable-shared")
 CONFIG_OPTS+=("--disable-documentation")
 
@@ -140,7 +141,7 @@ then
     have_aes=$(${CC} ${CFLAGS} -maes -dM -E - </dev/null 2>&1 | grep -i -c '__AES__')
     have_sha=$(${CC} ${CFLAGS} -msha -dM -E - </dev/null 2>&1 | grep -i -c '__SHA__')
 
-    if [[ "$have_aes" -eq 0 || "$have_sha" -eq 0 ]]; then
+    if [[ "$have_aes" -eq 0 && "$have_sha" -eq 0 ]]; then
         CONFIG_OPTS+=("--disable-fat")
         CONFIG_OPTS+=("--disable-x86-aesni")
         CONFIG_OPTS+=("--disable-x86-sha-ni")
