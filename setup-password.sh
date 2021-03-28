@@ -16,6 +16,13 @@ then
     [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
 fi
 
+# Don't prompt for password if installing into user's $HOME
+if [[ "${INSTX_PREFIX}" == "${HOME}"/* ]]; then
+    echo "PREFIX is in \$HOME. Skipping password prompt."
+    export SUDO_PASSWORD_DONE=yes
+    [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
+fi
+
 # Some sudo are too old and can't handle -E option. Check for it now.
 # https://www.sudo.ws/pipermail/sudo-users/2020-March/006327.html.
 # Since we want to be language agnostic, check for the quoted argument.
