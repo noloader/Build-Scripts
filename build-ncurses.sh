@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # Written and placed in public domain by Jeffrey Walton
-# This script builds Ncurses from sources.
+# This script builds Ncurses from sources. We do not
+# build Termcap, so there is no libtinfo{w}.
 
 # Do NOT use Ncurses 6.2. There are too many problems with the release.
 # Ncurses 6.2 does not build. It ends in a compile error. Additionally,
@@ -44,6 +45,17 @@ if [[ "${SUDO_PASSWORD_DONE}" != "yes" ]]; then
         echo "Failed to process password"
         exit 1
     fi
+fi
+
+###############################################################################
+
+# Remove old Termcap/libtinfo{w}
+if [[ -n "$SUDO_PASSWORD" ]]; then
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S find ${INSTX_LIBDIR} -name 'libtinfo*' -exec rm -f {} ;
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S find ${INSTX_PREFIX}/include -name 'termcap*' -exec rm -f {} ;
+else
+    find ${INSTX_LIBDIR} -name 'libtinfo*' -exec rm -f {} ;
+    find ${INSTX_PREFIX}/include -name 'termcap*' -exec rm -f {} ;
 fi
 
 ###############################################################################
@@ -290,7 +302,7 @@ echo "***************************"
 # JW added ncurses++ and tinfo
 if [[ "${IS_LINUX}" -eq 1 ]]; then
 
-    echo 'for lib in ncurses ncurses++ form panel menu tinfo ; do'
+    echo 'for lib in ncurses ncurses++ form panel menu ; do'
     echo '    rm -vf                    ${lib_dir}/lib${lib}.so'
     echo '    rm -vf                    ${lib_dir}/lib${lib}.so.6'
     echo '    echo "INPUT(-l${lib}w)" > ${lib_dir}/lib${lib}.so'
@@ -306,7 +318,7 @@ if [[ "${IS_LINUX}" -eq 1 ]]; then
 
 elif [[ "${IS_DARWIN}" -eq 1 ]]; then
 
-    echo 'for lib in ncurses ncurses++ form panel menu tinfo ; do'
+    echo 'for lib in ncurses ncurses++ form panel menu ; do'
     echo '    rm -vf                       ${lib_dir}/lib${lib}.dylib'
     echo '    rm -vf                       ${lib_dir}/lib${lib}.6.dylib'
     echo '    ln -sfv lib${lib}w.dylib     ${lib_dir}/lib${lib}.dylib'
@@ -322,7 +334,7 @@ elif [[ "${IS_DARWIN}" -eq 1 ]]; then
 
 else
 
-    echo 'for lib in ncurses ncurses++ form panel menu tinfo ; do'
+    echo 'for lib in ncurses ncurses++ form panel menu ; do'
     echo '    rm -vf                    ${lib_dir}/lib${lib}.so'
     echo '    rm -vf                    ${lib_dir}/lib${lib}.so.6'
     echo '    ln -sfv lib${lib}w.so     ${lib_dir}/lib${lib}.so'
@@ -341,7 +353,7 @@ fi
     echo 'cd ${lib_dir}/pkgconfig'
     echo ''
 
-    echo 'for lib in ncurses ncurses++ form panel menu tinfo ; do'
+    echo 'for lib in ncurses ncurses++ form panel menu ; do'
     echo '    rm -vf                  ${lib_dir}/pkgconfig/${lib}.pc'
     echo '    ln -sfv ${lib}w.pc      ${lib_dir}/pkgconfig/${lib}.pc'
     echo 'done'
