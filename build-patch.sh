@@ -43,9 +43,9 @@ echo "================= patch ================"
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "*************************"
 echo "Downloading package"
-echo "**********************"
+echo "*************************"
 
 if ! "$WGET" -q -O "$PATCH_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://ftp.gnu.org/gnu/patch/$PATCH_TAR"
@@ -60,16 +60,21 @@ cd "$PATCH_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/patch.patch ]]; then
-    patch -u -p0 < ../patch/patch.patch
     echo ""
+    echo "*************************"
+    echo "Patching package"
+    echo "*************************"
+
+    patch -u -p0 < ../patch/patch.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "*************************"
 echo "Configuring package"
-echo "**********************"
+echo "*************************"
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
@@ -84,7 +89,12 @@ echo "**********************"
     --libdir="${INSTX_LIBDIR}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "*************************"
     echo "Failed to configure patch"
+    echo "*************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -92,16 +102,18 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "*************************"
 echo "Building package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "*************************"
     echo "Failed to build patch"
-    echo "**********************"
+    echo "*************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
@@ -110,26 +122,29 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "*************************"
 echo "Testing package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     # At least one known failure in deep-directories.
     # https://lists.gnu.org/archive/html/bug-patch/2020-09/msg00000.html
-    echo "**********************"
+    echo ""
+    echo "*************************"
     echo "Failed to test patch"
-    echo "**********************"
+    echo "*************************"
 
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "*************************"
 echo "Installing package"
-echo "**********************"
+echo "*************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
