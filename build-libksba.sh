@@ -62,9 +62,13 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
+echo ""
+echo "libksba ${LIBKSBA_VER}..."
+
 if ! "$WGET" -q -O "$LIBKSBA_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
      "https://www.gnupg.org/ftp/gcrypt/libksba/$LIBKSBA_TAR"
 then
+    echo ""
     echo "***************************"
     echo "Failed to download libksba"
     echo "***************************"
@@ -78,13 +82,18 @@ cd "$LIBKSBA_DIR"
 #cp tests/Makefile.in tests/Makefile.in.orig
 
 if [[ -e ../patch/libksba.patch ]]; then
+	echo ""
+	echo "**********************"
+	echo "Patching package"
+	echo "**********************"
+
     patch -u -p0 < ../patch/libksba.patch
-    echo ""
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -104,9 +113,11 @@ echo "**********************"
     --with-libgpg-error-prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "***************************"
     echo "Failed to configure libksba"
     echo "***************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -115,6 +126,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -122,9 +134,11 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "***************************"
     echo "Failed to build libksba"
     echo "***************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -135,6 +149,7 @@ bash ../fix-pkgconfig.sh
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -142,9 +157,11 @@ echo "**********************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "***************************"
     echo "Failed to test libksba"
     echo "***************************"
+
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
@@ -152,6 +169,7 @@ fi
 # Fix runpaths
 bash ../fix-runpath.sh
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
