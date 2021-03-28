@@ -94,6 +94,18 @@ if [[ -e ../patch/libgcrypt.patch ]]; then
     patch -u -p0 < ../patch/libgcrypt.patch
 fi
 
+is_apple_m1=$(sysctl machdep.cpu.brand_string 2>&1 | grep -i -c 'Apple M1')
+if [[ "${is_apple_m1}" -eq 1 ]]; then
+    if [[ -e ../patch/libgcrypt-darwin.patch ]]; then
+        echo ""
+        echo "****************************"
+        echo "Patching package (Darwin)"
+        echo "****************************"
+
+        patch -u -p0 < ../patch/libgcrypt.patch
+    fi
+fi
+
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
