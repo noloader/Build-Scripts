@@ -147,7 +147,7 @@ then
         CONFIG_OPTS+=("--disable-x86-sha-ni")
     fi
 
-    if [[ "$have_aes" -eq 1 || if [[ "$have_sha" -eq 1 ]]; then ]]; then
+    if [[ "$have_aes" -eq 1 || "$have_sha" -eq 1 ]]; then
         CONFIG_OPTS+=("--enable-fat")
     fi
 fi
