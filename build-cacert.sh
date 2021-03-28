@@ -37,9 +37,11 @@ if [[ ! -e "$HOME/.build-scripts/cacert/cacert.pem" ]]; then
     ./setup-cacerts.sh &>/dev/null
 fi
 
+set +x
+
 # Line 4 is a date/time stamp
-bootstrap_cacert=$(sed '4!d' "bootstrap/cacert.pem")
-installed_cacert=$(sed '4!d' "$INSTX_CACERT_FILE" 2>/dev/null)
+bootstrap_cacert="$(sed '4!d' "bootstrap/cacert.pem" 2>/dev/null | cut -b 40- | awk '$1=$1')"
+installed_cacert="$(sed '4!d' "$INSTX_CACERT_FILE" 2>/dev/null | cut -b 40- | awk '$1=$1')"
 
 if [[ -z "${installed_cacert}" ]]; then
     installed_cacert="not available"
@@ -61,8 +63,8 @@ echo "========================================"
 
 echo ""
 echo "Installing cacert.pem"
-echo "  installed: $(cut -f 2-5 -d ':' <<< $installed_cacert)"
-echo "  available: $(cut -f 2-5 -d ':' <<< $bootstrap_cacert)"
+echo "  installed: ${installed_cacert}"
+echo "  available: ${bootstrap_cacert}"
 
 BOOTSTRAP_CACERT_FILE="bootstrap/cacert.pem"
 
