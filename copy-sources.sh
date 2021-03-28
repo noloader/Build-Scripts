@@ -48,7 +48,6 @@ do
     # This trims the leading "./" in "./foo.c".
     file=$(echo -n "${file}" | tr -s '/' | cut -c 3-);
     cp --parents --preserve=timestamps "${file}" "${dest_dir}"
-    chmod u+rw "${dest_dir}/${file}"
 done
 
 exit 0
