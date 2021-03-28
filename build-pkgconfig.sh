@@ -54,9 +54,9 @@ echo "============== pkg-config =============="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "******************************"
 echo "Downloading package"
-echo "**********************"
+echo "******************************"
 
 if [[ -n $(command -v "$WGET" 2>/dev/null) ]]
 then
@@ -87,9 +87,10 @@ cd "$PKGCONFIG_DIR" || exit 1
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "******************************"
 echo "Configuring package"
-echo "**********************"
+echo "******************************"
 
 CONFIG_OPTS=()
 if [[ "$IS_DARWIN" -ne 0 ]]; then
@@ -114,7 +115,12 @@ fi
     "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "******************************"
     echo "Failed to configure pkg-config"
+    echo "******************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -122,23 +128,30 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "******************************"
 echo "Building package"
-echo "**********************"
+echo "******************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "MAKEINFO=true" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "******************************"
     echo "Failed to build pkg-config"
+    echo "******************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "******************************"
 echo "Installing package"
-echo "**********************"
+echo "******************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
