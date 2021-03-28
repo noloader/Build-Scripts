@@ -187,6 +187,15 @@ else
     GIT_PERL=perl
 fi
 
+CONFIG_OPTS=()
+CONFIG_OPTS+=("--enable-pthreads")
+CONFIG_OPTS+=("--without-tcltk")
+
+if [[ "${IS_SOLARIS}" -eq 1 ]]; then
+    CONFIG_OPTS+=("ac_cv_func_inet_ntop=yes")
+    CONFIG_OPTS+=("ac_cv_func_inet_pton=yes")
+fi
+
     CURLDIR="${INSTX_PREFIX}" \
     CURL_CONFIG="${INSTX_PREFIX}/bin/curl-config" \
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
@@ -202,7 +211,6 @@ fi
     --libdir="${INSTX_LIBDIR}" \
     --with-lib="$(basename "${INSTX_LIBDIR}")" \
     --with-sane-tool-path="${INSTX_PREFIX}/bin" \
-    --enable-pthreads \
     --with-openssl="${INSTX_PREFIX}" \
     --with-curl="${INSTX_PREFIX}" \
     --with-libpcre="${INSTX_PREFIX}" \
@@ -210,7 +218,7 @@ fi
     --with-iconv="${INSTX_PREFIX}" \
     --with-expat="${INSTX_PREFIX}" \
     --with-perl="$GIT_PERL" \
-    --without-tcltk
+    "${CONFIG_OPTS[@]}"
 
 if [[ "$?" -ne 0 ]]; then
     echo ""
