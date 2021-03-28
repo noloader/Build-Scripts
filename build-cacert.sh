@@ -37,8 +37,6 @@ if [[ ! -e "$HOME/.build-scripts/cacert/cacert.pem" ]]; then
     ./setup-cacerts.sh &>/dev/null
 fi
 
-set +x
-
 # Line 4 is a date/time stamp
 bootstrap_cacert="$(sed '4!d' "bootstrap/cacert.pem" 2>/dev/null | cut -b 40- | awk '$1=$1')"
 installed_cacert="$(sed '4!d' "$INSTX_CACERT_FILE" 2>/dev/null | cut -b 40- | awk '$1=$1')"
