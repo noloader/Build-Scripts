@@ -41,8 +41,12 @@ fi
 bootstrap_cacert=$(sed '4!d' "bootstrap/cacert.pem")
 installed_cacert=$(sed '4!d' "$INSTX_CACERT_FILE" 2>/dev/null)
 
+if [[ -z "${installed_cacert}" ]]; then
+    installed_cacert="not available"
+fi
+
 # The bootstrap cacert.pem is the latest
-if [[ "x$bootstrap_cacert" == "x$installed_cacert" ]]; then
+if [[ "$bootstrap_cacert" == "$installed_cacert" ]]; then
     #echo ""
     #echo "$PKG_NAME is already installed."
     exit 0
