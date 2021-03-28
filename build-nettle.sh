@@ -139,9 +139,15 @@ then
     have_aes=$(${CC} ${CFLAGS} -maes -dM -E - </dev/null 2>&1 | grep -i -c '__AES__')
     have_sha=$(${CC} ${CFLAGS} -msha -dM -E - </dev/null 2>&1 | grep -i -c '__SHA__')
 
-    if [[ "$have_aes" -eq 1 && "$have_sha" -eq 1 ]]
-    then
-        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+    if [[ "$have_aes" -eq 0 ]]; then
+        CONFIG_OPTS+=("--disable-x86-aesni")
+    fi
+
+    if [[ "$have_sha" -eq 0 ]]; then
+        CONFIG_OPTS+=("--disable-x86-sha-ni")
+    fi
+
+    if [[ "$have_aes" -eq 1 || if [[ "$have_sha" -eq 1 ]]; then ]]; then
         CONFIG_OPTS+=("--enable-fat")
     fi
 fi
@@ -150,18 +156,14 @@ if [[ "$IS_ARM_NEON" -eq 1 ]]
 then
     have_neon=$(${CC} ${CFLAGS} -dM -E - </dev/null 2>&1 | grep -i -c '__ARM_NEON')
 
-    if [[ "$have_neon" -eq 1 ]]
-    then
-        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+    if [[ "$have_neon" -eq 1 ]]; then
         CONFIG_OPTS+=("--enable-fat")
     fi
 fi
 
 if [[ "$IS_ARMV8" -eq 1 ]]
 then
-    if [[ $(true) ]]
-    then
-        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+    if [[ $(true) ]]; then
         CONFIG_OPTS+=("--enable-fat")
     fi
 fi
@@ -170,9 +172,7 @@ if [[ "$IS_ALTIVEC" -eq 1 ]]
 then
     have_altivec=$(${CC} ${CFLAGS} -maltivec -dM -E - </dev/null 2>&1 | grep -i -c '__ALTIVEC__')
 
-    if [[ "$have_altivec" -eq 1 ]]
-    then
-        echo "Using runtime algorithm selection. Adding --enable-fat"; echo ""
+    if [[ "$have_altivec" -eq 1 ]]; then
         CONFIG_OPTS+=("--enable-fat")
     fi
 fi
