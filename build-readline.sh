@@ -2,8 +2,7 @@
 
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Readline from sources. Ncurses should
-# be built first. If Ncurses is built, then tinfo will be
-# used. If tinfow is not used, then UP and PC go missing.
+# be built first.
 
 READLN_TAR=readline-8.0.tar.gz
 READLN_DIR=readline-8.0
