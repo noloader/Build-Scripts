@@ -142,13 +142,13 @@ then
 
     if [[ "$have_aes" -eq 0 || "$have_sha" -eq 0 ]]; then
         CONFIG_OPTS+=("--disable-fat")
-		CONFIG_OPTS+=("--disable-x86-aesni")
-		CONFIG_OPTS+=("--disable-x86-sha-ni")
+        CONFIG_OPTS+=("--disable-x86-aesni")
+        CONFIG_OPTS+=("--disable-x86-sha-ni")
     elif [[ "$have_aes" -eq 0 ]]; then
-		CONFIG_OPTS+=("--disable-fat")
+        CONFIG_OPTS+=("--disable-fat")
         CONFIG_OPTS+=("--disable-x86-aesni")
     elif [[ "$have_sha" -eq 0 ]]; then
-		CONFIG_OPTS+=("--disable-fat")
+        CONFIG_OPTS+=("--disable-fat")
         CONFIG_OPTS+=("--disable-x86-sha-ni")
     fi
 fi
@@ -157,15 +157,18 @@ if [[ "$IS_ARM_NEON" -eq 1 ]]
 then
     have_neon=$(${CC} ${CFLAGS} -dM -E - </dev/null 2>&1 | grep -i -c '__ARM_NEON')
 
-    if [[ "$have_neon" -eq 1 ]]; then
-        CONFIG_OPTS+=("--enable-fat")
+    if [[ "$have_neon" -eq 0 ]]; then
+        CONFIG_OPTS+=("--disable-fat")
+        CONFIG_OPTS+=("--disable-neon")
     fi
 fi
 
 if [[ "$IS_ARMV8" -eq 1 ]]
 then
-    if [[ $(true) ]]; then
-        CONFIG_OPTS+=("--enable-fat")
+    # ASIMD is part of ARMv8 core ISA
+    if [[ $(false) ]]; then
+        CONFIG_OPTS+=("--disable-fat")
+        CONFIG_OPTS+=("--disable-neon")
     fi
 fi
 
@@ -173,8 +176,9 @@ if [[ "$IS_ALTIVEC" -eq 1 ]]
 then
     have_altivec=$(${CC} ${CFLAGS} -maltivec -dM -E - </dev/null 2>&1 | grep -i -c '__ALTIVEC__')
 
-    if [[ "$have_altivec" -eq 1 ]]; then
-        CONFIG_OPTS+=("--enable-fat")
+    if [[ "$have_altivec" -eq 0 ]]; then
+        CONFIG_OPTS+=("--disable-fat")
+        CONFIG_OPTS+=("--disable-altivec")
     fi
 fi
 
