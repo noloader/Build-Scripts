@@ -121,13 +121,10 @@ echo "**********************"
 # Awful Solaris 64-bit hack. Use -G for SunC, and -shared for GCC
 if [[ "$IS_SOLARIS" -ne 0 && "$IS_SUNC" -eq 0 ]]; then
     file=configure
-    touch -a -m -r "$file" "$file.timestamp"
-    chmod a+w "$file"; chmod a+x "$file"
+    chmod +w "$file"
     sed 's/ -G / -shared /g' "$file" > "$file.fixed"
     mv "$file.fixed" "$file"
-    chmod a+x "$file"; chmod go-w "$file"
-    touch -a -m -r "$file.timestamp" "$file"
-    rm -f "$file.timestamp" "$file.fixed"
+    chmod +x "$file"; chmod go-w "$file"
 fi
 
 CONFIG_OPTS=()
