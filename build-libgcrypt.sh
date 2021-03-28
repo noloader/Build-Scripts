@@ -102,7 +102,7 @@ if [[ "${is_apple_m1}" -eq 1 ]]; then
         echo "Patching package (Darwin)"
         echo "****************************"
 
-        patch -u -p0 < ../patch/libgcrypt.patch
+        patch -u -p0 < ../patch/libgcrypt-darwin.patch
     fi
 fi
 
