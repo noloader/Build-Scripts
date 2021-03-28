@@ -1,6 +1,6 @@
 --- tests/Makefile.in
 +++ tests/Makefile.in
-@@ -628,6 +628,10 @@
+@@ -631,6 +631,10 @@
  check-TESTS: $(TESTS)
  	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
  	srcdir=$(srcdir); export srcdir; \
