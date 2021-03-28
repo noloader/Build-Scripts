@@ -3,9 +3,10 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Datefudge from sources.
 
-DATEFUDGE_TAR=1.22
-DATEFUDGE_TAR=datefudge_${DATEFUDGE_TAR}.tar.gz
-DATEFUDGE_DIR=datefudge-${DATEFUDGE_TAR}
+DATEFUDGE_VER=1.24
+DATEFUDGE_XZ=datefudge_${DATEFUDGE_VER}.tar.xz
+DATEFUDGE_TAR=datefudge_${DATEFUDGE_VER}.tar
+DATEFUDGE_DIR=datefudge-${DATEFUDGE_VER}
 PKG_NAME=datefudge
 
 ###############################################################################
@@ -51,15 +52,15 @@ echo "*****************************"
 echo ""
 echo "Datefudge ${DATEFUDGE_VER}..."
 
-if ! "$WGET" -q -O "$DATEFUDGE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
-     "http://deb.debian.org/debian/pool/main/d/datefudge/$DATEFUDGE_TAR"
+if ! "$WGET" -q -O "$DATEFUDGE_XZ" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+     "http://deb.debian.org/debian/pool/main/d/datefudge/$DATEFUDGE_XZ"
 then
     echo "Failed to download Datefudge"
     exit 1
 fi
 
-rm -rf "$DATEFUDGE_DIR" &>/dev/null
-gzip -d < "$DATEFUDGE_TAR" | tar xf -
+rm -rf "$DATEFUDGE_TAR" "$DATEFUDGE_DIR" &>/dev/null
+unxz "$DATEFUDGE_XZ" && tar -xf "$DATEFUDGE_TAR"
 cd "$DATEFUDGE_DIR" || exit 1
 
 # Fix sys_lib_dlsearch_path_spec
@@ -162,7 +163,7 @@ cd "${CURR_DIR}" || exit 1
 # Set to false to retain artifacts
 if true;
 then
-    ARTIFACTS=("$DATEFUDGE_TAR" "$DATEFUDGE_DIR")
+    ARTIFACTS=("$DATEFUDGE_XZ" "$DATEFUDGE_TAR" "$DATEFUDGE_DIR")
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
