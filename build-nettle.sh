@@ -134,6 +134,7 @@ CONFIG_OPTS=()
 CONFIG_OPTS+=("--enable-shared")
 CONFIG_OPTS+=("--disable-documentation")
 
+# I wish the maintainer would test his shit...
 if [[ "$IS_IA32" -eq 1 ]]
 then
     have_aes=$(${CC} ${CFLAGS} -maes -dM -E - </dev/null 2>&1 | grep -i -c '__AES__')
@@ -187,6 +188,7 @@ fi
 
 # ac_cv_lib_gmp___gmpn_zero_p=yes due to
 # https://lists.lysator.liu.se/pipermail/nettle-bugs/2021/009469.html
+# I wish the maintainer would test his shit...
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
