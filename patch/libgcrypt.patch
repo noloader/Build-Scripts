@@ -9,7 +9,7 @@
 # machines. Also see https://dev.gnupg.org/T5159.
 --- mpi/mpiutil.c
 +++ mpi/mpiutil.c
-@@ -43,10 +43,22 @@
+@@ -43,10 +43,21 @@
  #endif
  
  
@@ -22,7 +22,6 @@
 +  0, 1, 2, 3, 4, 8
 +};
  
-+/* https://dev.gnupg.org/T4499 */
 +static struct gcry_mpi constants[MPI_NUMBER_OF_CONSTANTS] =
 +{
 +  /* [MPI_C_ZERO]  = */ { 1, 0, 0, (16 | 32), &constant_limbs[0] },
