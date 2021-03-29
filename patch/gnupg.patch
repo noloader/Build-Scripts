@@ -56,6 +56,17 @@
                 dfx->eof_seen? " eof":"");
  
    while (len && dfx->chunklen + len >= dfx->chunksize)
+@@ -695,8 +695,8 @@
+       len -= n;
+ 
+       if (DBG_FILTER)
+-        log_debug ("ndecrypted: %zu (nchunk=%ju) bytes left: %zu at off=%zu\n",
+-                   totallen, dfx->chunklen, len, off);
++        log_debug ("ndecrypted: %zu (nchunk=%u) bytes left: %zu at off=%zu\n",
++                   totallen, (unsigned int)dfx->chunklen, len, off);
+ 
+       /* Check the tag.  */
+       if (len < 16)
 @@ -777,7 +777,8 @@
        dfx->chunklen += len;
        dfx->total += len;
