@@ -1032,12 +1032,13 @@ printf "\n"
 # Too many GNU programs and libraries leak.
 # The world must lower its standards to GNU.
 if [[ -n "${INSTX_ASAN}" ]]; then
-    echo ""
     echo "**********************************************************************"
     echo "Disabling ASAN leak detection because GNU software leaks like a sieve."
     echo "You must lower your standards to that of the GNU organization."
     echo "https://www.gnu.org/prep/standards/standards.html#index-memory-usage."
     echo "**********************************************************************"
+    echo ""
+
     ASAN_OPTIONS='detect_leaks=0'
     export ASAN_OPTIONS
 fi
