@@ -3,7 +3,8 @@
 #
 # The mpi/mpiutil.c changes avoid memory leaks on exit so tools like
 # Asan don't produce findings. They also avoid the memory manager on
-# startup. Also see https://dev.gnupg.org/T4499.
+# startup and turn _gcry_mpi_init() into a nop. Also see
+# https://dev.gnupg.org/T4499.
 #
 # The Makefile.in changes allow the self tests to run on Apple SIP
 # machines. Also see https://dev.gnupg.org/T5159.
