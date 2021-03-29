@@ -183,33 +183,21 @@ echo "*************************"
 
 # PCRE2 fails one self test on older systems, like Fedora 1
 # and Ubuntu 4. Allow the failure but print the result.
-if [[ "$IS_LINUX" -ne 0 ]]; then
-    MAKE_FLAGS=("check" "-k" "V=1")
-    if ! "${MAKE}" "${MAKE_FLAGS[@]}"
-    then
-        echo ""
-        echo "*************************"
-        echo "Failed to test PCRE2"
-        echo "*************************"
-
-        bash ../collect-logs.sh "${PKG_NAME}"
-        # exit 1
-
-        echo ""
-        echo "*************************"
-        echo "Installing anyways..."
-        echo "*************************"
-    fi
-else
+MAKE_FLAGS=("check" "-k" "V=1")
+if ! "${MAKE}" "${MAKE_FLAGS[@]}"
+then
     echo ""
     echo "*************************"
-    echo "PCRE2 not tested"
+    echo "Failed to test PCRE2"
     echo "*************************"
 
+    bash ../collect-logs.sh "${PKG_NAME}"
+    # exit 1
+
     echo ""
-    echo "************************"
+    echo "*************************"
     echo "Installing anyways..."
-    echo "************************"
+    echo "*************************"
 fi
 
 # Fix runpaths again

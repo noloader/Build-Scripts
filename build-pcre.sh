@@ -180,28 +180,16 @@ echo "************************"
 echo "Testing package"
 echo "************************"
 
-if [[ "$IS_LINUX" -ne 0 ]]; then
-    MAKE_FLAGS=("check" "-k" "V=1")
-    if ! "${MAKE}" "${MAKE_FLAGS[@]}"
-    then
-        echo ""
-        echo "************************"
-        echo "Failed to test PCRE"
-        echo "************************"
-
-        bash ../collect-logs.sh "${PKG_NAME}"
-        exit 1
-    fi
-else
+MAKE_FLAGS=("check" "-k" "V=1")
+if ! "${MAKE}" "${MAKE_FLAGS[@]}"
+then
     echo ""
     echo "************************"
-    echo "PCRE not tested"
+    echo "Failed to test PCRE"
     echo "************************"
 
-    echo ""
-    echo "************************"
-    echo "Installing anyways..."
-    echo "************************"
+    bash ../collect-logs.sh "${PKG_NAME}"
+    exit 1
 fi
 
 # Fix runpaths again
