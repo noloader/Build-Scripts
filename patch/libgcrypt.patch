@@ -6,7 +6,7 @@
 # on startup and turn _gcry_mpi_init() into a nop. Also see
 # https://dev.gnupg.org/T4499.
 #
-# The random changes was shaelessly ripped from MacPorts at
+# The random changes was shamelessly ripped from MacPorts at
 # https://github.com/macports/macports-ports/tree/master/devel/libgcrypt
 #
 # The Makefile.in changes allow the self tests to run on Apple SIP
