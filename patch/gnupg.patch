@@ -14,37 +14,6 @@
  
  	  if (sig->sig_class == 0x20 || sig->sig_class == 0x28
  	      || sig->sig_class == 0x30)
-# Fix a missing return code on-path
---- tests/gpgscm/scheme.c
-+++ tests/gpgscm/scheme.c
-@@ -172,6 +172,7 @@
-      case T_FRAME: return "frame";
-      }
-      assert (! "not reached");
-+     return "unknown";
- }
- 
- /* ADJ is enough slack to align cells in a TYPE_BITS-bit boundary */
-# Fix undefined behavior sanitizer finding
---- sm/certdump.c
-+++ sm/certdump.c
-@@ -774,9 +774,13 @@
-       gpg_err_set_errno (c->error);
-       return -1;
-     }
--  memcpy (p + c->len, buffer, size);
--  c->len += size;
--  p[c->len] = 0; /* Terminate string. */
-+
-+  if (p && buffer)
-+    {
-+      memcpy (p + c->len, buffer, size);
-+      c->len += size;
-+    }
-+  p[c->len] = 0; /* Terminate string. */
- 
-   return (gpgrt_ssize_t)size;
- }
 # Squash some printf format specifier warnings.
 --- g10/decrypt-data.c
 +++ g10/decrypt-data.c
@@ -80,3 +49,34 @@
      }
  
    if (dfx->eof_seen)
+# Fix a missing return code on-path
+--- tests/gpgscm/scheme.c
++++ tests/gpgscm/scheme.c
+@@ -172,6 +172,7 @@
+      case T_FRAME: return "frame";
+      }
+      assert (! "not reached");
++     return "unknown";
+ }
+ 
+ /* ADJ is enough slack to align cells in a TYPE_BITS-bit boundary */
+# Fix undefined behavior sanitizer finding
+--- sm/certdump.c
++++ sm/certdump.c
+@@ -774,9 +774,13 @@
+       gpg_err_set_errno (c->error);
+       return -1;
+     }
+-  memcpy (p + c->len, buffer, size);
+-  c->len += size;
+-  p[c->len] = 0; /* Terminate string. */
++
++  if (p && buffer)
++    {
++      memcpy (p + c->len, buffer, size);
++      c->len += size;
++    }
++  p[c->len] = 0; /* Terminate string. */
+ 
+   return (gpgrt_ssize_t)size;
+ }
