@@ -2,9 +2,12 @@
 # This patch fixes some issues with GnuPG.
 #
 # The mpi/mpiutil.c changes avoid memory leaks on exit so tools like
-# Asan don't produce findings. They also avoid the memory manager on
-# startup and turn _gcry_mpi_init() into a nop. Also see
+# Asan don't produce findings. The changes also avoid the memory manager
+# on startup and turn _gcry_mpi_init() into a nop. Also see
 # https://dev.gnupg.org/T4499.
+#
+# The random changes was shaelessly ripped from MacPorts at
+# https://github.com/macports/macports-ports/tree/master/devel/libgcrypt
 #
 # The Makefile.in changes allow the self tests to run on Apple SIP
 # machines. Also see https://dev.gnupg.org/T5159.
