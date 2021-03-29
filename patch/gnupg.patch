@@ -51,8 +51,8 @@
    if (DBG_FILTER)
 -    log_debug ("decrypt: chunklen=%ju total=%ju size=%zu len=%zu%s\n",
 -               dfx->chunklen, dfx->total, size, len,
-+    log_debug ("decrypt: chunklen=%ju total=%zu size=%zu len=%zu%s\n",
-+               (uint32_t)dfx->chunklen, dfx->total, size, len,
++    log_debug ("decrypt: chunklen=%u total=%zu size=%zu len=%zu%s\n",
++               (unsigned int)dfx->chunklen, dfx->total, size, len,
                 dfx->eof_seen? " eof":"");
  
    while (len && dfx->chunklen + len >= dfx->chunksize)
@@ -61,8 +61,8 @@
        dfx->total += len;
        if (DBG_FILTER)
 -        log_debug ("ndecrypted: %zu (nchunk=%ju)\n", totallen, dfx->chunklen);
-+        log_debug ("ndecrypted: %zu (nchunk=%ju)\n", totallen,
-+		   (uint32_t)dfx->chunklen);
++        log_debug ("ndecrypted: %u (nchunk=%ju)\n", totallen,
++		   (unsigned int)dfx->chunklen);
      }
  
    if (dfx->eof_seen)
