@@ -642,11 +642,14 @@ fi
 # Location to install the sources. Limit to Linux for the moment.
 # https://alex.dzyoba.com/blog/gdb-source-path/
 if [[ "${IS_LINUX}" -ne 0 ]]; then
+  # No need to install sources for Sanitizer testing.
+  if [[ "${INSTX_ASAN}" -eq 0 && "${INSTX_MSAN}" -eq 0 && "${INSTX_UBSAN}" -eq 0 ]]; then
     cc_result=$(${TEST_CC} -g -fdebug-prefix-map=${PWD}=${PWD} -o "${outfile}" "${infile}" 2>&1 | wc -w)
     if [[ "$cc_result" -eq 0 ]]; then
         INSTX_DEBUG_MAP=1
         export INSTX_DEBUG_MAP
     fi
+  fi
 fi
 
 # Perl does not add -lm when needed
