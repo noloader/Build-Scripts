@@ -1,5 +1,12 @@
 # Written and placed in public domain by Jeffrey Walton.
 # This patch fixes some issues with GnuPG.
+#
+# The mpi/mpiutil.c changes avoid memory leaks on exit so tools like
+# Asan don't produce findings. They also avoid the memory manager on
+# startup. Also see https://dev.gnupg.org/T4499.
+#
+# The Makefile.in changes allow the self tests to run on Apple SIP
+# machines. Also see https://dev.gnupg.org/T5159.
 --- mpi/mpiutil.c
 +++ mpi/mpiutil.c
 @@ -43,10 +43,22 @@
