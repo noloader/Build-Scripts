@@ -43,3 +43,26 @@
  
    return (gpgrt_ssize_t)size;
  }
+--- g10/decrypt-data.c
++++ g10/decrypt-data.c
+@@ -658,8 +658,8 @@
+   /* Decrypt the buffer.  This first requires a loop to handle the
+    * case when a chunk ends within the buffer.  */
+   if (DBG_FILTER)
+-    log_debug ("decrypt: chunklen=%ju total=%ju size=%zu len=%zu%s\n",
+-               dfx->chunklen, dfx->total, size, len,
++    log_debug ("decrypt: chunklen=%ju total=%zu size=%zu len=%zu%s\n",
++               (uint32_t)dfx->chunklen, dfx->total, size, len,
+                dfx->eof_seen? " eof":"");
+ 
+   while (len && dfx->chunklen + len >= dfx->chunksize)
+@@ -777,7 +777,8 @@
+       dfx->chunklen += len;
+       dfx->total += len;
+       if (DBG_FILTER)
+-        log_debug ("ndecrypted: %zu (nchunk=%ju)\n", totallen, dfx->chunklen);
++        log_debug ("ndecrypted: %zu (nchunk=%ju)\n", totallen,
++		   (uint32_t)dfx->chunklen);
+     }
+ 
+   if (dfx->eof_seen)
