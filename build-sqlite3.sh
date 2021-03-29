@@ -38,6 +38,23 @@ fi
 
 ###############################################################################
 
+if ! ./build-zlib.sh
+then
+    echo "Failed to build zLib"
+    exit 1
+fi
+
+###############################################################################
+
+#Sqlite only needs Readline
+if ! ./build-ncurses-readline.sh
+then
+    echo "Failed to build Ncurses and Readline"
+    exit 1
+fi
+
+###############################################################################
+
 echo ""
 echo "========================================"
 echo "=============== Sqlite3 ================"
@@ -80,8 +97,21 @@ echo "**********************"
 echo "Configuring package"
 echo "**********************"
 
+# Compile: https://sqlite.org/compile.html
+# FTS3 and FTS4: https://sqlite.org/fts3.html
+# FTS5: https://sqlite.org/fts5.html
+# R*Tree: https://sqlite.org/rtree.html
+# JSON1: https://sqlite.org/json1.html
+
+    sqlite_cppflags="${INSTX_CPPFLAGS}"
+    sqlite_cppflags="${sqlite_cppflags} -DSQLITE_OMIT_DEPRECATED"
+    sqlite_cppflags="${sqlite_cppflags} -DSQLITE_TEMP_STORE=2"
+    sqlite_cppflags="${sqlite_cppflags} -DSQLITE_ENABLE_COLUMN_METADATA"
+    sqlite_cppflags="${sqlite_cppflags} -DSQLITE_SOUNDEX"
+    sqlite_cppflags="${sqlite_cppflags} -DSQLITE_HAVE_ZLIB"
+
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
-    CPPFLAGS="${INSTX_CPPFLAGS}" \
+    CPPFLAGS="${sqlite_cppflags}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
     CFLAGS="${INSTX_CFLAGS}" \
     CXXFLAGS="${INSTX_CXXFLAGS}" \
@@ -91,7 +121,16 @@ echo "**********************"
 ./configure \
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
-    --libdir="${INSTX_LIBDIR}"
+    --libdir="${INSTX_LIBDIR}" \
+    --enable-static \
+    --enable-shared \
+    --enable-readline \
+    --enable-threadsafe \
+    --enable-dynamic-extensions \
+    --enable-fts4 \
+    --enable-fts5 \
+    --enable-json1 \
+    --enable-rtree
 
 if [[ "$?" -ne 0 ]]; then
     echo ""
