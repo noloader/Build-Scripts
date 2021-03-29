@@ -1,12 +1,13 @@
 # Written and placed in public domain by Jeffrey Walton.
 # This patch fixes some issues with GnuPG on Apple M1.
+#
 # This patch is a hack. The module should have exported symbols with
 # double underscore names, like __gcry_mpih_add_n. However, the symbols
 # were not wrapped in C_SYMBOL_NAME macro so they only got the single
 # underscore name. Later, GnuPG could not locate the symbols because GnuPG
 # was trying to link to the double underscore names. To fix it and retain
 # compatibility both the single and double underscore names are exported.
-# Also see https://dev.gnupg.org/T5370
+# Also see https://dev.gnupg.org/T5157 and https://dev.gnupg.org/T5370
 --- mpi/aarch64/mpih-add1.S
 +++ mpi/aarch64/mpih-add1.S
 @@ -36,7 +36,13 @@
