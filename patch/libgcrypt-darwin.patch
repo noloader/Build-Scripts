@@ -12,6 +12,12 @@
 # macro is not needed on Darwin since Darwin does not use ELF. It
 # can be deleted and everything will work just fine.
 #
+# According to nm, both symbols are exported (as expected):
+#     % nm /usr/local/lib/libgcrypt.20.dylib | grep gcry_mpih_add_n
+#     000000000007bd9c T __gcry_mpih_add_n
+#     00000000000761e8 T __gcry_mpih_add_n_cond
+#     000000000007bd9c T _gcry_mpih_add_n
+#
 # Also see https://dev.gnupg.org/T5157 and https://dev.gnupg.org/T5370
 --- mpi/aarch64/mpih-add1.S
 +++ mpi/aarch64/mpih-add1.S
