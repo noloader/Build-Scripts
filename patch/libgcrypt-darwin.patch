@@ -6,7 +6,7 @@
 # were not wrapped in C_SYMBOL_NAME macro so they only got the single
 # underscore name. Later, GnuPG could not locate the symbols because GnuPG
 # was trying to link to the double underscore names. To fix it and retain
-# compatibility both the single and double underscore names are exported.
+# compatibility, both the single and double underscore names are exported.
 #
 # The patch also copies the ELF macro from the original code. The ELF
 # macro is not needed on Darwin since Darwin does not use ELF. It
