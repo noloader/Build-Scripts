@@ -45,7 +45,7 @@
        if (DBG_FILTER)
 -        log_debug ("ndecrypted: %zu (nchunk=%ju)\n", totallen, dfx->chunklen);
 +        log_debug ("ndecrypted: %zu (nchunk=%u)\n", totallen,
-+		   (unsigned int)dfx->chunklen);
++                   (unsigned int)dfx->chunklen);
      }
  
    if (dfx->eof_seen)
