@@ -41,7 +41,7 @@
 +      memcpy (p + c->len, buffer, size);
 +      c->len += size;
 +    }
-+    p[c->len] = 0; /* Terminate string. */
++  p[c->len] = 0; /* Terminate string. */
  
    return (gpgrt_ssize_t)size;
  }
