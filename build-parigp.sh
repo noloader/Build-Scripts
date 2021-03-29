@@ -76,9 +76,9 @@ echo "=============== PARI/GP ================"
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "***************************"
 echo "Downloading package"
-echo "**********************"
+echo "***************************"
 
 if ! "$WGET" -q -O "$PARI_TAR" --ca-certificate="$THE_CA_ZOO" \
      "https://pari.math.u-bordeaux.fr/pub/pari/unix/$PARI_TAR"
@@ -95,16 +95,21 @@ cd "$PARI_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/parigp.patch ]]; then
+     echo ""
+     echo "***************************"
+     echo "Patching package"
+     echo "***************************"
+
     patch -u -p0 < ../patch/parigp.patch
-    echo ""
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Configuring package"
-echo "**********************"
+echo "***************************"
 
 # XXX_LIBS added to the PARI/GP build gear by parigp.patch.
 # The PARI/GP build gear is blowing away our LIBS.
@@ -130,7 +135,12 @@ echo "**********************"
     --with-qt
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "***************************"
     echo "Failed to configure PARI/GP"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -138,38 +148,49 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Building package"
-echo "**********************"
+echo "***************************"
 
 MAKE_FLAGS=("gp" "-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "***************************"
     echo "Failed to build PARI/GP"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Testing package"
-echo "**********************"
+echo "***************************"
 
 # According to PARI/GP User manual, 'make bench' is the self tests???
 # According to the mailing list, it is 'make dobench'
 MAKE_FLAGS=("test-all" "-k" "-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "***************************"
     echo "Failed to test PARI/GP"
-    echo "**********************"
+    echo "***************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Installing package"
-echo "**********************"
+echo "***************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
