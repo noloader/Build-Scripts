@@ -159,6 +159,8 @@ void fold_prefix(const std::string& prefix, std::vector<std::string>& accum)
     if (prefix.empty())
         return;
 
+     const std::string new_prefix = "${prefix}";
+
     for (size_t i=0; i<accum.size(); ++i)
     {
         if (accum[i].substr(0, 7) == "prefix=")
@@ -167,8 +169,21 @@ void fold_prefix(const std::string& prefix, std::vector<std::string>& accum)
         std::string::size_type pos = 0;
         while ((pos = accum[i].find(prefix, pos)) != std::string::npos)
         {
-            accum[i].replace(pos, prefix.length(), "${prefix}");
-            pos += 9;
+            accum[i].replace(pos, prefix.length(), new_prefix);
+            pos += new_prefix.length();
+        }
+    }
+
+    // Remove ${prefix}/${prefix}. This shows up in a couple of *.pc files.
+    for (size_t i=0; i<accum.size(); ++i)
+    {
+        const dtf::string two_prefix = "${prefix}/${prefix}";
+        std::string::size_type pos = 0;
+
+        while ((pos = accum[i].find(two_prefix, pos)) != std::string::npos)
+        {
+            accum[i].replace(pos, two_prefix.length(), new_prefix);
+            pos += new_prefix.length();
         }
     }
 }
