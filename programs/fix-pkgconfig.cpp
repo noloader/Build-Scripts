@@ -177,7 +177,7 @@ void fold_prefix(const std::string& prefix, std::vector<std::string>& accum)
     // Remove ${prefix}/${prefix}. This shows up in a couple of *.pc files.
     for (size_t i=0; i<accum.size(); ++i)
     {
-        const dtf::string two_prefix = "${prefix}/${prefix}";
+        const std::string two_prefix = "${prefix}/${prefix}";
         std::string::size_type pos = 0;
 
         while ((pos = accum[i].find(two_prefix, pos)) != std::string::npos)
