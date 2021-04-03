@@ -31,6 +31,28 @@
  OPTIMIZATION?=-O3
  WARNINGS=-Wall -W -Wstrict-prototypes -Wwrite-strings -Wno-missing-field-initializers
  DEBUG_FLAGS?= -g -ggdb
+@@ -234,8 +231,8 @@
+ 	@echo "Generating $@ for pkgconfig..."
+ 	@echo prefix=$(PREFIX) > $@
+ 	@echo exec_prefix=\$${prefix} >> $@
+-	@echo libdir=$(PREFIX)/$(LIBRARY_PATH) >> $@
+-	@echo includedir=$(PREFIX)/$(INCLUDE_PATH) >> $@
++	@echo libdir=$(LIBRARY_PATH) >> $@
++	@echo includedir=$(INCLUDE_PATH) >> $@
+ 	@echo >> $@
+ 	@echo Name: hiredis >> $@
+ 	@echo Description: Minimalistic C client library for Redis. >> $@
+@@ -247,8 +244,8 @@
+ 	@echo "Generating $@ for pkgconfig..."
+ 	@echo prefix=$(PREFIX) > $@
+ 	@echo exec_prefix=\$${prefix} >> $@
+-	@echo libdir=$(PREFIX)/$(LIBRARY_PATH) >> $@
+-	@echo includedir=$(PREFIX)/$(INCLUDE_PATH) >> $@
++	@echo libdir=$(LIBRARY_PATH) >> $@
++	@echo includedir=$(INCLUDE_PATH) >> $@
+ 	@echo >> $@
+ 	@echo Name: hiredis_ssl >> $@
+ 	@echo Description: SSL Support for hiredis. >> $@
 @@ -297,7 +294,7 @@
  	$(MAKE) CFLAGS="-fprofile-arcs -ftest-coverage" LDFLAGS="-fprofile-arcs"
  
