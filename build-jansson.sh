@@ -74,20 +74,17 @@ if [[ -e ../patch/jansson.patch ]]; then
     echo ""
 fi
 
-# No damn configure...
-if [[ -n "$(command -v glibtoolize 2>/dev/null)" ]]; then
-    if ! autoreconf -i; then
+if [[ ! -f configure ]]
+then
+    if command -v autoreconf 2>/dev/null ; then
+        if ! autoreconf -i; then
+            echo "Failed to bootstrap Jansson"
+            exit 1
+        fi
+    else
         echo "Failed to bootstrap Jansson"
         exit 1
     fi
-elif [[ -n "$(command -v libtoolize 2>/dev/null)" ]]; then
-    if ! autoreconf -i; then
-        echo "Failed to bootstrap Jansson"
-        exit 1
-    fi
-else
-    echo "Failed to bootstrap Jansson"
-    exit 1
 fi
 
 # Fix sys_lib_dlsearch_path_spec
