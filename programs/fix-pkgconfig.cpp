@@ -17,6 +17,7 @@ void process_stream(std::istream&);
 std::string fix_options(std::string);
 std::string trim_trailing(std::string);
 std::string fold_path(std::string);
+bool read_continued_line(std::istream&, std::string&);
 
 std::string get_prefix(const std::vector<std::string>&);
 void fold_prefix(const std::string&, std::vector<std::string>&);
@@ -30,7 +31,7 @@ inline char last_char(const std::string& str)
     return *(str.end()-1);
 }
 
-inline std::string rm_last(const std::string& str)
+inline std::string rm_last_char(const std::string& str)
 {
     if (str.empty())
         return str;
@@ -89,41 +90,15 @@ void process_stream(std::istream& stream)
 {
     std::string line, prefix;
     std::vector<std::string> accum;
-    size_t last_i=0;
 
-    while (std::getline(stream, line))
+    while (read_continued_line(stream, line))
     {
-        line = trim_trailing(line);
         accum.push_back(line);
+        line.erase();
     }
 
     // Later we will replace an expanded prefix with ${prefix}.
     prefix = get_prefix(accum);
-
-restart:
-    for (size_t i=last_i; i<accum.size(); ++i)
-    {
-        std::string& l = accum[i];
-        l = trim_trailing(l);
-
-        // continuation character ?
-        if (last_char(l) == '\\')
-        {
-            // splice next line into current line
-            // after trimming trailing whitespace
-            l = rm_last(l);
-            l = trim_trailing(l);
-            l += " ";
-
-            if (i+1 < accum.size())
-            {
-                l += accum[i+1];
-                accum.erase(accum.begin()+i+1);
-                last_i = i;
-                goto restart;
-            }
-        }
-    }
 
     // fold use of expanded ${prefix}
     fold_prefix(prefix, accum);
@@ -138,7 +113,29 @@ restart:
     // output the stream
     for (size_t i=0; i<accum.size(); ++i)
         std::cout << accum[i] << std::endl;
-    std::cout << std::endl;
+}
+
+// tail recursive for continued lines
+bool read_continued_line(std::istream& stream, std::string& line)
+{
+    std::string temp;
+    if (! std::getline(stream, temp))
+        return false;
+
+    temp = trim_trailing(temp);
+    if (last_char(temp) == '\\')
+    {
+        temp = rm_last_char(temp);
+
+        std::string next;
+        if (read_continued_line(stream, next))
+            temp += next;
+    }
+
+    line += temp;
+    line = trim_trailing(line);
+
+    return true;
 }
 
 std::string get_prefix(const std::vector<std::string>& accum)
