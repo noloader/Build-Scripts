@@ -198,7 +198,7 @@ std::string fix_options(std::string line)
     std::string t;
     std::istringstream stream(line);
 
-    while (getline(stream, t, ' '))
+    while (std::getline(stream, t, ' '))
     {
         if (t.empty())
             continue;
