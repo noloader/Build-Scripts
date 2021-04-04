@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Jansson from sources.
 
-JANSSON_VER=2.12
+JANSSON_VER=2.13.1
 JANSSON_TAR=jansson-$JANSSON_VER.tar.gz
 JANSSON_DIR=jansson-$JANSSON_VER
 PKG_NAME=jansson
