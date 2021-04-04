@@ -156,8 +156,7 @@ void fold_prefix(const std::string& prefix, std::vector<std::string>& accum)
     if (prefix.empty())
         return;
 
-     const std::string new_prefix = "${prefix}";
-
+    const std::string new_prefix = "${prefix}";
     for (size_t i=0; i<accum.size(); ++i)
     {
         if (accum[i].substr(0, 7) == "prefix=")
