@@ -133,6 +133,7 @@ echo "Testing package"
 echo "************************"
 
 MAKE_FLAGS=("all" "check")
+if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo ""
     echo "************************"
