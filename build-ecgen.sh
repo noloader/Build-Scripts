@@ -104,9 +104,6 @@ CXXFLAGS=$(echo "${ecgen_cxxflags}" | sed 's/\$/\$\$/g')
 LDFLAGS=$(echo "${INSTX_LDFLAGS}" | sed 's/\$/\$\$/g')
 LIBS="${INSTX_LDLIBS}"
 
-export CPPFLAGS ASFLAGS CFLAGS CXXFLAGS
-export LDFLAGS LIBS
-
 MAKE_FLAGS=("all" "-j" "${INSTX_JOBS}")
 if ! CPPFLAGS="${CPPFLAGS}" \
      ASFLAGS="${ASFLAGS}" \
@@ -132,7 +129,13 @@ echo "Testing package"
 echo "************************"
 
 MAKE_FLAGS=("test")
-if ! "${MAKE}" "${MAKE_FLAGS[@]}"
+if ! CPPFLAGS="${CPPFLAGS}" \
+     ASFLAGS="${ASFLAGS}" \
+     CFLAGS="${CFLAGS}" \
+     CXXFLAGS="${CXXFLAGS}" \
+     LDFLAGS="${LDFLAGS}" \
+     LIBS="${LIBS}" \
+     "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo ""
     echo "************************"
