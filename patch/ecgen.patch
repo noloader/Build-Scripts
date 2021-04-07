@@ -202,3 +202,14 @@
  
  clean:
  	rm -f *.o *.a $(TARGET)
+--- src/invalid/invalid.c
++++ src/invalid/invalid.c
+@@ -239,7 +239,7 @@
+ 	pthread_t pthreads[cfg->threads];
+ 	thread_t threads[cfg->threads];
+ 	struct pari_thread pari_threads[cfg->threads];
+-	pari_thread_sync();
++	/* pari_thread_sync(); */
+ 
+ 	size_t generated = 0;
+ 	state_e states[nprimes];

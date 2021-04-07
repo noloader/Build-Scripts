@@ -74,14 +74,6 @@ rm -rf "$ECGEN_DIR" &>/dev/null
 gzip -d < "$ECGEN_TAR" | tar xf -
 cd "$ECGEN_DIR" || exit 1
 
-cp test/src/Makefile test/src/Makefile.orig
-cp test/Makefile test/Makefile.orig
-cp src/Makefile src/Makefile.orig
-cp Makefile Makefile.orig
-cp lib/parson/Makefile lib/parson/Makefile.orig
-cp lib/Makefile lib/Makefile.orig
-cp lib/sha1/Makefile lib/sha1/Makefile.orig
-
 if [[ -e ../patch/ecgen.patch ]]; then
     echo ""
     echo "*************************"
@@ -90,18 +82,6 @@ if [[ -e ../patch/ecgen.patch ]]; then
 
     patch -u -p0 < ../patch/ecgen.patch
 fi
-
-{
-diff -u test/src/Makefile.orig test/src/Makefile
-diff -u test/Makefile.orig test/Makefile
-diff -u src/Makefile.orig src/Makefile
-diff -u Makefile.orig Makefile
-diff -u lib/parson/Makefile.orig lib/parson/Makefile
-diff -u lib/Makefile.orig lib/Makefile
-diff -u lib/sha1/Makefile.orig lib/sha1/Makefile
-} > ../patch/ecgen.patch
-
-exit 1
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
