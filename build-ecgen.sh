@@ -77,6 +77,8 @@ if [[ -e ../patch/ecgen.patch ]]; then
     patch -u -p0 < ../patch/ecgen.patch
 fi
 
+# find . -type f -name '*.sh' -exec dos2unix {} \;
+
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
@@ -133,7 +135,7 @@ echo "************************"
 echo "Testing package"
 echo "************************"
 
-MAKE_FLAGS=("all" "test")
+MAKE_FLAGS=("test")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo ""
