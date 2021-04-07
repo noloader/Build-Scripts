@@ -213,3 +213,27 @@
  
  	size_t generated = 0;
  	state_e states[nprimes];
+--- src/gen/field.c
++++ src/gen/field.c
+@@ -7,6 +7,12 @@
+ #include "io/output.h"
+ #include "math/poly.h"
+ 
++#if PARI_VERSION_CODE >= PARI_VERSION(2,12,1)
++# define ecgen_isirreducible(x) polisirreducible(x)
++#else
++# define ecgen_isirreducible(x) isirreducible(x)
++#endif
++
+ static GEN field_primer(unsigned long bits) { return random_prime(bits); }
+ 
+ static GEN field_binaryr(unsigned long bits) {
+@@ -84,7 +90,7 @@
+ 			gel(v, 1) = gen_1;
+ 
+ 			GEN poly = gmul(gtopolyrev(v, -1), gmodulss(1, 2));
+-			if (!isirreducible(poly)) {
++			if (!ecgen_isirreducible(poly)) {
+ 				fprintf(err, "Polynomial is reducible.\n");
+ 				avma = ltop;
+ 				return 0;
