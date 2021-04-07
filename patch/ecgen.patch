@@ -1,3 +1,5 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with ecgen.
 --- test/src/Makefile
 +++ test/src/Makefile
 @@ -7,14 +7,13 @@
@@ -222,9 +224,9 @@
  #include "math/poly.h"
  
 +#if PARI_VERSION_CODE >= PARI_VERSION(2,12,1)
-+# define ecgen_isirreducible(x) polisirreducible(x)
++#  define ecgen_isirreducible(x) polisirreducible(x)
 +#else
-+# define ecgen_isirreducible(x) isirreducible(x)
++#  define ecgen_isirreducible(x) isirreducible(x)
 +#endif
 +
  static GEN field_primer(unsigned long bits) { return random_prime(bits); }
