@@ -104,12 +104,8 @@ CXXFLAGS=$(echo "${ecgen_cxxflags}" | sed 's/\$/\$\$/g')
 LDFLAGS=$(echo "${INSTX_LDFLAGS}" | sed 's/\$/\$\$/g')
 LIBS="${INSTX_LDLIBS}"
 
-export CPPFLAGS
-export ASFLAGS
-export CFLAGS
-export CXXFLAGS
-export LDFLAGS
-export LIBS
+export CPPFLAGS ASFLAGS CFLAGS CXXFLAGS
+export LDFLAGS LIBS
 
 MAKE_FLAGS=("all" "-j" "${INSTX_JOBS}")
 if ! CPPFLAGS="${CPPFLAGS}" \
