@@ -180,6 +180,22 @@ then
     PATH="$SOLARIS_PATH:$PATH"
 fi
 
+# Ensure Command Line Tools is on-path, if present.
+if [ "${IS_DARWIN}" -ne 0 ]
+then
+    for path in /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin /Library/Developer/CommandLineTools/usr/bin
+    do
+        if [ -d "$path" ]; then
+            DARWIN_PATH="$DARWIN_PATH:$path"
+        fi
+    done
+
+    # Add user's path in case a binary is in a non-standard location,
+    # like /opt/local. Place the PATH after SOLARIS_PATH so the anemic
+    # tools are last in the list.
+    PATH="$DARWIN_PATH:$PATH"
+fi
+
 # Strip duplicate, leading and trailing colons
 PATH=$(echo "$PATH" | tr -s ':' | ${SED} -e 's/^:\(.*\)/\1/' | ${SED} -e 's/:$//g')
 export PATH
