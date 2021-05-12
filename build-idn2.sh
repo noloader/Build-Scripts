@@ -3,9 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds IDN2 from sources.
 
-IDN2_VER=2.3.0
-IDN2_TAR="libidn2-${IDN2_VER}.tar.gz"
-IDN2_DIR="libidn2-${IDN2_VER}"
+IDN2_VER=2.3.1
+IDN2_TAR=libidn2-${IDN2_VER}.tar.gz
+IDN2_DIR=libidn2-${IDN2_VER}
 PKG_NAME=libidn2
 
 ###############################################################################
