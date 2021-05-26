@@ -122,13 +122,12 @@ bash ../fix-pkgconfig.sh
 #echo "Testing package"
 #echo "**********************"
 
-# Man, Valgirnd is awful when it comes to trying to build self tests.
-# MAKE_FLAGS=("check" "-k" "V=1")
-# if ! "${MAKE}" "${MAKE_FLAGS[@]}"
-# then
-#    echo "Failed to test M4"
-#    exit 1
-# fi
+MAKE_FLAGS=("check" "-k" "V=1")
+if ! "${MAKE}" "${MAKE_FLAGS[@]}"
+then
+   echo "Failed to test M4"
+   exit 1
+fi
 
 echo "**********************"
 echo "Installing package"
@@ -141,6 +140,15 @@ if [[ -n "$SUDO_PASSWORD" ]]; then
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+fi
+
+###############################################################################
+
+if ! make dist;
+then
+   echo "Failed to create M4 tarball"
+else
+    cp m4-*.xz ../
 fi
 
 ###############################################################################
