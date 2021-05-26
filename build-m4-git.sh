@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds M4 from sources.
 
-M4_DIR=valgrind-master
+M4_DIR=m4-master
 PKG_NAME=m4-rc
 
 ###############################################################################
@@ -44,7 +44,7 @@ fi
 
 echo ""
 echo "========================================"
-echo "================ M4 rc ================="
+echo "================ M4 Git ================"
 echo "========================================"
 
 rm -rf "$M4_DIR" 2>/dev/null
@@ -56,12 +56,17 @@ echo "**********************"
 
 if ! git clone --depth=3 https://git.savannah.gnu.org/git/m4.git "$M4_DIR";
 then
-    echo "Failed to checkout M4"
+    echo "Failed to clone M4"
     exit 1
 fi
 
 cd "$M4_DIR"
-git checkout master &>/dev/null
+
+if ! git checkout branch-1.6 1>/dev/null;
+then
+    echo "Failed to checkout M4"
+    exit 1
+fi
 
 if ! ./autogen.sh
 then
