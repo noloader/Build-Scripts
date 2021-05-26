@@ -300,7 +300,15 @@
    CFLAGS="${CFLAGS--O3}"
    SFLAGS="${CFLAGS--O3} -fPIC"
    if test "$ARCHS"; then
-@@ -832,6 +833,7 @@
+@@ -453,6 +454,7 @@
+ cat > $test.c <<EOF
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <stdint.h>
+ size_t dummy = 0;
+ EOF
+ if try $CC -c $CFLAGS $test.c; then
+@@ -832,6 +834,7 @@
  echo AR = $AR >> configure.log
  echo ARFLAGS = $ARFLAGS >> configure.log
  echo CC = $CC >> configure.log
@@ -308,7 +316,7 @@
  echo CFLAGS = $CFLAGS >> configure.log
  echo CPP = $CPP >> configure.log
  echo EXE = $EXE >> configure.log
-@@ -862,6 +864,7 @@
+@@ -862,6 +865,7 @@
  # udpate Makefile with the configure results
  sed < ${SRCDIR}Makefile.in "
  /^CC *=/s#=.*#=$CC#
@@ -316,7 +324,7 @@
  /^CFLAGS *=/s#=.*#=$CFLAGS#
  /^SFLAGS *=/s#=.*#=$SFLAGS#
  /^LDFLAGS *=/s#=.*#=$LDFLAGS#
-@@ -895,6 +898,7 @@
+@@ -895,6 +899,7 @@
  # create zlib.pc with the configure results
  sed < ${SRCDIR}zlib.pc.in "
  /^CC *=/s#=.*#=$CC#
