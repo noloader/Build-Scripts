@@ -54,21 +54,21 @@ echo "**********************"
 echo "Cloning package"
 echo "**********************"
 
-if ! git clone --depth=3 https://git.savannah.gnu.org/git/m4.git "$M4_DIR";
+if ! git clone https://git.savannah.gnu.org/git/m4.git "$M4_DIR";
 then
     echo "Failed to clone M4"
     exit 1
 fi
 
-cd "$M4_DIR"
+cd "$M4_DIR" || exit 1
 
-if ! git checkout branch-1.6 1>/dev/null;
+if ! git checkout branch-1.4 1>/dev/null;
 then
     echo "Failed to checkout M4"
     exit 1
 fi
 
-if ! ./autogen.sh
+if ! ./bootstrap
 then
     echo "Failed to generate M4 build files"
     exit 1
@@ -82,16 +82,18 @@ echo "Configuring package"
 echo "**********************"
 
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
-    CPPFLAGS="-g2 -O3" \
-    ASFLAGS="" \
-    CFLAGS="-g2 -O3" \
-    CXXFLAGS="-g2 -O3" \
-    LDFLAGS="" \
-    LIBS="" \
+    CPPFLAGS="${INSTX_CPPFLAGS}" \
+    ASFLAGS="${INSTX_ASFLAGS}" \
+    CFLAGS="${INSTX_CFLAGS}" \
+    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    LDFLAGS="${INSTX_LDFLAGS}" \
+    LDLIBS="${INSTX_LDLIBS}" \
+    LIBS="${INSTX_LDLIBS}" \
 ./configure \
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
-    --libdir="${INSTX_LIBDIR}"
+    --libdir="${INSTX_LIBDIR}" \
+    --enable-c++
 
 if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure M4"
