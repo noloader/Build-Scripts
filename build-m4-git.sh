@@ -4,7 +4,7 @@
 # This script builds M4 from sources.
 
 M4_DIR=m4-master
-PKG_NAME=m4-rc
+PKG_NAME=m4-master
 
 ###############################################################################
 
@@ -108,7 +108,7 @@ echo "**********************"
 echo "Building package"
 echo "**********************"
 
-MAKE_FLAGS=("-j" "${INSTX_JOBS}")
+MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo "Failed to build M4"
@@ -140,15 +140,6 @@ if [[ -n "$SUDO_PASSWORD" ]]; then
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
-fi
-
-###############################################################################
-
-if ! make dist;
-then
-   echo "Failed to create M4 tarball"
-else
-    cp m4-*.xz ../
 fi
 
 ###############################################################################
