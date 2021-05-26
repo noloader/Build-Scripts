@@ -104,7 +104,7 @@ IS_CYGWIN=$(grep -i -c 'cygwin' <<< "$THIS_SYSTEM")
 IS_OPENBSD=$(grep -i -c 'openbsd' <<< "$THIS_SYSTEM")
 IS_FREEBSD=$(grep -i -c 'freebsd' <<< "$THIS_SYSTEM")
 IS_NETBSD=$(grep -i -c 'netbsd' <<< "$THIS_SYSTEM")
-
+IS_APPLE_M1=$(sysctl machdep.cpu.brand_string 2>/dev/null | grep -i -c 'Apple M1')
 THIS_SYSTEM=$(uname -v 2>&1)
 IS_ALPINE=$(grep -i -c 'alpine' <<< "$THIS_SYSTEM")
 
@@ -336,7 +336,7 @@ elif [[ "${IS_SUN_SPARCv9}" -eq 1 ]]; then
 fi
 
 # Apple M1 fixup
-if [[ $(sysctl machdep.cpu.brand_string 2>/dev/null | ${GREP} -i -c 'Apple M1') -eq 1 ]]; then
+if [[ ${IS_APPLE_M1} -eq 1 ]]; then
     AUTOCONF_BUILD="aarch64-apple-darwin"
 fi
 export AUTOCONF_BUILD
@@ -346,7 +346,7 @@ export AUTOCONF_BUILD
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32,
 # /usr/local/lib64 and /usr/local/lib/64. We drive a test compile
 # using the supplied compiler and flags.
-if ${TEST_CC} ${CFLAGS} programs/test-64bit.c -o "${outfile}" &>/dev/null
+if ${TEST_CC} ${CFLAGS} programs/test-64bit.c -o "${outfile}"
 then
     IS_64BIT=1
     IS_32BIT=0
