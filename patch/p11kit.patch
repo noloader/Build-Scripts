@@ -1,9 +1,10 @@
 --- p11-kit/lists.c
 +++ p11-kit/lists.c
-@@ -43,12 +43,21 @@
+@@ -43,12 +43,20 @@
  #include <stdio.h>
  #include <stdlib.h>
  #include <unistd.h>
++#include <stdint.h>
 +#include <limits.h>
  
  #include "message.h"
@@ -14,8 +15,6 @@
 +#ifndef SIZE_MAX
 +# ifdef SIZE_T_MAX
 +#  define SIZE_MAX SIZE_T_MAX
-+# else
-+#  define SIZE_MAX MAX_SIZE
 +# endif
 +#endif
 +
