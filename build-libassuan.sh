@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds libassuan from sources.
 
-LIBASSUAN_VER=2.5.4
+LIBASSUAN_VER=2.5.5
 LIBASSUAN_TAR="libassuan-${LIBASSUAN_VER}.tar.bz2"
 LIBASSUAN_DIR="libassuan-${LIBASSUAN_VER}"
 PKG_NAME=libassuan
