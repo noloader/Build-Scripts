@@ -56,14 +56,20 @@ fi
 
 ############################## Misc ##############################
 
+if [[ -n "$(command -v patch 2>/dev/null)" ]]
+then
+    echo "Please install patch program"
+    exit 1
+fi
+
 if [[ -z "$CC" ]]
 then
-    if [[ -n "$(command -v cc 2>/dev/null)" && -n "$(command -v CC 2>/dev/null)" ]]; then
-        CC=cc; CXX=CC
-    elif [[ -n "$(command -v gcc 2>/dev/null)" ]]; then
+    if [[ -n "$(command -v gcc 2>/dev/null)" ]]; then
         CC=gcc; CXX=g++
     elif [[ -n "$(command -v clang 2>/dev/null)" ]]; then
         CC=clang; CXX=clang++
+    elif [[ -n "$(command -v cc 2>/dev/null)" && -n "$(command -v CC 2>/dev/null)" ]]; then
+        CC=cc; CXX=CC
     fi
 fi
 
@@ -151,7 +157,12 @@ gzip -d < "$SSL_TAR" | tar xf -
 cd "$BOOTSTRAP_DIR/$SSL_DIR" || exit 1
 
 cp "${PATCH_DIR}/openssl-1.0.2.patch" .
-patch -p0 < openssl-1.0.2.patch
+
+if ! patch -p0 < openssl-1.0.2.patch;
+then
+    echo "Failed to patch OpenSSL"
+    exit 1
+fi
 
     KERNEL_BITS="$OPT_BITS" \
 ./config \
@@ -243,7 +254,12 @@ gzip -d < "$WGET_TAR" | tar xf -
 cd "$BOOTSTRAP_DIR/$WGET_DIR" || exit 1
 
 cp "${PATCH_DIR}/wget.patch" .
-patch -p0 < wget.patch
+
+if ! patch -p0 < wget.patch;
+then
+    echo "Failed to patch Wget"
+    exit 1
+fi
 
 # Install recipe does not overwrite a config, if present.
 if [[ -f "$PREFIX/etc/wgetrc" ]]; then

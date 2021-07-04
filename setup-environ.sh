@@ -346,7 +346,7 @@ export AUTOCONF_BUILD
 # Try to determine 32 vs 64-bit, /usr/local/lib, /usr/local/lib32,
 # /usr/local/lib64 and /usr/local/lib/64. We drive a test compile
 # using the supplied compiler and flags.
-if ${TEST_CC} ${CFLAGS} programs/test-64bit.c -o "${outfile}"
+if ${TEST_CC} ${CFLAGS} programs/test-64bit.c -o "${outfile}" 2>/dev/null
 then
     IS_64BIT=1
     IS_32BIT=0
