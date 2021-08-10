@@ -5,7 +5,7 @@
 # a fair amount of trouble. It is on a backslide since
 # Daniel turned over reigns to other developers.
 
-CARES_VER=1.17.1
+CARES_VER=1.17.2
 CARES_TAR=c-ares-${CARES_VER}.tar.gz
 CARES_DIR=c-ares-${CARES_VER}
 PKG_NAME=c-ares
