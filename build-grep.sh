@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds grep from sources.
 
-GREP_VER=3.6
+GREP_VER=3.7
 GREP_XZ=grep-${GREP_VER}.tar.xz
 GREP_TAR=grep-${GREP_VER}.tar
 GREP_DIR=grep-${GREP_VER}
