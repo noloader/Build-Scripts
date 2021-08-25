@@ -168,7 +168,7 @@ fi
 
 # Fix the install_name
 if [[ "$IS_DARWIN" -eq 1 ]]; then
-    CONFIG_OPTS[${#CONFIG_OPTS[@]}]="-DOPENSSL_NO_CCRANDOMGENERATEBYTES"
+    CONFIG_OPTS[${#CONFIG_OPTS[@]}]="-Wl,-headerpad_max_install_names"
 fi
 
 # The "${CC##*/ }" strips everything proceeding
