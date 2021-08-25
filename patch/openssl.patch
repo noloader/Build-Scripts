@@ -15,3 +15,13 @@
  #include <openssl/crypto.h>
  #include "internal/cryptlib.h"
  
+--- crypto/rand/rand_unix.c
++++ crypto/rand/rand_unix.c
+@@ -36,6 +36,7 @@
+ #endif
+ #if defined(__APPLE__)
+ # include <CommonCrypto/CommonRandom.h>
++# include <CommonCrypto/CommonCryptoError.h>
+ #endif
+ 
+ #if defined(OPENSSL_SYS_UNIX) || defined(__DJGPP__)
