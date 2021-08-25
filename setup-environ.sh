@@ -208,6 +208,7 @@ export PATH
 OSX_VERSION=$(system_profiler SPSoftwareDataType 2>&1 | ${GREP} 'System Version:' | ${AWK} '{print $6}')
 OSX_10p10_OR_ABOVE=$(${EGREP} -i -c -E "10\.1[0-9]|1[1-9]\.|[2-9][0-9]" <<< "$OSX_VERSION")
 OSX_10p8_OR_ABOVE=$(${EGREP} -i -c -E "10\.[8-9]|10\.1[0-9]|1[1-9]\.|[2-9][0-9]" <<< "$OSX_VERSION")
+OSX_10p9_OR_BELOW=$(${EGREP} -i -c -E "10\.[0-9]" <<< "$OSX_VERSION")
 OSX_10p5_OR_BELOW=$(${EGREP} -i -c -E "10\.[0-5]" <<< "$OSX_VERSION")
 OSX_10p5_OR_10p6=$(${EGREP} -i -c -E "10\.5|10\.6" <<< "$OSX_VERSION")
 

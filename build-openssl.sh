@@ -161,12 +161,11 @@ if [[ "$IS_ALPINE" -eq 1 ]]; then
 fi
 
 # Fix use of CCRandomGenerateBytes
-
-if [[ "$OSX_10p5_OR_BELOW" -eq 1 ]]; then
+if [[ "$OSX_10p9_OR_BELOW" -eq 1 ]]; then
     CONFIG_OPTS[${#CONFIG_OPTS[@]}]="-DOPENSSL_NO_CCRANDOMGENERATEBYTES"
 fi
 
-# Fix the install_name
+# Fix the use of install_name
 if [[ "$IS_DARWIN" -eq 1 ]]; then
     CONFIG_OPTS[${#CONFIG_OPTS[@]}]="-Wl,-headerpad_max_install_names"
 fi
