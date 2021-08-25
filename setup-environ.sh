@@ -270,10 +270,10 @@ USER_CXX=${CXX}
 
 # If CC and CXX are not set, then use default or assume Clang or GCC
 if [[ -z "${CC}" ]]; then
-    CC=$(make -p 2>/dev/null | ${EGREP} '^CC.*=' | head -n 1 | cut -f 2 -d '=' | awk '{$1=$1};1')
+    CC=$(make -p 2>/dev/null | ${EGREP} '^CC.*=' | head -n 1 | cut -f 2 -d '=' | ${AWK} '{$1=$1};1')
 fi
 if [[ -z "${CXX}" ]]; then
-    CXX=$(make -p 2>/dev/null | ${EGREP} '^CXX.*=' | head -n 1 | cut -f 2 -d '=' | awk '{$1=$1};1')
+    CXX=$(make -p 2>/dev/null | ${EGREP} '^CXX.*=' | head -n 1 | cut -f 2 -d '=' | ${AWK} '{$1=$1};1')
 fi
 
 # Fixup for Solaris
@@ -1007,17 +1007,17 @@ if [[ "${IS_SOLARIS}" -ne 0 ]]; then
     printf "\n"
     printf "%s\n" "Solaris tools:"
     printf "\n"
-    printf "%s\n" "     sed: $(command -v sed)"
-    printf "%s\n" "     awk: $(command -v awk)"
-    printf "%s\n" "    grep: $(command -v grep)"
-    if [[ -n "$LEX" ]]; then
-        printf "%s\n" "     lex: $LEX"
+    printf "%s\n" "     sed: ${SED}"
+    printf "%s\n" "     awk: ${AWK}"
+    printf "%s\n" "    grep: ${GREP}"
+    if [[ -n "${LEX}" ]]; then
+        printf "%s\n" "     lex: ${LEX}"
     else
         printf "%s\n" "     lex: $(command -v lex)"
         printf "%s\n" "    flex: $(command -v flex)"
     fi
-    if [[ -n "$YACC" ]]; then
-        printf "%s\n" "     lex: $YACC"
+    if [[ -n "${YACC}" ]]; then
+        printf "%s\n" "     lex: ${YACC}"
     else
         printf "%s\n" "    yacc: $(command -v yacc)"
         printf "%s\n" "   bison: $(command -v bison)"
