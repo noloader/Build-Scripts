@@ -204,11 +204,12 @@ export PATH
 
 ###############################################################################
 
-# OS X flavors. OS X 10.5 was last to support PowerPC.
+# OS X flavors. We delete everything prior to the
+# version number to normalize the stream for awk.
 # Old OS X uses 'System Version: Mac OS X 10.5.8'.
-# New OS X uses 'System Version: OS X 10.9.5'
-# Hence, we delete the word "Mac" to normalize the stream.
-OSX_VERSION=$(system_profiler SPSoftwareDataType 2>&1 | ${GREP} 'System Version:' | ${SED} 's/Mac //' | ${AWK} '{print $5}')
+# New OS X uses 'System Version: OS X 10.9.5'.
+# OS X 10.5 was last to support PowerPC.
+OSX_VERSION=$(system_profiler SPSoftwareDataType 2>&1 | ${GREP} 'System Version:' | ${SED} 's/^[^[:digit:]]*//' | ${AWK} '{print $1}')
 OSX_10p10_OR_ABOVE=$(${EGREP} -i -c -E "10\.1[0-9]|1[1-9]\.|[2-9][0-9]" <<< "$OSX_VERSION")
 OSX_10p8_OR_ABOVE=$(${EGREP} -i -c -E "10\.[8-9]|10\.1[0-9]|1[1-9]\.|[2-9][0-9]" <<< "$OSX_VERSION")
 OSX_10p9_OR_BELOW=$(${EGREP} -i -c -E "10\.[0-9]\." <<< "$OSX_VERSION")
