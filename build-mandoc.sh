@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds mandoc from sources.
 
-MANDOC_TAR=mandoc-1.14.5.tar.gz
-MANDOC_DIR=mandoc-1.14.5
+MANDOC_TAR=mandoc-1.14.6.tar.gz
+MANDOC_DIR=mandoc-1.14.6
 PKG_NAME=mandoc
 
 ###############################################################################
