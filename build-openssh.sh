@@ -4,8 +4,8 @@
 # This script builds SSH and its dependencies from sources.
 # Also see https://superuser.com/q/961349/173513.
 
-OPENSSH_TAR=openssh-8.7p1.tar.gz
-OPENSSH_DIR=openssh-8.7p1
+OPENSSH_TAR=openssh-8.8p1.tar.gz
+OPENSSH_DIR=openssh-8.8p1
 PKG_NAME=openssh
 
 ###############################################################################
