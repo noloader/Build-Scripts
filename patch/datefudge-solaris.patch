@@ -1,0 +1,79 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with DateFudge.
+--- datefudge.c
++++ datefudge.c
+@@ -14,7 +14,6 @@
+ #include <stdlib.h>
+ #include <dlfcn.h>
+ #include <assert.h>
+-#include <features.h>
+ #include <stdbool.h>
+ #include <unistd.h>
+ #include <time.h>
+@@ -78,7 +77,7 @@
+     return 0;
+ }
+ 
+-int gettimeofday(struct timeval *x, struct timezone *y) {
++int gettimeofday(struct timeval *_RESTRICT_KYWD x, void *_RESTRICT_KYWD y) {
+     return __gettimeofday(x,y);
+ }
+ 
+--- Makefile
++++ Makefile
+@@ -1,46 +1,39 @@
+ VERSION := $(shell dpkg-parsechangelog | sed -n 's/^Version: //p')
+ 
+ CC      ?= gcc
+-CFLAGS  += -Wall -Wextra -D_REENTRANT -fpic
++CFLAGS  += -Wall
+ 
+ ifeq (,$(INSTALL_PROGRAM))
+     INSTALL_PROGRAM := "install"
+ endif
+ 
+-prefix	= /usr
+-libdir 	= $(prefix)/lib
++prefix	?= /usr
++libdir 	?= $(prefix)/lib
+ ifneq (,$(libarch))
+ # The `*-*' pattern matches to both hurd-i386 and e.g. i386-linux-gnu
+ marchpt = /*-*
+ endif
+-bindir	= $(prefix)/bin
+-mandir	= $(prefix)/share/man
++bindir	?= $(prefix)/bin
++mandir	?= $(prefix)/share/man
+ 
+-all compile: datefudge datefudge.so datefudge.1
++all compile: datefudge datefudge.so
+ 
+-install: datefudge datefudge.so datefudge.1
++install: datefudge datefudge.so
+ 	install -d $(DESTDIR)$(libdir)/$(libarch)/datefudge
+ 	$(INSTALL_PROGRAM) -o root -g root -m 644 datefudge.so $(DESTDIR)$(libdir)/$(libarch)/datefudge/datefudge.so
+ 	install -d $(DESTDIR)$(bindir)
+ 	$(INSTALL_PROGRAM) -o root -g root -m 755 datefudge $(DESTDIR)$(bindir)
+- 	install -d $(DESTDIR)$(mandir)/man1
+-	install -o root -g root -m 644 datefudge.1 $(DESTDIR)$(mandir)/man1
+ 
+ datefudge: datefudge.sh
+-datefudge.1: datefudge.man
+ 
+-datefudge datefudge.1:
+-	sed -e 's,@VERSION@,$(VERSION),g; s,@MULTIARCH_PATTERN@,$(marchpt),g; s,@LIBDIR@,$(libdir),g;' \
+-	< $< > $@
+-
+ datefudge.so: datefudge.o
+-	$(CC) $(LDFLAGS) -o $@ -shared $< -ldl -lc
++	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ -shared $< -ldl -lc
+ 
+ datefudge.o: datefudge.c
+ 	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+ 
+ clean:
+-	rm -f datefudge.o datefudge.so datefudge datefudge.1
++	rm -f datefudge.o datefudge.so datefudge
+ 
+ # The first run may possibly fail when it's around midnight, that's why it's run twice.
+ test: compile

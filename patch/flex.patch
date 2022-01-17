@@ -1,0 +1,28 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with Flex.
+--- src/misc.c
++++ src/misc.c
+@@ -338,6 +338,10 @@
+ 
+ void line_directive_out (FILE *output_file, int do_infile)
+ {
++	/* Based on GCC object size checker */
++	#undef MAXLINE
++	# define MAXLINE (2048+64)
++
+ 	char    directive[MAXLINE], filename[MAXLINE];
+ 	char   *s1, *s2, *s3;
+ 	static const char line_fmt[] = "#line %d \"%s\"\n";
+--- src/filter.c
++++ src/filter.c
+@@ -336,6 +336,10 @@
+  */
+ int filter_fix_linedirs (struct filter *chain)
+ {
++	/* Based on GCC object size checker */
++	#undef MAXLINE
++	# define MAXLINE (2048+64)
++
+ 	char   *buf;
+ 	const size_t readsz = 512;
+ 	int     lineno = 1;

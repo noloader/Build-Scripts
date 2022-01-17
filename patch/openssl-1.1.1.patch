@@ -1,0 +1,39 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with OpenSSL 1.1.1g.
+--- crypto/threads_pthread.c
++++ crypto/threads_pthread.c
+@@ -7,6 +7,12 @@
+  * https://www.openssl.org/source/license.html
+  */
+ 
++/* https://github.com/openssl/openssl/issues/10966 */
++#ifndef _XOPEN_SOURCE || _XOPEN_SOURCE < 500
++# undef _XOPEN_SOURCE
++# define _XOPEN_SOURCE 500
++#endif
++
+ #include <openssl/crypto.h>
+ #include "internal/cryptlib.h"
+ 
+--- crypto/rand/rand_unix.c
++++ crypto/rand/rand_unix.c
+@@ -34,8 +34,9 @@
+ #if defined(__OpenBSD__)
+ # include <sys/param.h>
+ #endif
+-#if defined(__APPLE__)
++#if defined(__APPLE__) && !defined(OPENSSL_NO_CCRANDOMGENERATEBYTES)
+ # include <CommonCrypto/CommonRandom.h>
++# include <CommonCrypto/CommonCryptoError.h>
+ #endif
+ 
+ #if defined(OPENSSL_SYS_UNIX) || defined(__DJGPP__)
+@@ -381,7 +382,7 @@
+         if (errno != ENOSYS)
+             return -1;
+     }
+-#  elif defined(__APPLE__)
++#  elif defined(__APPLE__) && !defined(OPENSSL_NO_CCRANDOMGENERATEBYTES)
+     if (CCRandomGenerateBytes(buf, buflen) == kCCSuccess)
+ 	    return (ssize_t)buflen;
+ 

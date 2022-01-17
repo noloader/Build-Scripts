@@ -1,0 +1,67 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with Unbound.
+--- cachedb/cachedb.c
++++ cachedb/cachedb.c
+@@ -85,6 +85,16 @@
+ #endif
+ #endif /* be64toh */
+ 
++# if __BIG_ENDIAN__
++#  define OUR_BE64TOH(n) (n)
++#  define OUR_HTOBE64(n) (n)
++# else
++#  define OUR_HI32(n)  ((uint32_t)(((uint64_t)(n)) >> 32))
++#  define OUR_LO32(n)  ((uint32_t)(n))
++#  define OUR_BE64TOH(n) ((((uint64_t)htonl(OUR_LO32(n)) << 32)) | htonl(OUR_HI32(n)))
++#  define OUR_HTOBE64(n) ((((uint64_t)htonl(OUR_LO32(n)) << 32)) | htonl(OUR_HI32(n)))
++# endif
++
+ /** the unit test testframe for cachedb, its module state contains
+  * a cache for a couple queries (in memory). */
+ struct testframe_moddata {
+@@ -407,8 +426,8 @@
+ 	/* qstate->return_msg->rep->ttl contains that relative shortest ttl */
+ 	timestamp = (uint64_t)*qstate->env->now;
+ 	expiry = timestamp + (uint64_t)qstate->return_msg->rep->ttl;
+-	timestamp = htobe64(timestamp);
+-	expiry = htobe64(expiry);
++	timestamp = OUR_HTOBE64(timestamp);
++	expiry = OUR_HTOBE64(expiry);
+ 	oldlim = sldns_buffer_limit(buf);
+ 	if(oldlim + sizeof(timestamp)+sizeof(expiry) >=
+ 		sldns_buffer_capacity(buf))
+@@ -431,7 +450,7 @@
+ 		return 0;
+ 	sldns_buffer_read_at(buf, sldns_buffer_limit(buf)-sizeof(expiry),
+ 		&expiry, sizeof(expiry));
+-	expiry = be64toh(expiry);
++	expiry = OUR_BE64TOH(expiry);
+ 
+ 	if((time_t)expiry < *qstate->env->now &&
+ 		!qstate->env->cfg->serve_expired)
+@@ -491,8 +510,8 @@
+ 	sldns_buffer_read_at(buf, lim-sizeof(expiry), &expiry, sizeof(expiry));
+ 	sldns_buffer_read_at(buf, lim-sizeof(expiry)-sizeof(timestamp),
+ 		&timestamp, sizeof(timestamp));
+-	expiry = be64toh(expiry);
+-	timestamp = be64toh(timestamp);
++	expiry = OUR_BE64TOH(expiry);
++	timestamp = OUR_BE64TOH(timestamp);
+ 
+ 	/* parse DNS packet */
+ 	regional_free_all(qstate->env->scratch);
+--- services/listen_dnsport.c
++++ services/listen_dnsport.c
+@@ -817,6 +817,12 @@
+ {
+ 	int ds;
+ 
++#ifndef IPV6_TCLASS
++	/* define to continue the compile */
++	#define IPV6_TCLASS 0
++	return NULL;
++#endif
++
+ 	if(dscp == 0)
+ 		return NULL;
+ 	ds = dscp << 2;

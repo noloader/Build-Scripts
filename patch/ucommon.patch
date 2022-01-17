@@ -1,0 +1,2738 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with uCommon C/C++ libraries.
+#
+# This patch includes at least two other fixes and patches.
+# - https://lists.gnu.org/archive/html/bug-commoncpp/2020-05/msg00000.html
+# - https://lists.gnu.org/archive/html/bug-commoncpp/2019-05/msg00000.html
+# - https://lists.gnu.org/archive/html/bug-commoncpp/2017-10/msg00000.html
+--- ucommon.pc.in
++++ ucommon.pc.in
+@@ -1,6 +1,6 @@
++prefix=@CMAKE_INSTALL_PREFIX@
+ includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+ libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+-prefix=@CMAKE_INSTALL_PREFIX@
+ modflags="@MODULE_FLAGS@"
+ minimal="-lucommon @PKG_UCOMMON_LIBS@"
+ cmake_macros=@CMAKE_INSTALL_FULL_DATADIR@/ucommon/cmake
+--- inc/ucommon/Makefile.am
++++ inc/ucommon/Makefile.am
+@@ -18,7 +18,7 @@
+ 	timers.h socket.h access.h export.h thread.h mapped.h \
+ 	keydata.h memory.h platform.h fsys.h ucommon.h stream.h \
+ 	shell.h protocols.h atomic.h numbers.h condition.h \
+-	datetime.h unicode.h secure.h generics.h stl.h \
++	datetime.h unicode.h secure.h generics.h nullptr.h stl.h \
+ 	typeref.h arrayref.h mapref.h shared.h temporary.h
+ 
+ 
+--- inc/ucommon/Makefile.in
++++ inc/ucommon/Makefile.in
+@@ -340,7 +340,7 @@
+ 	timers.h socket.h access.h export.h thread.h mapped.h \
+ 	keydata.h memory.h platform.h fsys.h ucommon.h stream.h \
+ 	shell.h protocols.h atomic.h numbers.h condition.h \
+-	datetime.h unicode.h secure.h generics.h stl.h \
++	datetime.h unicode.h secure.h generics.h nullptr.h stl.h \
+ 	typeref.h arrayref.h mapref.h shared.h temporary.h
+ 
+ all: all-am
+--- openssl/digest.cpp
++++ openssl/digest.cpp
+@@ -18,6 +18,21 @@
+ 
+ #include "local.h"
+ 
++#ifdef HAVE_OPENSSL_OPENSSLV_H
++#include <openssl/opensslv.h>
++#endif
++
++#ifdef HAVE_OPENSSL_CRYPTO_H
++#include <openssl/crypto.h>
++#endif
++
++#ifdef HAVE_OPENSSL_EVP_H
++#include <openssl/evp.h>
++#endif
++
++#include <stdexcept>
++#include <cassert>
++
+ namespace ucommon {
+ 
+ bool Digest::has(const char *id)
+@@ -36,26 +51,49 @@
+         type = "sha1";
+ 
+     hashtype = (void *)EVP_get_digestbyname(type);
+-    if(hashtype) {
++    assert(hashtype != NULL);
++
++    if (hashtype)
++    {
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++        context = EVP_MD_CTX_new();
++        assert(context != NULL);
++
++        if (context) {
++            int rc = EVP_DigestInit_ex((EVP_MD_CTX*)context, (const EVP_MD*)hashtype, NULL);
++            if (rc != 1) throw std::runtime_error("EVP_DigestInit_ex failed");
++        }
++#else
+         context = new EVP_MD_CTX;
+-        EVP_MD_CTX_init((EVP_MD_CTX *)context);
+-        EVP_DigestInit_ex((EVP_MD_CTX *)context, (const EVP_MD *)hashtype, NULL);
++        assert(context != NULL);
++
++        if (context) {
++            EVP_MD_CTX_init((EVP_MD_CTX *)context);
++            EVP_DigestInit_ex((EVP_MD_CTX *)context, (const EVP_MD *)hashtype, NULL);
++        }
++#endif
+     }
+ }
+ 
+ void Digest::release(void)
+ {
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++    if(context)
++        EVP_MD_CTX_free((EVP_MD_CTX *)context);
++    context = NULL;
++#else
+     if(context)
+         EVP_MD_CTX_cleanup((EVP_MD_CTX *)context);
+ 
+     if(context) {
+-        memset(context, 0, sizeof(EVP_MD_CTX));
++        OPENSSL_cleanse(context, sizeof(EVP_MD_CTX));
+         delete (EVP_MD_CTX *)context;
+         context = NULL;
+     }
++#endif
+ 
+     bufsize = 0;
+-    memset(textbuf, 0, sizeof(textbuf));
++    OPENSSL_cleanse(textbuf, sizeof(textbuf));
+ }
+ 
+ bool Digest::put(const void *address, size_t size)
+@@ -63,23 +101,48 @@
+     if(!context)
+         return false;
+ 
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++    int rc = EVP_DigestUpdate((EVP_MD_CTX *)context, address, size);
++    return rc == 1;
++#else
+     EVP_DigestUpdate((EVP_MD_CTX *)context, address, size);
+     return true;
++#endif
+ }
+ 
+ void Digest::reset(void)
+ {
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++    if(!context) {
++        if(hashtype) {
++            context = EVP_MD_CTX_new();
++            assert(context != NULL);
++        }
++        else
++            return;
++    }
++
++    if (context) {
++        int rc = EVP_DigestInit_ex((EVP_MD_CTX*)context, (const EVP_MD*)hashtype, NULL);
++        if (rc != 1) throw std::runtime_error("EVP_DigestInit_ex failed");
++        bufsize = 0;
++    }
++#else
+     if(!context) {
+         if(hashtype) {
+             context = new EVP_MD_CTX;
++            assert(context != NULL);
+             EVP_MD_CTX_init((EVP_MD_CTX *)context);
+         }
+         else
+             return;
+     }
+ 
+-    EVP_DigestInit_ex((EVP_MD_CTX *)context, (const EVP_MD *)hashtype, NULL);
+-    bufsize = 0;
++    if (context) {
++        EVP_DigestInit_ex((EVP_MD_CTX *)context, (const EVP_MD *)hashtype, NULL);
++        bufsize = 0;
++    }
++#endif
+ }
+ 
+ void Digest::recycle(bool bin)
+@@ -89,6 +152,31 @@
+     if(!context)
+         return;
+ 
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++    int rc;
++    if(!bufsize) {
++        rc = EVP_DigestFinal_ex((EVP_MD_CTX *)context, buffer, &size);
++        if (rc != 1) throw std::runtime_error("EVP_DigestFinal_ex failed");
++    }
++
++    rc = EVP_DigestInit_ex((EVP_MD_CTX *)context, (const EVP_MD *)hashtype, NULL);
++    if (rc != 1) throw std::runtime_error("EVP_DigestInit_ex failed");
++
++    if(bin) {
++        rc = EVP_DigestUpdate((EVP_MD_CTX *)context, buffer, size);
++        if (rc != 1) throw std::runtime_error("EVP_DigestUpdate failed");
++    }
++    else {
++        unsigned count = 0;
++        while(count < size) {
++            snprintf(textbuf + (count * 2), 3, "%2.2x", buffer[count]);
++            ++count;
++        }
++        rc = EVP_DigestUpdate((EVP_MD_CTX *)context, textbuf, size * 2);
++        if (rc != 1) throw std::runtime_error("EVP_DigestUpdate failed");
++    }
++    bufsize = 0;
++#else
+     if(!bufsize)
+         EVP_DigestFinal_ex((EVP_MD_CTX *)context, buffer, &size);
+ 
+@@ -99,15 +187,13 @@
+     else {
+         unsigned count = 0;
+         while(count < size) {
+-            snprintf(textbuf + (count * 2), 3, "%2.2x",
+-buffer[count]);
++            snprintf(textbuf + (count * 2), 3, "%2.2x", buffer[count]);
+             ++count;
+         }
+-        EVP_DigestUpdate((EVP_MD_CTX *)context, textbuf, size *
+-2);
++        EVP_DigestUpdate((EVP_MD_CTX *)context, textbuf, size * 2);
+     }
+     bufsize = 0;
+-
++#endif
+ }
+ 
+ const uint8_t *Digest::get(void)
+@@ -121,7 +207,12 @@
+     if(!context)
+         return NULL;
+ 
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++    int rc = EVP_DigestFinal_ex((EVP_MD_CTX *)context, buffer, &size);
++    if (rc != 1) throw std::runtime_error("EVP_DigestFinal_ex failed");
++#else
+     EVP_DigestFinal_ex((EVP_MD_CTX *)context, buffer, &size);
++#endif
+ 
+     release();
+ 
+--- openssl/random.cpp
++++ openssl/random.cpp
+@@ -18,6 +18,14 @@
+ 
+ #include "local.h"
+ 
++#ifdef HAVE_OPENSSL_OPENSSLV_H
++#include <openssl/opensslv.h>
++#endif
++
++#ifdef HAVE_OPENSSL_RAND_H
++#include <openssl/rand.h>
++#endif
++
+ namespace ucommon {
+ 
+ void Random::seed(void)
+@@ -47,9 +55,15 @@
+ {
+     secure::init();
+ 
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++    if(RAND_bytes(buf, (int)size))
++        return size;
++    return 0;
++#else
+     if(RAND_pseudo_bytes(buf, (int)size))
+         return size;
+     return 0;
++#endif
+ }
+ 
+ bool Random::status(void)
+--- openssl/cipher.cpp
++++ openssl/cipher.cpp
+@@ -18,6 +18,17 @@
+ 
+ #include "local.h"
+ 
++#ifdef HAVE_OPENSSL_OPENSSLV_H
++#include <openssl/opensslv.h>
++#endif
++
++#ifdef HAVE_OPENSSL_EVP_H
++#include <openssl/evp.h>
++#endif
++
++#include <stdexcept>
++#include <cassert>
++
+ static const uint8_t *_salt = NULL;
+ static unsigned _rounds = 1;
+ 
+@@ -76,6 +87,7 @@
+         String::set(fpart, sizeof(algoname), fpart + 1);
+ 
+     algotype = EVP_get_cipherbyname(algoname);
++    assert(algotype != NULL);
+ 
+     if(!algotype)
+         return;
+@@ -96,7 +108,10 @@
+     if(fpart && fpart == lpart)
+         String::set(fpart, sizeof(algoname), fpart + 1);
+ 
+-    return (EVP_get_cipherbyname(algoname) != NULL);
++    const EVP_CIPHER * cipher = EVP_get_cipherbyname(algoname);
++    assert(cipher != NULL);
++
++    return (cipher != NULL);
+ }
+ 
+ void Cipher::push(uint8_t *address, size_t size)
+@@ -105,12 +120,19 @@
+ 
+ void Cipher::release(void)
+ {
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++    keys.clear();
++    if(context)
++        EVP_CIPHER_CTX_free((EVP_CIPHER_CTX*)context);
++    context = NULL;
++#else
+     keys.clear();
+     if(context) {
+         EVP_CIPHER_CTX_cleanup((EVP_CIPHER_CTX*)context);
+         delete (EVP_CIPHER_CTX*)context;
+         context = NULL;
+     }
++#endif
+ }
+ 
+ void Cipher::set(const key_t key, mode_t mode, uint8_t *address, size_t size)
+@@ -125,10 +147,23 @@
+     if(!keys.keysize)
+         return;
+ 
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++    context = EVP_CIPHER_CTX_new();
++    assert(context != NULL);
++
++    if (context)
++    {
++        int rc = EVP_CipherInit_ex((EVP_CIPHER_CTX *)context, (EVP_CIPHER *)keys.algotype, NULL, keys.keybuf, keys.ivbuf, (int)mode);
++        if (rc != 1) throw std::runtime_error("EVP_CipherInit_ex failed");
++        rc = EVP_CIPHER_CTX_set_padding((EVP_CIPHER_CTX *)context, 0);
++        if (rc != 1) throw std::runtime_error("EVP_CIPHER_CTX_set_padding failed");
++    }
++#else
+     context = new EVP_CIPHER_CTX;
+     EVP_CIPHER_CTX_init((EVP_CIPHER_CTX *)context);
+     EVP_CipherInit_ex((EVP_CIPHER_CTX *)context, (EVP_CIPHER *)keys.algotype, NULL, keys.keybuf, keys.ivbuf, (int)mode);
+     EVP_CIPHER_CTX_set_padding((EVP_CIPHER_CTX *)context, 0);
++#endif
+ }
+ 
+ size_t Cipher::put(const uint8_t *data, size_t size)
+--- openssl/hmac.cpp
++++ openssl/hmac.cpp
+@@ -18,75 +18,128 @@
+ 
+ #include "local.h"
+ 
++#ifdef HAVE_OPENSSL_OPENSSLV_H
++#include <openssl/opensslv.h>
++#endif
++
++#ifdef HAVE_OPENSSL_CRYPTO_H
++#include <openssl/crypto.h>
++#endif
++
++#ifdef HAVE_OPENSSL_EVP_H
++#include <openssl/evp.h>
++#endif
++
++#include <stdexcept>
++#include <cassert>
++
+ namespace ucommon {
+ 
+ bool HMAC::has(const char *id)
+ {
+-    return (EVP_get_digestbyname(id) != NULL);
++	return (EVP_get_digestbyname(id) != NULL);
+ }
+ 
+ void HMAC::set(const char *digest, const secure::keybytes& key)
+ {
+-    secure::init();
++	secure::init();
+ 
+-    release();
++	release();
+ 
+-    size_t len = key.size() / 8;
++	size_t len = key.size() / 8;
+ 
+-    hmactype = EVP_get_digestbyname(digest);
+-    if(hmactype && len) {
+-        context = new ::HMAC_CTX;
+-        HMAC_CTX_init((HMAC_CTX *)context);
+-        HMAC_Init((HMAC_CTX *)context, *key, (int)len, (const EVP_MD *)hmactype);
+-    }
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++	hmactype = EVP_get_digestbyname(digest);
++	assert(hmactype != NULL);
++
++	if(hmactype && len) {
++		context = HMAC_CTX_new();
++		assert(context != NULL);
++
++		if (context) {
++			int rc = HMAC_Init_ex((HMAC_CTX *)context, *key, (int)len, (const EVP_MD *)hmactype, NULL);
++			if (rc != 1) throw std::runtime_error("HMAC_Init_ex failed");
++		}
++	}
++#else
++	hmactype = EVP_get_digestbyname(digest);
++	assert(hmactype != NULL);
++
++	if(hmactype && len) {
++		context = new HMAC_CTX;
++		assert(context != NULL);
++
++		if (context) {
++			HMAC_CTX_init((HMAC_CTX *)context);
++			HMAC_Init((HMAC_CTX *)context, *key, (int)len, (const EVP_MD *)hmactype);
++		}
++	}
++#endif
+ }
+ 
+ void HMAC::release(void)
+ {
+-    if(context) {
+-        HMAC_cleanup((HMAC_CTX *)context);
+-        memset(context, 0, sizeof(HMAC_CTX));
+-        delete (HMAC_CTX *)context;
+-        context = NULL;
+-    }
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++	if(context)
++		HMAC_CTX_free((HMAC_CTX *)context);
++	context = NULL;
++#else
++	if(context) {
++		HMAC_cleanup((HMAC_CTX *)context);
++		OPENSSL_cleanse(context, sizeof(HMAC_CTX));
++		delete (HMAC_CTX *)context;
++		context = NULL;
++	}
++#endif
+ 
+-    bufsize = 0;
+-    memset(textbuf, 0, sizeof(textbuf));
++	bufsize = 0;
++	OPENSSL_cleanse(textbuf, sizeof(textbuf));
+ }
+ 
+ bool HMAC::put(const void *address, size_t size)
+ {
+-    if(!context)
+-        return false;
++	if(!context)
++		return false;
+ 
+-    HMAC_Update((HMAC_CTX *)context, (const uint8_t *)address, size);
+-    return true;
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++	int rc = HMAC_Update((HMAC_CTX *)context, (const uint8_t *)address, size);
++	return rc == 1;
++#else
++	HMAC_Update((HMAC_CTX *)context, (const uint8_t *)address, size);
++	return true;
++#endif
+ }
+ 
+ const uint8_t *HMAC::get(void)
+ {
+-    unsigned count = 0;
+-    unsigned size = 0;
++	unsigned count = 0;
++	unsigned size = 0;
+ 
+-    if(bufsize)
+-        return buffer;
++	if(bufsize)
++		return buffer;
+ 
+-    if(!context)
+-        return NULL;
++	if(!context)
++		return NULL;
+ 
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++	int rc = HMAC_Final((HMAC_CTX *)context, buffer, &size);
++	if (rc != 1) throw std::runtime_error("HMAC_Final failed");
++#else
+ 	HMAC_Final((HMAC_CTX *)context, buffer, &size);
++#endif
++
+ 	release();
+ 
+ 	if(!size)
+ 		return NULL;
+ 
+-    bufsize = size;
++	bufsize = size;
+ 
+-    while(count < bufsize) {
+-        snprintf(textbuf + (count * 2), 3, "%2.2x", buffer[count]);
+-        ++count;
+-    }
+-    return buffer;
++	while(count < bufsize) {
++		snprintf(textbuf + (count * 2), 3, "%2.2x", buffer[count]);
++		++count;
++	}
++	return buffer;
+ }
+ 
+ } // namespace ucommon
+--- corelib/arrayref.cpp
++++ corelib/arrayref.cpp
+@@ -17,6 +17,7 @@
+ 
+ #include <ucommon-config.h>
+ #include <ucommon/export.h>
++#include <ucommon/nullptr.h>
+ #include <ucommon/typeref.h>
+ #include <ucommon/string.h>
+ #include <ucommon/thread.h>
+@@ -212,7 +213,7 @@
+ 
+ void ArrayRef::clear(void)
+ {
+-    reset(nullptr);
++    reset(UCOMMON_NULLPTR);
+ }
+ 
+ ArrayRef::Array *ArrayRef::create(arraytype_t mode, size_t size)
+--- corelib/atomic.cpp
++++ corelib/atomic.cpp
+@@ -18,8 +18,10 @@
+ 
+ #include <ucommon-config.h>
+ #include <ucommon/export.h>
++#include <ucommon/nullptr.h>
+ #include <ucommon/atomic.h>
+ #include <ucommon/thread.h>
++#include <cstdlib>
+ 
+ #if __cplusplus >= 201103l
+ #include <atomic>
+@@ -468,7 +470,7 @@
+             --base;
+         }
+         ::free(base);
+-        address = nullptr;
++        address = UCOMMON_NULLPTR;
+     }
+ }
+ 
+--- corelib/linked.cpp
++++ corelib/linked.cpp
+@@ -18,6 +18,7 @@
+ 
+ #include <ucommon-config.h>
+ #include <ucommon/export.h>
++#include <ucommon/nullptr.h>
+ #include <ucommon/linked.h>
+ #include <ucommon/string.h>
+ #include <ucommon/thread.h>
+@@ -26,7 +27,7 @@
+ 
+ LinkedObject::LinkedObject(LinkedObject **root)
+ {
+-    assert(root != nullptr);
++    assert(root != UCOMMON_NULLPTR);
+     enlist(root);
+ }
+ 
+@@ -38,7 +39,7 @@
+ {
+     LinkedObject *after;
+ 
+-    assert(root != nullptr);
++    assert(root != UCOMMON_NULLPTR);
+ 
+     while(root) {
+         after = root->Next;
+@@ -49,7 +50,7 @@
+ 
+ bool LinkedObject::is_member(LinkedObject *list) const
+ {
+-    assert(list != nullptr);
++    assert(list != UCOMMON_NULLPTR);
+ 
+     while(list) {
+         if(list == this)
+@@ -61,7 +62,7 @@
+ 
+ void LinkedObject::enlist(LinkedObject **root)
+ {
+-    assert(root != nullptr);
++    assert(root != UCOMMON_NULLPTR);
+ 
+     Next = *root;
+     *root = this;
+@@ -69,9 +70,9 @@
+ 
+ void LinkedObject::delist(LinkedObject **root)
+ {
+-    assert(root != nullptr);
++    assert(root != UCOMMON_NULLPTR);
+ 
+-    LinkedObject *prior = nullptr, *node = *root;
++    LinkedObject *prior = UCOMMON_NULLPTR, *node = *root;
+ 
+     while(node && node != this) {
+         prior = node;
+@@ -89,22 +90,22 @@
+ 
+ void ReusableObject::release(void)
+ {
+-    Next = nullptr;
++    Next = UCOMMON_NULLPTR;
+ }
+ 
+ NamedObject::NamedObject() :
+ OrderedObject()
+ {
+-    Id = nullptr;
++    Id = UCOMMON_NULLPTR;
+ }
+ 
+ NamedObject::NamedObject(OrderedIndex *root, char *nid) :
+ OrderedObject()
+ {
+-    assert(root != nullptr);
+-    assert(nid != nullptr && *nid != 0);
++    assert(root != UCOMMON_NULLPTR);
++    assert(nid != UCOMMON_NULLPTR && *nid != 0);
+ 
+-    NamedObject *node = static_cast<NamedObject*>(root->head), *prior = nullptr;
++    NamedObject *node = static_cast<NamedObject*>(root->head), *prior = UCOMMON_NULLPTR;
+ 
+     while(node) {
+         if(node->equal(nid)) {
+@@ -118,7 +119,7 @@
+         prior = node;
+         node = node->getNext();
+     }
+-    Next = nullptr;
++    Next = UCOMMON_NULLPTR;
+     Id = nid;
+     if(!root->head)
+         root->head = this;
+@@ -135,23 +136,23 @@
+ NamedObject::NamedObject(NamedObject **root, char *nid, unsigned max) :
+ OrderedObject()
+ {
+-    assert(root != nullptr);
+-    assert(nid != nullptr && *nid != 0);
++    assert(root != UCOMMON_NULLPTR);
++    assert(nid != UCOMMON_NULLPTR && *nid != 0);
+     assert(max > 0);
+ 
+-    Id = nullptr;
++    Id = UCOMMON_NULLPTR;
+     add(root, nid, max);
+ }
+ 
+ void NamedObject::add(NamedObject **root, char *nid, unsigned max)
+ {
+-    assert(root != nullptr);
+-    assert(nid != nullptr && *nid != 0);
++    assert(root != UCOMMON_NULLPTR);
++    assert(nid != UCOMMON_NULLPTR && *nid != 0);
+     assert(max > 0);
+ 
+     clearId();
+ 
+-    NamedObject *node, *prior = nullptr;
++    NamedObject *node, *prior = UCOMMON_NULLPTR;
+ 
+     if(max < 2)
+         max = 0;
+@@ -185,7 +186,7 @@
+ {
+     if(Id) {
+         free(Id);
+-        Id = nullptr;
++        Id = UCOMMON_NULLPTR;
+     }
+ }
+ 
+@@ -217,7 +218,7 @@
+ 
+ LinkedObject *LinkedObject::getIndexed(LinkedObject *root, unsigned index)
+ {
+-    while(index-- && root != nullptr)
++    while(index-- && root != UCOMMON_NULLPTR)
+         root = root->Next;
+ 
+     return root;
+@@ -225,7 +226,7 @@
+ 
+ unsigned LinkedObject::count(const LinkedObject *root)
+ {
+-    assert(root != nullptr);
++    assert(root != UCOMMON_NULLPTR);
+ 
+     unsigned c = 0;
+     while(root) {
+@@ -237,7 +238,7 @@
+ 
+ unsigned NamedObject::keyindex(const char *id, unsigned max)
+ {
+-    assert(id != nullptr && *id != 0);
++    assert(id != UCOMMON_NULLPTR && *id != 0);
+     assert(max > 1);
+ 
+     unsigned val = 0;
+@@ -250,7 +251,7 @@
+ 
+ int NamedObject::compare(const char *cid) const
+ {
+-    assert(cid != nullptr && *cid != 0);
++    assert(cid != UCOMMON_NULLPTR && *cid != 0);
+ 
+ #ifdef  HAVE_STRCOLL
+     return strcoll(Id, cid);
+@@ -263,17 +264,17 @@
+ 
+     static int ncompare(const void *o1, const void *o2)
+     {
+-        assert(o1 != nullptr);
+-        assert(o2 != nullptr);
++        assert(o1 != UCOMMON_NULLPTR);
++        assert(o2 != UCOMMON_NULLPTR);
+         const NamedObject * const *n1 = static_cast<const NamedObject * const*>(o1);
+-        const NamedObject * const*n2 = static_cast<const NamedObject * const*>(o2);
++        const NamedObject * const *n2 = static_cast<const NamedObject * const*>(o2);
+         return ((*n1)->compare((*n2)->getId()));
+     }
+ }
+ 
+ NamedObject **NamedObject::sort(NamedObject **list, size_t size)
+ {
+-    assert(list != nullptr);
++    assert(list != UCOMMON_NULLPTR);
+ 
+     if(!size) {
+         while(list[size])
+@@ -286,23 +287,23 @@
+ 
+ NamedObject **NamedObject::index(NamedObject **idx, unsigned max)
+ {
+-    assert(idx != nullptr);
++    assert(idx != UCOMMON_NULLPTR);
+     assert(max > 0);
+     NamedObject **op = new NamedObject *[count(idx, max) + 1];
+     unsigned pos = 0;
+-    NamedObject *node = skip(idx, nullptr, max);
++    NamedObject *node = skip(idx, UCOMMON_NULLPTR, max);
+ 
+     while(node) {
+         op[pos++] = node;
+         node = skip(idx, node, max);
+     }
+-    op[pos] = nullptr;
++    op[pos] = UCOMMON_NULLPTR;
+     return op;
+ }
+ 
+ NamedObject *NamedObject::skip(NamedObject **idx, NamedObject *rec, unsigned max)
+ {
+-    assert(idx != nullptr);
++    assert(idx != UCOMMON_NULLPTR);
+     assert(max > 0);
+ 
+     unsigned key = 0;
+@@ -313,7 +314,7 @@
+         while(key < max && !idx[key])
+             ++key;
+         if(key >= max)
+-            return nullptr;
++            return UCOMMON_NULLPTR;
+         return idx[key];
+     }
+ 
+@@ -322,7 +323,7 @@
+ 
+ void NamedObject::purge(NamedObject **idx, unsigned max)
+ {
+-    assert(idx != nullptr);
++    assert(idx != UCOMMON_NULLPTR);
+     assert(max > 0);
+ 
+     LinkedObject *root;
+@@ -338,7 +339,7 @@
+ 
+ unsigned NamedObject::count(NamedObject **idx, unsigned max)
+ {
+-    assert(idx != nullptr);
++    assert(idx != UCOMMON_NULLPTR);
+     assert(max > 0);
+ 
+     unsigned count = 0;
+@@ -359,8 +360,8 @@
+ 
+ NamedObject *NamedObject::remove(NamedObject **idx, const char *id, unsigned max)
+ {
+-    assert(idx != nullptr);
+-    assert(id != nullptr && *id != 0);
++    assert(idx != UCOMMON_NULLPTR);
++    assert(id != UCOMMON_NULLPTR && *id != 0);
+     assert(max > 0);
+ 
+     if(max < 2)
+@@ -371,8 +372,8 @@
+ 
+ NamedObject *NamedObject::map(NamedObject **idx, const char *id, unsigned max)
+ {
+-    assert(idx != nullptr);
+-    assert(id != nullptr && *id != 0);
++    assert(idx != UCOMMON_NULLPTR);
++    assert(id != UCOMMON_NULLPTR && *id != 0);
+     assert(max > 0);
+ 
+     if(max < 2)
+@@ -383,7 +384,7 @@
+ 
+ NamedObject *NamedObject::find(NamedObject *root, const char *id)
+ {
+-    assert(id != nullptr && *id != 0);
++    assert(id != UCOMMON_NULLPTR && *id != 0);
+ 
+     while(root) {
+         if(root->equal(id))
+@@ -395,10 +396,10 @@
+ 
+ NamedObject *NamedObject::remove(NamedObject **root, const char *id)
+ {
+-    assert(id != nullptr && *id != 0);
+-    assert(root != nullptr);
++    assert(id != UCOMMON_NULLPTR && *id != 0);
++    assert(root != UCOMMON_NULLPTR);
+ 
+-    NamedObject *prior = nullptr;
++    NamedObject *prior = UCOMMON_NULLPTR;
+     NamedObject *node = *root;
+ 
+     while(node) {
+@@ -409,9 +410,9 @@
+     }
+ 
+     if(!node)
+-        return nullptr;
++        return UCOMMON_NULLPTR;
+ 
+-    if(prior == nullptr)
++    if(prior == UCOMMON_NULLPTR)
+         *root = node->getNext();
+     else
+         prior->Next = node->getNext();
+@@ -427,21 +428,21 @@
+ NamedObject(), Child()
+ {
+     Id = nid;
+-    Parent = nullptr;
++    Parent = UCOMMON_NULLPTR;
+ }
+ 
+ NamedTree::NamedTree(const NamedTree& source)
+ {
+     Id = source.Id;
+-    Parent = nullptr;
++    Parent = UCOMMON_NULLPTR;
+     Child = source.Child;
+ }
+ 
+ NamedTree::NamedTree(NamedTree *p, char *nid) :
+ NamedObject(), Child()
+ {
+-    assert(p != nullptr);
+-    assert(nid != nullptr && *nid != 0);
++    assert(p != UCOMMON_NULLPTR);
++    assert(nid != UCOMMON_NULLPTR && *nid != 0);
+ 
+     enlistTail(&p->Child);
+     Id = nid;
+@@ -450,13 +451,13 @@
+ 
+ NamedTree::~NamedTree()
+ {
+-    Id = nullptr;
++    Id = UCOMMON_NULLPTR;
+     purge();
+ }
+ 
+ NamedTree *NamedTree::getChild(const char *tid) const
+ {
+-    assert(tid != nullptr && *tid != 0);
++    assert(tid != UCOMMON_NULLPTR && *tid != 0);
+ 
+     linked_pointer<NamedTree> node = Child.begin();
+ 
+@@ -465,7 +466,7 @@
+             return *node;
+         node.next();
+     }
+-    return nullptr;
++    return UCOMMON_NULLPTR;
+ }
+ 
+ void NamedTree::relistTail(NamedTree *trunk)
+@@ -495,7 +496,7 @@
+ 
+ NamedTree *NamedTree::path(const char *tid) const
+ {
+-    assert(tid != nullptr && *tid != 0);
++    assert(tid != UCOMMON_NULLPTR && *tid != 0);
+ 
+     const char *np;
+     char buf[65];
+@@ -507,7 +508,7 @@
+ 
+     while(*tid == '.') {
+         if(!node->Parent)
+-            return nullptr;
++            return UCOMMON_NULLPTR;
+         node = node->Parent;
+ 
+         ++tid;
+@@ -522,7 +523,7 @@
+         if(np)
+             tid = ++np;
+         else
+-            tid = nullptr;
++            tid = UCOMMON_NULLPTR;
+         node = node->getChild(buf);
+     }
+     return node;
+@@ -530,7 +531,7 @@
+ 
+ NamedTree *NamedTree::getLeaf(const char *tid) const
+ {
+-    assert(tid != nullptr && *tid != 0);
++    assert(tid != UCOMMON_NULLPTR && *tid != 0);
+ 
+     linked_pointer<NamedTree> node = Child.begin();
+ 
+@@ -539,12 +540,12 @@
+             return *node;
+         node.next();
+     }
+-    return nullptr;
++    return UCOMMON_NULLPTR;
+ }
+ 
+ NamedTree *NamedTree::leaf(const char *tid) const
+ {
+-    assert(tid != nullptr && *tid != 0);
++    assert(tid != UCOMMON_NULLPTR && *tid != 0);
+ 
+     linked_pointer<NamedTree> node = Child.begin();
+     NamedTree *obj;
+@@ -552,19 +553,19 @@
+     while(node) {
+         if(node->is_leaf() && eq(node->Id, tid))
+             return *node;
+-        obj = nullptr;
++        obj = UCOMMON_NULLPTR;
+         if(!node->is_leaf())
+             obj = node->leaf(tid);
+         if(obj)
+             return obj;
+         node.next();
+     }
+-    return nullptr;
++    return UCOMMON_NULLPTR;
+ }
+ 
+ NamedTree *NamedTree::find(const char *tid) const
+ {
+-    assert(tid != nullptr && *tid != 0);
++    assert(tid != UCOMMON_NULLPTR && *tid != 0);
+ 
+     linked_pointer<NamedTree> node = Child.begin();
+     NamedTree *obj;
+@@ -579,12 +580,12 @@
+         }
+         node.next();
+     }
+-    return nullptr;
++    return UCOMMON_NULLPTR;
+ }
+ 
+ void NamedTree::setId(char *nid)
+ {
+-    assert(nid != nullptr && *nid != 0);
++    assert(nid != UCOMMON_NULLPTR && *nid != 0);
+ 
+     Id = nid;
+ }
+@@ -597,7 +598,7 @@
+     if(Parent)
+         delist(&Parent->Child);
+ 
+-    Id = nullptr;
++    Id = UCOMMON_NULLPTR;
+ }
+ 
+ void NamedTree::purge(void)
+@@ -612,7 +613,7 @@
+         obj = *node;
+ 		if (!obj)
+ 			break;
+-        obj->Parent = nullptr; // save processing
++        obj->Parent = UCOMMON_NULLPTR; // save processing
+         node = obj->getNext();
+         delete obj;
+     }
+@@ -624,12 +625,12 @@
+ 
+ LinkedObject::LinkedObject()
+ {
+-    Next = nullptr;
++    Next = UCOMMON_NULLPTR;
+ }
+ 
+ LinkedObject::LinkedObject(const LinkedObject& from)
+ {
+-    Next = nullptr;
++    Next = UCOMMON_NULLPTR;
+ }
+ 
+ OrderedObject::OrderedObject() : LinkedObject()
+@@ -643,16 +644,16 @@
+ OrderedObject::OrderedObject(OrderedIndex *root) :
+ LinkedObject()
+ {
+-    assert(root != nullptr);
+-    Next = nullptr;
++    assert(root != UCOMMON_NULLPTR);
++    Next = UCOMMON_NULLPTR;
+     enlistTail(root);
+ }
+ 
+ void OrderedObject::delist(OrderedIndex *root)
+ {
+-    assert(root != nullptr);
++    assert(root != UCOMMON_NULLPTR);
+ 
+-    OrderedObject *prior = nullptr, *node;
++    OrderedObject *prior = UCOMMON_NULLPTR, *node;
+ 
+     node = root->head;
+ 
+@@ -675,17 +676,17 @@
+ 
+ void OrderedObject::enlist(OrderedIndex *root)
+ {
+-    assert(root != nullptr);
++    assert(root != UCOMMON_NULLPTR);
+ 
+-    Next = nullptr;
++    Next = UCOMMON_NULLPTR;
+     enlistTail(root);
+ }
+ 
+ void OrderedObject::enlistTail(OrderedIndex *root)
+ {
+-    assert(root != nullptr);
++    assert(root != UCOMMON_NULLPTR);
+ 
+-    if(root->head == nullptr)
++    if(root->head == UCOMMON_NULLPTR)
+         root->head = this;
+     else if(root->tail)
+         root->tail->Next = this;
+@@ -695,10 +696,10 @@
+ 
+ void OrderedObject::enlistHead(OrderedIndex *root)
+ {
+-    assert(root != nullptr);
++    assert(root != UCOMMON_NULLPTR);
+ 
+-    Next = nullptr;
+-    if(root->tail == nullptr)
++    Next = UCOMMON_NULLPTR;
++    if(root->tail == UCOMMON_NULLPTR)
+         root->tail = this;
+     else if(root->head)
+         Next = root->head;
+@@ -708,43 +709,43 @@
+ 
+ DLinkedObject::DLinkedObject()
+ {
+-    Root = nullptr;
+-    Prev = nullptr;
+-    Next = nullptr;
++    Root = UCOMMON_NULLPTR;
++    Prev = UCOMMON_NULLPTR;
++    Next = UCOMMON_NULLPTR;
+ }
+ 
+ DLinkedObject::DLinkedObject(const DLinkedObject& from)
+ {
+-    Root = nullptr;
+-    Prev = nullptr;
+-    Next = nullptr;
++    Root = UCOMMON_NULLPTR;
++    Prev = UCOMMON_NULLPTR;
++    Next = UCOMMON_NULLPTR;
+ }
+ 
+ DLinkedObject::DLinkedObject(OrderedIndex *r)
+ {
+-    Root = nullptr;
+-    Next = Prev = nullptr;
++    Root = UCOMMON_NULLPTR;
++    Next = Prev = UCOMMON_NULLPTR;
+     if(r)
+         enlist(r);
+ }
+ 
+ void DLinkedObject::enlist(OrderedIndex *r)
+ {
+-    assert(r != nullptr);
++    assert(r != UCOMMON_NULLPTR);
+ 
+     enlistTail(r);
+ }
+ 
+ void DLinkedObject::insert(DLinkedObject *o)
+ {
+-    assert(o != nullptr);
++    assert(o != UCOMMON_NULLPTR);
+ 
+     insertTail(o);
+ }
+ 
+ void DLinkedObject::insertHead(DLinkedObject *o)
+ {
+-    assert(o != nullptr);
++    assert(o != UCOMMON_NULLPTR);
+ 
+     if(o->Root)
+         o->delist();
+@@ -755,7 +756,7 @@
+     }
+     else {
+         Root->head = o;
+-        o->Prev = nullptr;
++        o->Prev = UCOMMON_NULLPTR;
+     }
+     o->Root = Root;
+     o->Next = this;
+@@ -764,7 +765,7 @@
+ 
+ void DLinkedObject::insertTail(DLinkedObject *o)
+ {
+-    assert(o != nullptr);
++    assert(o != UCOMMON_NULLPTR);
+ 
+     if(o->Root)
+         o->delist();
+@@ -775,7 +776,7 @@
+     }
+     else {
+         Root->tail = o;
+-        o->Next = nullptr;
++        o->Next = UCOMMON_NULLPTR;
+     }
+     o->Root = Root;
+     o->Prev = this;
+@@ -784,14 +785,14 @@
+ 
+ void DLinkedObject::enlistHead(OrderedIndex *r)
+ {
+-    assert(r != nullptr);
++    assert(r != UCOMMON_NULLPTR);
+ 
+     if(Root)
+         delist();
+ 
+     Root = r;
+-    Prev = nullptr; 
+-    Next = nullptr;
++    Prev = UCOMMON_NULLPTR; 
++    Next = UCOMMON_NULLPTR;
+ 
+     if(!Root->tail) {
+         Root->tail = Root->head = static_cast<OrderedObject *>(this);
+@@ -806,13 +807,13 @@
+ 
+ void DLinkedObject::enlistTail(OrderedIndex *r)
+ {
+-    assert(r != nullptr);
++    assert(r != UCOMMON_NULLPTR);
+ 
+     if(Root)
+         delist();
+ 
+     Root = r;
+-    Next = Prev = nullptr;
++    Next = Prev = UCOMMON_NULLPTR;
+ 
+     if(!Root->head) {
+         Root->head = Root->tail = static_cast<OrderedObject *>(this);
+@@ -839,8 +840,8 @@
+     else if(Root->tail == static_cast<OrderedObject *>(this))
+         Root->tail = static_cast<OrderedObject *>(Prev);
+ 
+-    Root = nullptr;
+-    Next = Prev = nullptr;
++    Root = UCOMMON_NULLPTR;
++    Next = Prev = UCOMMON_NULLPTR;
+ }
+ 
+ DLinkedObject::~DLinkedObject()
+@@ -850,12 +851,12 @@
+ 
+ OrderedIndex::OrderedIndex()
+ {
+-    head = tail = nullptr;
++    head = tail = UCOMMON_NULLPTR;
+ }
+ 
+ OrderedIndex::~OrderedIndex()
+ {
+-    head = tail = nullptr;
++    head = tail = UCOMMON_NULLPTR;
+ }
+ 
+ void OrderedIndex::copy(const OrderedIndex& source)
+@@ -866,14 +867,14 @@
+ 
+ void OrderedIndex::operator*=(OrderedObject *object)
+ {
+-    assert(object != nullptr);
++    assert(object != UCOMMON_NULLPTR);
+ 
+     object->enlist(this);
+ }
+ 
+ void OrderedIndex::add(OrderedObject *object)
+ {
+-    assert(object != nullptr);
++    assert(object != UCOMMON_NULLPTR);
+ 
+     object->enlist(this);
+ }
+@@ -883,12 +884,12 @@
+     LinkedObject *node;
+ 
+     if(!head)
+-        return nullptr;
++        return UCOMMON_NULLPTR;
+ 
+     node = head;
+     head = static_cast<OrderedObject *>(node->getNext());
+     if(!head)
+-        tail = nullptr;
++        tail = UCOMMON_NULLPTR;
+ 
+     return static_cast<LinkedObject *>(node);
+ }
+@@ -897,13 +898,13 @@
+ {
+     if(head) {
+         LinkedObject::purge((LinkedObject *)head);
+-        head = tail = nullptr;
++        head = tail = UCOMMON_NULLPTR;
+     }
+ }
+ 
+ void OrderedIndex::reset(void)
+ {
+-    head = tail = nullptr;
++    head = tail = UCOMMON_NULLPTR;
+ }
+ 
+ void OrderedIndex::lock_index(void)
+@@ -925,7 +926,7 @@
+         op[idx++] = node;
+         node = node->Next;
+     }
+-    op[idx] = nullptr;
++    op[idx] = UCOMMON_NULLPTR;
+     return op;
+ }
+ 
+--- corelib/memory.cpp
++++ corelib/memory.cpp
+@@ -18,6 +18,7 @@
+ 
+ #include <ucommon-config.h>
+ #include <ucommon/export.h>
++#include <ucommon/nullptr.h>
+ #include <ucommon/object.h>
+ #include <ucommon/memory.h>
+ #include <ucommon/thread.h>
+@@ -688,7 +689,7 @@
+ {
+     const char *out = NULL;
+ 
+-    if(root == nullptr) {
++    if(root == UCOMMON_NULLPTR) {
+         __THROW_RUNTIME("no root");
+         return NULL;
+     }
+@@ -898,7 +899,7 @@
+ }
+ 
+ PagerObject::PagerObject() :
+-LinkedObject(nullptr), CountedObject()
++LinkedObject(UCOMMON_NULLPTR), CountedObject()
+ {
+ }
+ 
+--- corelib/shared.cpp
++++ corelib/shared.cpp
+@@ -17,6 +17,7 @@
+ 
+ #include <ucommon-config.h>
+ #include <ucommon/export.h>
++#include <ucommon/nullptr.h>
+ #include <ucommon/typeref.h>
+ #include <ucommon/string.h>
+ #include <ucommon/thread.h>
+@@ -97,7 +98,7 @@
+ 
+ void MappedPointer::release(void *object)
+ {
+-	if(object != nullptr)
++	if(object != UCOMMON_NULLPTR)
+ 		lock->release();
+ }
+ 
+--- corelib/socket.cpp
++++ corelib/socket.cpp
+@@ -34,6 +34,12 @@
+ #ifdef  HAVE_FCNTL_H
+ #include <fcntl.h>
+ #endif
++#ifdef  HAVE_SYS_TYPES_H
++#include <sys/types.h>
++#endif
++#ifdef  HAVE_SYS_SOCKET_H
++#include <sys/socket.h>
++#endif
+ #include <errno.h>
+ 
+ #if defined(HAVE_POLL_H)
+@@ -62,6 +68,10 @@
+ #define MSG_NOSIGNAL 0
+ #endif
+ 
++#ifndef AI_NUMERICSERV
++#define AI_NUMERICSERV 0
++#endif
++
+ #ifdef  __FreeBSD__
+ #ifdef  AI_V4MAPPED
+ #undef  AI_V4MAPPED
+--- corelib/thread.cpp
++++ corelib/thread.cpp
+@@ -18,6 +18,7 @@
+ 
+ #include <ucommon-config.h>
+ #include <ucommon/export.h>
++#include <ucommon/nullptr.h>
+ #include <ucommon/object.h>
+ #include <ucommon/thread.h>
+ #include <ucommon/timers.h>
+@@ -26,8 +27,9 @@
+ #include <string.h>
+ #include <stdarg.h>
+ #include <limits.h>
++#include <sys/sysctl.h>
+ 
+-#if _POSIX_PRIORITY_SCHEDULING > 0
++#if _POSIX_PRIORITY_SCHEDULING+0 > 0
+ #include <sched.h>
+ static int realtime_policy = SCHED_FIFO;
+ #endif
+@@ -211,7 +213,7 @@
+ 
+ void *Thread::Local::allocate()
+ {
+-    return nullptr;
++    return UCOMMON_NULLPTR;
+ }
+ 
+ void Thread::release(void)
+@@ -1311,13 +1313,14 @@
+     free(buffer);
+     return line_size;
+ #elif defined(__APPLE__)
+-    size_t line_size = 0;
+-    size_t sizeof_line_size = sizeof(line_size);
+-    sysctlbyname("hw.cachelinesize", &line_size, &sizeof_line_size, 0, 0);
+-    return line_size;
++    size_t lsize = 0;
++    size_t sizeof_line_size = sizeof(lsize);
++    sysctlbyname("hw.cachelinesize", &lsize, &sizeof_line_size, 0, 0);
++    return lsize;
+ #elif defined(_SC_LEVEL1_DCACHE_LINESIZE)
++    const size_t neg_one = (size_t) -1;
+     line_size = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
+-    if(!line_size)
++    if(line_size == neg_one || line_size == 0)
+         line_size = 64;
+     return line_size;
+ #elif defined(linux)
+--- corelib/typeref.cpp
++++ corelib/typeref.cpp
+@@ -17,6 +17,7 @@
+ 
+ #include <ucommon-config.h>
+ #include <ucommon/export.h>
++#include <ucommon/nullptr.h>
+ #include <ucommon/typeref.h>
+ #include <ucommon/string.h>
+ #include <ucommon/thread.h>
+@@ -36,7 +37,7 @@
+ {
+     TypeRelease *rel = autorelease;
+     if(rel) {
+-        autorelease = nullptr;
++        autorelease = UCOMMON_NULLPTR;
+         rel->dealloc(this);
+         return;
+     }
+@@ -225,7 +226,7 @@
+ {
+     value *v1 = polystatic_cast<value *>(ref);
+     const char *str1 = "";
+-    TypeRelease *ar = nullptr;
++    TypeRelease *ar = UCOMMON_NULLPTR;
+ 
+     if(v1) {
+         str1 = &v1->mem[0];
+@@ -401,7 +402,7 @@
+ TypeRef()
+ {
+     caddr_t p = ar->allocate(sizeof(value) + size);
+-    TypeRef::set(new(mem(p)) value(p, size, nullptr, ar));
++    TypeRef::set(new(mem(p)) value(p, size, UCOMMON_NULLPTR, ar));
+ }
+ 
+ typeref<const uint8_t *>::typeref(bool mode, size_t bits, TypeRelease *ar) :
+@@ -412,7 +413,7 @@
+         ++size;
+ 
+     caddr_t p = ar->allocate(sizeof(value) + size);
+-    TypeRef::set(new(mem(p)) value(p, size, nullptr, ar));
++    TypeRef::set(new(mem(p)) value(p, size, UCOMMON_NULLPTR, ar));
+     set(mode, 0, bits);
+ }
+ 
+@@ -449,7 +450,7 @@
+         return 0;
+ 
+     caddr_t p = ar->allocate(sizeof(value) + size);
+-    TypeRef::set(new(mem(p)) value(p, size, nullptr, ar));
++    TypeRef::set(new(mem(p)) value(p, size, UCOMMON_NULLPTR, ar));
+     String::hex2bin(str, data(), size, ws);
+     return size;
+ }
+@@ -462,7 +463,7 @@
+         return 0;
+ 
+     caddr_t p = ar->allocate(sizeof(value) + size);
+-    TypeRef::set(new(mem(p)) value(p, size, nullptr, ar));
++    TypeRef::set(new(mem(p)) value(p, size, UCOMMON_NULLPTR, ar));
+     String::b64decode(data(), str, size, ws);
+     return size;
+ }
+@@ -492,7 +493,7 @@
+ typeref<const uint8_t *>::value *typeref<const uint8_t *>::create(size_t size, TypeRelease *ar)
+ {
+     caddr_t p = ar->allocate(sizeof(value) + size);
+-    return new(mem(p)) value(p, size, nullptr, ar);
++    return new(mem(p)) value(p, size, UCOMMON_NULLPTR, ar);
+ }
+ 
+ void typeref<const uint8_t *>::destroy(typeref<const uint8_t *>::value *bytes)
+@@ -561,7 +562,7 @@
+     uint8_t *out;
+     size_t s1 = 0, s2 = 0, max;
+     typeref<const uint8_t*> result;
+-    TypeRelease *ar = nullptr;
++    TypeRelease *ar = UCOMMON_NULLPTR;
+ 
+     if(v1) {
+         s1 = v1->max();
+@@ -658,7 +659,7 @@
+ 
+ void TypeRelease::release(TypeRef::Counted *obj)
+ {
+-    obj->autorelease = nullptr;
++    obj->autorelease = UCOMMON_NULLPTR;
+     obj->dealloc();
+ }
+ 
+@@ -680,10 +681,10 @@
+     TypeRef::Counted *obj = *root;
+     if(obj) {
+         *root = obj->linkrelease;
+-        obj->autorelease = nullptr;
++        obj->autorelease = UCOMMON_NULLPTR;
+     }
+     else
+-        *root = nullptr;
++        *root = UCOMMON_NULLPTR;
+     return obj;
+ }
+ 
+@@ -714,7 +715,7 @@
+ 
+ public:
+     TypeReleaseLater() { 
+-        list = nullptr; 
++        list = UCOMMON_NULLPTR; 
+     }
+ 
+     unsigned purge(void) __FINAL;
+@@ -734,10 +735,10 @@
+     TypeRef::Counted *pool;
+     lock.acquire();
+     pool = list;
+-    list = nullptr;
++    list = UCOMMON_NULLPTR;
+     lock.release();
+ 
+-    while((obj = delist(&pool)) != nullptr) {
++    while((obj = delist(&pool)) != UCOMMON_NULLPTR) {
+         TypeRelease::release(obj);
+         ++count;
+     }
+--- inc/ucommon/arrayref.h
++++ inc/ucommon/arrayref.h
+@@ -33,6 +33,10 @@
+ #include <ucommon/atomic.h>
+ #endif
+ 
++#ifndef _UCOMMON_NULLPTR_H_
++#include <ucommon/nullptr.h>
++#endif
++
+ #ifndef _UCOMMON_PROTOCOLS_H_
+ #include <ucommon/protocols.h>
+ #endif
+@@ -151,7 +155,7 @@
+ 	}
+ 
+ 	inline void release(void) {
+-		TypeRef::set(nullptr);
++		TypeRef::set(UCOMMON_NULLPTR);
+ 	}
+ 
+ 	inline typeref<T> pull() {
+@@ -219,7 +223,7 @@
+ 	}
+ 
+ 	inline void release(void) {
+-		TypeRef::set(nullptr);
++		TypeRef::set(UCOMMON_NULLPTR);
+ 	}
+ 
+ 	inline typeref<T> pull() {
+@@ -325,7 +329,7 @@
+ 	}
+ 
+ 	inline void release(void) {
+-		TypeRef::set(nullptr);
++		TypeRef::set(UCOMMON_NULLPTR);
+ 	}
+ };
+ 
+--- inc/ucommon/generics.h
++++ inc/ucommon/generics.h
+@@ -29,13 +29,19 @@
+ #include <ucommon/cpr.h>
+ #endif
+ 
++#ifndef _UCOMMON_NULLPTR_H_
++#include <ucommon/nullptr.h>
++#endif
++
+ #include <cstdlib>
+ #include <cstring>
+ #include <stdexcept>
+ 
++// Do not declare an exception specification. It is an anti-pattern.
++// Also see https://stackoverflow.com/q/1055387.
+ #ifndef UCOMMON_SYSRUNTIME
+ #define THROW(x)    throw x
+-#define THROWS(x)   throw(x)
++#define THROWS(x)
+ #define THROWS_ANY  throw()
+ #else
+ #define THROW(x)    ::abort()
+@@ -63,8 +69,8 @@
+             delete counter;
+             delete object;
+         }
+-        object = NULL;
+-        counter = NULL;
++        object = UCOMMON_NULLPTR;
++        counter = UCOMMON_NULLPTR;
+     }
+ 
+     inline void retain(void) {
+@@ -96,17 +102,17 @@
+     }
+ 
+     inline pointer() {
+-        counter = NULL;
+-        object = NULL;
++        counter = UCOMMON_NULLPTR;
++        object = UCOMMON_NULLPTR;
+     }
+ 
+-    inline explicit pointer(T* ptr = NULL) : object(ptr) {
++    inline explicit pointer(T* ptr = UCOMMON_NULLPTR) : object(ptr) {
+         if(object) {
+             counter = new unsigned;
+             *counter = 1;
+         }
+         else
+-            counter = NULL;
++            counter = UCOMMON_NULLPTR;
+     }
+ 
+     inline pointer(const pointer<T> &ref) {
+@@ -139,11 +145,11 @@
+     }
+ 
+     inline bool operator!() const {
+-        return (counter == NULL);
++        return (counter == UCOMMON_NULLPTR);
+     }
+ 
+     inline operator bool() const {
+-        return counter != NULL;
++        return counter != UCOMMON_NULLPTR;
+     }
+ };
+ 
+@@ -165,8 +171,8 @@
+             delete counter;
+             delete[] array;
+         }
+-        array = NULL;
+-        counter = NULL;
++        array = UCOMMON_NULLPTR;
++        counter = UCOMMON_NULLPTR;
+     }
+ 
+     inline void retain(void) {
+@@ -198,17 +204,17 @@
+     }
+ 
+     inline array_pointer() {
+-        counter = NULL;
+-        array = NULL;
++        counter = UCOMMON_NULLPTR;
++        array = UCOMMON_NULLPTR;
+     }
+ 
+-    inline explicit array_pointer(T* ptr = NULL) : array(ptr) {
++    inline explicit array_pointer(T* ptr = UCOMMON_NULLPTR) : array(ptr) {
+         if(array) {
+             counter = new unsigned;
+             *counter = 1;
+         }
+         else
+-            counter = NULL;
++            counter = UCOMMON_NULLPTR;
+     }
+ 
+     inline array_pointer(const array_pointer<T> &ref) {
+@@ -245,11 +251,11 @@
+     }
+ 
+     inline bool operator!() const {
+-        return (counter == NULL);
++        return (counter == UCOMMON_NULLPTR);
+     }
+ 
+     inline operator bool() const {
+-        return counter != NULL;
++        return counter != UCOMMON_NULLPTR;
+     }
+ };
+ 
+@@ -297,22 +303,22 @@
+  * Convenience function to test pointer object.  This solves issues where
+  * some compilers get confused between bool and pointer operators.
+  * @param object we are testing.
+- * @return true if object points to NULL.
++ * @return true if object points to nullptr or NULL.
+  */
+ template<typename T>
+ inline bool isnull(T& object) {
+-    return (bool)(object.operator*() == nullptr);
++    return (bool)(object.operator*() == UCOMMON_NULLPTR);
+ }
+ 
+ /**
+  * Convenience function to test pointer-pointer object.  This solves issues
+  * where some compilers get confused between bool and pointer operators.
+  * @param object we are testing.
+- * @return true if object points to NULL.
++ * @return true if object points to nullptr or NULL.
+  */
+ template<typename T>
+ inline bool isnullp(T *object) {
+-    return (bool)(object->operator*() == nullptr);
++    return (bool)(object->operator*() == UCOMMON_NULLPTR);
+ }
+ 
+ /**
+--- /dev/null
++++ inc/ucommon/nullptr.h
+@@ -0,0 +1,76 @@
++// Copyright (C) 2020 Jeffrey Walton
++//
++// This file is part of GNU uCommon C++.
++//
++// GNU uCommon C is free software: you can redistribute it and/or modify
++// it under the terms of the GNU Lesser General Public License as published
++// by the Free Software Foundation, either version 3 of the License, or
++// (at your option) any later version.
++//
++// GNU uCommon C is distributed in the hope that it will be useful,
++// but WITHOUT ANY WARRANTY; without even the implied warranty of
++// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++// GNU Lesser General Public License for more details.
++//
++// You should have received a copy of the GNU Lesser General Public License
++// along with GNU uCommon C.  If not, see <http://www.gnu.org/licenses/>.
++
++/**
++ * Provides UCOMMON_NULLPTR. UCOMMON_NULLPTR is nullptr for C++11 and above,
++ * and NULL otherwise. std::nullptr_t and nullptr are too new for some older
++ * distributions still found in the field.
++ * @file ucommon/nullptr.h
++ */
++
++#ifndef _UCOMMON_NULLPTR_H_
++#define _UCOMMON_NULLPTR_H_
++
++// std::nullptr_t, nullptr and NULL
++#include <cstddef>
++
++// https://clang.llvm.org/docs/LanguageExtensions.html
++#ifndef __has_feature
++# define __has_feature(x) 0
++#endif
++
++// Clang depends on __has_feature
++#if (_MSC_VER >= 1600) || __has_feature(cxx_nullptr) || \
++    ((__GNUC__ >= 5) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)) || \
++    (__INTEL_COMPILER >= 1000) || (__SUNPRO_CC >= 0x5130) || \
++    defined(__IBMCPP_NULLPTR)
++# undef  HAVE_NULLPTR
++# define HAVE_NULLPTR 1
++#endif
++
++// TODO: add configure.ac test
++#ifdef HAVE_NULLPTR
++# define UCOMMON_NULLPTR nullptr
++#else
++# define UCOMMON_NULLPTR NULL
++#endif
++
++// uCommon C++ provided the following class for non-C++11 implementations.
++// Unfortunately, we need more than a class file since one of the features
++// of nullptr is to distinguish between ints, longs and pointers while
++// still being convertible to bool. That requires compiler support.
++#if 0
++const class nullptr_t 
++{
++public:
++    template<class T>
++    inline operator T*() const {
++        return 0; 
++    }
++
++    template<class C, class T>
++    inline operator T C::*() const {
++        return 0; 
++    }
++
++private:
++    void operator&() const;
++
++} nullptr = {};
++#endif
++
++#endif
+
+--- inc/ucommon/platform.h
++++ inc/ucommon/platform.h
+@@ -36,6 +36,10 @@
+ #include <malloc.h>
+ #endif
+ 
++#ifndef _UCOMMON_NULLPTR_H_
++#include <ucommon/nullptr.h>
++#endif
++
+ #ifndef _UCOMMON_PLATFORM_H_
+ #define _UCOMMON_PLATFORM_H_
+ #define UCOMMON_ABI 7
+@@ -50,16 +54,16 @@
+ #define __THROW_RANGE(x)      throw std::out_of_range(x)
+ #define __THROW_RUNTIME(x)    throw std::runtime_error(x)
+ #define __THROW_ALLOC()       throw std::bad_alloc()
+-#define __THROW_DEREF(v)      if(v == nullptr) \
++#define __THROW_DEREF(v)      if(v == UCOMMON_NULLPTR) \
+                                 throw std::runtime_error("Dereference NULL")
+-#define __THROW_UNDEF(v,x)    if(v == nullptr) throw std::runtime_error(x)
++#define __THROW_UNDEF(v,x)    if(v == UCOMMON_NULLPTR) throw std::runtime_error(x)
+ #else
+ #define __THROW_RANGE(x)      abort()
+ #define __THROW_SIZE(x)       abort()
+ #define __THROW_RUNTIME(x)    abort()
+ #define __THROW_ALLOC()       abort()
+-#define __THROW_DEREF(v)      if(v == nullptr) abort()
+-#define __THROW_UNDEF(v,x)    if(v == nullptr) abort()
++#define __THROW_DEREF(v)      if(v == UCOMMON_NULLPTR) abort()
++#define __THROW_UNDEF(v,x)    if(v == UCOMMON_NULLPTR) abort()
+ #endif
+ 
+ /**
+@@ -90,7 +94,7 @@
+ #endif
+ #endif
+ 
+-#if !defined(__GNUC__) && !defined(__has_feature) && !defined(_MSC_VER)
++#if !defined(__GNUC__) && !defined(_MSC_VER)
+ #define UCOMMON_RTTI    1
+ #endif
+ 
+@@ -102,11 +106,9 @@
+ #define UCOMMON_RTTI    1
+ #endif
+ 
+-#if defined(__has_feature)
+ #if __has_feature(cxx_rtti)
+ #define UCOMMON_RTTI    1
+ #endif
+-#endif
+ 
+ #ifdef  UCOMMON_RTTI
+ #define __PROTOCOL   virtual
+@@ -171,30 +173,6 @@
+                                 __DELETE_COPY(x)
+ #endif
+ 
+-#if __cplusplus <= 199711L && !defined(_MSC_VER)
+-#if defined(__GNUC_MINOR__) && !defined(__clang__)
+-#define nullptr __null
+-#elif !defined(__clang__) || (defined(__clang__) && defined(__linux__))
+-const class nullptr_t 
+-{
+-public:
+-    template<class T>
+-    inline operator T*() const {
+-        return 0; 
+-    }
+-
+-    template<class C, class T>
+-    inline operator T C::*() const {
+-        return 0; 
+-    }
+-
+-private:
+-    void operator&() const;
+-
+-} nullptr = {};
+-#endif
+-#endif
+-
+ #ifndef __MALLOC
+ #define __PRINTF(x, y)
+ #define __SCANF(x, y)
+@@ -392,13 +370,13 @@
+     {};
+ 
+ inline void pthread_mutex_lock(pthread_mutex_t *mutex)
+-    {pth_mutex_acquire(mutex, 0, nullptr);};
++    {pth_mutex_acquire(mutex, 0, UCOMMON_NULLPTR);};
+ 
+ inline void pthread_mutex_unlock(pthread_mutex_t *mutex)
+     {pth_mutex_release(mutex);};
+ 
+ inline void pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
+-    {pth_cond_await(cond, mutex, nullptr);};
++    {pth_cond_await(cond, mutex, UCOMMON_NULLPTR);};
+ 
+ inline void pthread_cond_signal(pthread_cond_t *cond)
+     {pth_cond_notify(cond, FALSE);};
+@@ -549,7 +527,7 @@
+  */
+ template<class T>
+ inline T *init(T *memory)
+-    {return ((memory) ? new(((void *)memory)) T : nullptr);}
++    {return ((memory) ? new(((void *)memory)) T : UCOMMON_NULLPTR);}
+ 
+ typedef long Integer;
+ typedef unsigned long Unsigned;
+@@ -567,8 +545,8 @@
+ inline T polypointer_cast(S *s)
+ {
+ #if defined(DEBUG) && defined(UCOMMON_RTTI)
+-    if(s == nullptr)
+-        return nullptr;
++    if(s == UCOMMON_NULLPTR)
++        return UCOMMON_NULLPTR;
+     T ptr = dynamic_cast<T>(s);
+     __THROW_DEREF(ptr);
+     return ptr;
+--- inc/ucommon/secure.h
++++ inc/ucommon/secure.h
+@@ -50,6 +50,10 @@
+ #include <ucommon/ucommon.h>
+ #endif
+ 
++#ifndef _UCOMMON_NULLPTR_H_
++#include <ucommon/nullptr.h>
++#endif
++
+ #define MAX_CIPHER_KEYSIZE  512
+ #define MAX_DIGEST_HASHSIZE 512
+ 
+@@ -216,7 +220,7 @@
+      * @param authority path to use or NULL if none.
+      * @return a security context that is cast from derived library.
+      */
+-    static server_t server(const char *keyfile = NULL, const char *authority = NULL);
++    static server_t server(const char *keyfile = UCOMMON_NULLPTR, const char *authority = UCOMMON_NULLPTR);
+ 
+     /**
+      * Create an anonymous client context with an optional authority to
+@@ -225,7 +229,7 @@
+      * @param paths of certificates to use.
+      * @return a basic client security context.
+      */
+-    static client_t client(const char *authority = NULL, const char *paths = NULL);
++    static client_t client(const char *authority = UCOMMON_NULLPTR, const char *paths = UCOMMON_NULLPTR);
+ 
+     /**
+      * Create a peer user client context.  This assumes a user certificate
+@@ -328,7 +332,7 @@
+     public:
+         Key();
+ 
+-        Key(const char *cipher, const char *digest, const char *text, size_t size = 0, const uint8_t *salt = NULL, unsigned rounds = 1);
++        Key(const char *cipher, const char *digest, const char *text, size_t size = 0, const uint8_t *salt = UCOMMON_NULLPTR, unsigned rounds = 1);
+ 
+         Key(const char *cipher, const uint8_t *iv, size_t ivsize);
+ 
+@@ -366,7 +370,7 @@
+ 
+         void b64(const char *string);
+ 
+-        size_t get(uint8_t *key, uint8_t *ivout = NULL);
++        size_t get(uint8_t *key, uint8_t *ivout = UCOMMON_NULLPTR);
+ 
+         inline size_t size(void) const {
+             return keysize;
+@@ -395,7 +399,7 @@
+             return !operator==(other);
+         }
+ 
+-        static void options(const uint8_t *salt = NULL, unsigned rounds = 1);
++        static void options(const uint8_t *salt = UCOMMON_NULLPTR, unsigned rounds = 1);
+     };
+ 
+     typedef Key *key_t;
+@@ -417,7 +421,7 @@
+ public:
+     Cipher();
+ 
+-    Cipher(const key_t key, mode_t mode, uint8_t *address = NULL, size_t size = 0);
++    Cipher(const key_t key, mode_t mode, uint8_t *address = UCOMMON_NULLPTR, size_t size = 0);
+ 
+     virtual ~Cipher();
+ 
+@@ -596,11 +600,11 @@
+     }
+ 
+     inline bool operator!() const {
+-        return !bufsize && context == NULL;
++        return !bufsize && context == UCOMMON_NULLPTR;
+     }
+ 
+     inline operator bool() const {
+-        return bufsize > 0 || context != NULL;
++        return bufsize > 0 || context != UCOMMON_NULLPTR;
+     }
+ 
+     /**
+@@ -622,7 +626,7 @@
+      */
+     static bool has(const char *name);
+ 
+-    static secure::string uuid(const char *name, const uint8_t *ns = NULL);
++    static secure::string uuid(const char *name, const uint8_t *ns = UCOMMON_NULLPTR);
+ 
+     /**
+      * Shortcut for short md5 digests if supported...
+@@ -738,11 +742,11 @@
+     }
+ 
+     inline bool operator!() const {
+-        return !bufsize && context == NULL;
++        return !bufsize && context == UCOMMON_NULLPTR;
+     }
+ 
+     inline operator bool() const {
+-        return bufsize > 0 || context != NULL;
++        return bufsize > 0 || context != UCOMMON_NULLPTR;
+     }
+ 
+     /**
+@@ -971,7 +975,7 @@
+ 
+     /**
+      * Get peer (x509) certificate for current stream if present.
+-     * @return certificate of peer or nullptr if none.
++     * @return certificate of peer or NULL if none.
+      */
+     inline secure::cert_t certificate(void) const {
+         return cert;
+@@ -982,7 +986,7 @@
+      * @return true if ssl session.
+      */
+     inline bool is_secure(void) const {
+-        return bio != NULL;
++        return bio != UCOMMON_NULLPTR;
+     }
+ 
+     /**
+@@ -990,7 +994,7 @@
+      * @return true if peer certificate.
+      */
+     inline bool is_certificate(void) const {
+-        return cert != NULL;
++        return cert != UCOMMON_NULLPTR;
+     }
+ 
+     /**
+--- inc/ucommon/shared.h
++++ inc/ucommon/shared.h
+@@ -188,7 +188,7 @@
+ }
+ 
+ template<>
+-inline size_t mapped_keypath<struct sockaddr>(const struct sockaddr *addr)
++inline size_t mapped_keypath<sockaddr>(const sockaddr *addr)
+ {
+ 	if(!addr)
+ 		return 0;
+@@ -197,7 +197,7 @@
+ }
+ 
+ template<>
+-inline bool mapped_keyequal<struct sockaddr>(const struct sockaddr *s1, const struct sockaddr *s2)
++inline bool mapped_keyequal<sockaddr>(const sockaddr *s1, const sockaddr *s2)
+ {
+ 	if(!s1 || !s2)
+ 		return false;
+@@ -236,7 +236,7 @@
+ 			ip.next();
+ 		}
+ 		lock->release();
+-		return nullptr;
++		return UCOMMON_NULLPTR;
+ 	}
+ 
+ 	void set(const K* key, V* ptr) {
+--- inc/ucommon/socket.h
++++ inc/ucommon/socket.h
+@@ -43,6 +43,10 @@
+ #include <ucommon/typeref.h>
+ #endif
+ 
++#ifndef _UCOMMON_NULLPTR_H_
++#include <ucommon/nullptr.h>
++#endif
++
+ extern "C" {
+     struct addrinfo;
+ }
+@@ -55,6 +59,7 @@
+ typedef uint32_t in_addr_t;
+ #else
+ #include <unistd.h>
++#include <sys/types.h>
+ #include <sys/socket.h>
+ #include <net/if.h>
+ #include <netinet/in.h>
+@@ -391,7 +396,7 @@
+          * @param hostname or ip address.  The socket family is used for hostnames.
+          * @param service port or name we are referencing or NULL.
+          */
+-        address(int family, const char *hostname, const char *service = NULL);
++        address(int family, const char *hostname, const char *service = UCOMMON_NULLPTR);
+ 
+         /**
+          * Construct a socket address list for a service.
+@@ -423,14 +428,14 @@
+         /**
+          * Construct a socket address from a sockaddr object.
+          */
+-        address(const sockaddr& address) : list(NULL) {
++        address(const sockaddr& address) : list(UCOMMON_NULLPTR) {
+             insert(&address);
+         }
+ 
+         /**
+          * Construct a socket address from an addrinfo structure.
+          */
+-        address(const addrinfo* address) : list(NULL) {
++        address(const addrinfo* address) : list(UCOMMON_NULLPTR) {
+             insert(address);
+         }
+ 
+@@ -603,15 +608,15 @@
+          * @return true if we have an address list.
+          */
+         inline operator bool() const {
+-            return list != nullptr;
++            return list != UCOMMON_NULLPTR;
+         }
+ 
+         inline bool is_valid() const {
+-            return list != nullptr;
++            return list != UCOMMON_NULLPTR;
+         }
+ 
+         inline bool isValid() const {
+-            return list != nullptr;
++            return list != UCOMMON_NULLPTR;
+         }
+ 
+         /**
+@@ -619,7 +624,7 @@
+          * @return true if we have no address list.
+          */
+         inline bool operator!() const {
+-            return list == nullptr;
++            return list == UCOMMON_NULLPTR;
+         }
+ 
+         /**
+@@ -675,7 +680,7 @@
+          * @param service name or port number, or NULL if not used.
+          * @param type of socket (stream or dgram) to filter list by.
+          */
+-        void set(const char *hostname, const char *service = NULL, int type = SOCK_STREAM);
++        void set(const char *hostname, const char *service = UCOMMON_NULLPTR, int type = SOCK_STREAM);
+ 
+         /**
+          * Append additional host addresses to our list.
+@@ -683,7 +688,7 @@
+          * @param service name or port number, or NULL if not used.
+          * @param type of socket (stream or dgram).
+          */
+-        void add(const char *hostname, const char *service = NULL, int type = SOCK_STREAM);
++        void add(const char *hostname, const char *service = UCOMMON_NULLPTR, int type = SOCK_STREAM);
+ 
+         /**
+          * Set an entry for host binding.
+@@ -1194,7 +1199,7 @@
+      * @param address of peer data was received from.
+      * @return number of bytes actually read, 0 if none, -1 if error.
+      */
+-    size_t readfrom(void *data, size_t number, struct sockaddr_storage *address = NULL);
++    size_t readfrom(void *data, size_t number, struct sockaddr_storage *address = UCOMMON_NULLPTR);
+ 
+     /**
+      * Write data to the socket send buffer.  This will be used in abi 4.
+@@ -1203,7 +1208,7 @@
+      * @param address of peer to send data to if not connected.
+      * @return number of bytes actually sent, 0 if none, -1 if error.
+      */
+-    size_t writeto(const void *data, size_t number, const struct sockaddr *address = NULL);
++    size_t writeto(const void *data, size_t number, const struct sockaddr *address = UCOMMON_NULLPTR);
+ 
+     /**
+      * Read a newline of text data from the socket and save in NULL terminated
+@@ -1482,7 +1487,7 @@
+      * @param address of source.
+      * @return number of bytes received, -1 if error.
+      */
+-    static ssize_t recvfrom(socket_t socket, void *buffer, size_t size, int flags = 0, struct sockaddr_storage *address = NULL);
++    static ssize_t recvfrom(socket_t socket, void *buffer, size_t size, int flags = 0, struct sockaddr_storage *address = UCOMMON_NULLPTR);
+ 
+     /**
+      * Send data on socket.
+@@ -1493,7 +1498,7 @@
+      * @param address of destination, NULL if connected.
+      * @return number of bytes sent, -1 if error.
+      */
+-    static ssize_t sendto(socket_t socket, const void *buffer, size_t size, int flags = 0, const struct sockaddr *address = NULL);
++    static ssize_t sendto(socket_t socket, const void *buffer, size_t size, int flags = 0, const struct sockaddr *address = UCOMMON_NULLPTR);
+ 
+     /**
+      * Send reply on socket.  Used to reply to a recvfrom message.
+@@ -1541,7 +1546,7 @@
+      * @param address of socket accepting.
+      * @return new socket accepted.
+      */
+-    static socket_t acceptfrom(socket_t socket, struct sockaddr_storage *address = NULL);
++    static socket_t acceptfrom(socket_t socket, struct sockaddr_storage *address = UCOMMON_NULLPTR);
+ 
+     /**
+      * Create a socket object unbound.
+@@ -1851,7 +1856,7 @@
+      * @param address to save peer connecting.
+      * @return socket descriptor of connected socket.
+      */
+-    socket_t accept(struct sockaddr_storage *address = NULL) const;
++    socket_t accept(struct sockaddr_storage *address = UCOMMON_NULLPTR) const;
+ 
+     /**
+      * Wait for a pending connection.
+@@ -1959,7 +1964,7 @@
+     }
+ 
+     inline linked_pointer() {
+-        ptr = nullptr;
++        ptr = UCOMMON_NULLPTR;
+     }
+ 
+     inline linked_pointer(Socket::address& list) {
+@@ -2012,7 +2017,7 @@
+      * @return true if we have an address list.
+      */
+     inline operator bool() const {
+-        return ptr != nullptr;
++        return ptr != UCOMMON_NULLPTR;
+     }
+ 
+     /**
+@@ -2063,7 +2068,7 @@
+      * @return true if we have no address list.
+      */
+     inline bool operator!() const {
+-        return ptr == nullptr;
++        return ptr == UCOMMON_NULLPTR;
+     }
+ 
+     inline void next(void) {
+--- inc/ucommon/string.h
++++ inc/ucommon/string.h
+@@ -52,6 +52,10 @@
+ #include <ucommon/object.h>
+ #endif
+ 
++#ifndef _UCOMMON_NULLPTR_H_
++#include <ucommon/nullptr.h>
++#endif
++
+ #include <stdio.h>
+ #include <string.h>
+ #include <stdarg.h>
+@@ -123,11 +127,11 @@
+         bool operator*=(const char *string);
+ 
+         operator bool() const {
+-            return object != NULL;
++            return object != UCOMMON_NULLPTR;
+         }
+ 
+         bool operator!() const {
+-            return object == NULL;
++            return object == UCOMMON_NULLPTR;
+         }
+     };
+ 
+@@ -584,9 +588,9 @@
+ 
+     const char *search(regex& expr, unsigned instance = 0, unsigned flags = 0) const;
+ 
+-    unsigned replace(const char *string, const char *text = NULL, unsigned flags = 0);
++    unsigned replace(const char *string, const char *text = UCOMMON_NULLPTR, unsigned flags = 0);
+ 
+-    unsigned replace(regex& expr, const char *text = NULL, unsigned flags = 0);
++    unsigned replace(regex& expr, const char *text = UCOMMON_NULLPTR, unsigned flags = 0);
+ 
+     /**
+      * Find a character in the string.
+@@ -983,7 +987,7 @@
+      * @param end of line marker characters or NULL if not used.
+      * @return token extracted from string or NULL if no more tokens found.
+      */
+-    static char *token(char *text, char **last, const char *list, const char *quote = NULL, const char *end = NULL);
++    static char *token(char *text, char **last, const char *list, const char *quote = UCOMMON_NULLPTR, const char *end = UCOMMON_NULLPTR);
+ 
+     /**
+      * Skip after lead characters in a null terminated string.
+@@ -1259,7 +1263,7 @@
+      * @param end of line marker characters or NULL if not used.
+      * @return token extracted from string or NULL if no more tokens found.
+      */
+-    inline char *token(char **last, const char *list, const char *quote = NULL, const char *end = NULL) {
++    inline char *token(char **last, const char *list, const char *quote = UCOMMON_NULLPTR, const char *end = UCOMMON_NULLPTR) {
+         return token(data(), last, list, quote, end);
+     }
+ 
+@@ -1269,7 +1273,7 @@
+      * @param pointer to update with end of parsed value.
+      * @return double value of object.
+      */
+-    inline double tod(char **pointer = NULL) {
++    inline double tod(char **pointer = UCOMMON_NULLPTR) {
+         return strtod(data(), pointer);
+     }
+ 
+@@ -1279,7 +1283,7 @@
+      * @param pointer to update with end of parsed value.
+      * @return long value of object.
+      */
+-    inline long tol(char **pointer = NULL) {
++    inline long tol(char **pointer = UCOMMON_NULLPTR) {
+         return strtol(data(), pointer, 0);
+     }
+ 
+@@ -1289,7 +1293,7 @@
+      * @param pointer to update with end of parsed value.
+      * @return double value of object.
+      */
+-    inline static double tod(const char *text, char **pointer = NULL) {
++    inline static double tod(const char *text, char **pointer = UCOMMON_NULLPTR) {
+         return strtod(text, pointer);
+     }
+ 
+@@ -1299,7 +1303,7 @@
+      * @param pointer to update with end of parsed value.
+      * @return long value of object.
+      */
+-    inline static long tol(const char *text, char **pointer = NULL) {
++    inline static long tol(const char *text, char **pointer = UCOMMON_NULLPTR) {
+         return strtol(text, pointer, 0);
+     }
+ 
+@@ -1754,7 +1758,7 @@
+ 
+ public:
+     inline strdup_t() {
+-        data = NULL;
++        data = UCOMMON_NULLPTR;
+     }
+ 
+     inline strdup_t(char *str) {
+@@ -1774,11 +1778,11 @@
+     }
+ 
+     inline operator bool() const {
+-        return data != nullptr;
++        return data != UCOMMON_NULLPTR;
+     }
+ 
+     inline bool operator!() const {
+-        return data == nullptr;
++        return data == UCOMMON_NULLPTR;
+     }
+ 
+     inline operator char*() const {
+--- inc/ucommon/temporary.h
++++ inc/ucommon/temporary.h
+@@ -53,9 +53,11 @@
+ #include <cstring>
+ #include <stdexcept>
+ 
++// Do not declare an exception specification. It is an anti-pattern.
++// Also see https://stackoverflow.com/q/1055387.
+ #ifndef UCOMMON_SYSRUNTIME
+ #define THROW(x)    throw x
+-#define THROWS(x)   throw(x)
++#define THROWS(x)
+ #define THROWS_ANY  throw()
+ #else
+ #define THROW(x)    ::abort()
+--- inc/ucommon/thread.h
++++ inc/ucommon/thread.h
+@@ -63,6 +63,10 @@
+ #include <ucommon/condition.h>
+ #endif
+ 
++#ifndef _UCOMMON_NULLPTR_H_
++#include <ucommon/nullptr.h>
++#endif
++
+ namespace ucommon {
+ 
+ /**
+@@ -593,11 +597,11 @@
+     ~AutoProtect();
+ 
+     inline operator bool() const {
+-        return object != NULL;
++        return object != UCOMMON_NULLPTR;
+     }
+ 
+     inline bool operator!() const {
+-        return object == NULL;
++        return object == UCOMMON_NULLPTR;
+     }    
+ };
+ 
+@@ -706,7 +710,7 @@
+         void *get(void);
+ 
+         inline void clear() {
+-            set(nullptr);
++            set(UCOMMON_NULLPTR);
+         }
+     };
+ 
+--- inc/ucommon/typeref.h
++++ inc/ucommon/typeref.h
+@@ -52,6 +52,10 @@
+ #include <ucommon/thread.h>
+ #endif
+ 
++#ifndef _UCOMMON_NULLPTR_H_
++#include <ucommon/nullptr.h>
++#endif
++
+ namespace ucommon {
+ 
+ class TypeRelease;
+@@ -109,7 +113,7 @@
+ 		 * @param size of object allocated.
+ 		 * @param ar pool to use
+ 		 */
+-		explicit Counted(void *address, size_t size, TypeRelease *ar = NULL);
++		explicit Counted(void *address, size_t size, TypeRelease *ar = UCOMMON_NULLPTR);
+ 
+ 		/**
+ 		 * Release memory and delete object when no longer referenced.
+@@ -236,7 +240,7 @@
+ 	 * @return true if we are referencing a container.
+ 	 */
+ 	inline operator bool() const {
+-		return ref != NULL;
++		return ref != UCOMMON_NULLPTR;
+ 	}
+ 
+ 	/**
+@@ -244,7 +248,7 @@
+ 	 * @return true if not referencing a container.
+ 	 */
+ 	inline bool operator!() const {
+-		return ref == NULL;
++		return ref == UCOMMON_NULLPTR;
+ 	}
+ 
+ 	/**
+@@ -267,7 +271,7 @@
+ {
+ public:
+ 	inline TypeRelease() {
+-		delegate = nullptr;
++		delegate = UCOMMON_NULLPTR;
+ 	}
+ 
+ 	inline TypeRelease(TypeRelease *target) {
+@@ -358,7 +362,7 @@
+ 
+ 	inline const T* operator->() const {
+ 		if(!ref)
+-			return NULL;
++			return UCOMMON_NULLPTR;
+ 		value *v = polystatic_cast<value *>(ref);
+ 		return &(v->data);
+ 	}
+@@ -372,7 +376,7 @@
+ 	inline const T* operator()() const {
+ 		value *v = polystatic_cast<value*>(ref);
+ 		if(!v)
+-			return nullptr;
++			return UCOMMON_NULLPTR;
+ 
+ 		return &(v->data);
+ 	}
+@@ -566,7 +570,7 @@
+ 
+ 		uint8_t mem[1];
+ 
+-		value(caddr_t addr, size_t size, const uint8_t *data = nullptr, TypeRelease *ar = &auto_release);
++		value(caddr_t addr, size_t size, const uint8_t *data = UCOMMON_NULLPTR, TypeRelease *ar = &auto_release);
+ 
+ 		void destroy(void);
+ 
+--- test/datetime.cpp
++++ test/datetime.cpp
+@@ -16,6 +16,10 @@
+ // You should have received a copy of the GNU Lesser General Public License
+ // along with GNU uCommon C++.  If not, see <http://www.gnu.org/licenses/>.
+ 
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif
+--- test/digest.cpp
++++ test/digest.cpp
+@@ -16,6 +16,10 @@
+ // You should have received a copy of the GNU Lesser General Public License
+ // along with GNU uCommon C++.  If not, see <http://www.gnu.org/licenses/>.
+ 
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif
+--- test/keydata.cpp
++++ test/keydata.cpp
+@@ -16,6 +16,10 @@
+ // You should have received a copy of the GNU Lesser General Public License
+ // along with GNU uCommon C++.  If not, see <http://www.gnu.org/licenses/>.
+ 
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif
+--- test/linked.cpp
++++ test/linked.cpp
+@@ -16,6 +16,10 @@
+ // You should have received a copy of the GNU Lesser General Public License
+ // along with GNU uCommon C++.  If not, see <http://www.gnu.org/licenses/>.
+ 
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif
+--- test/memory.cpp
++++ test/memory.cpp
+@@ -16,6 +16,10 @@
+ // You should have received a copy of the GNU Lesser General Public License
+ // along with GNU uCommon C++.  If not, see <http://www.gnu.org/licenses/>.
+ 
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif
+@@ -24,6 +28,10 @@
+ 
+ #include <stdio.h>
+ 
++#ifndef _UCOMMON_NULLPTR_H_
++#include <ucommon/nullptr.h>
++#endif
++
+ using namespace ucommon;
+ 
+ static int tval = 100;
+@@ -188,7 +196,7 @@
+     stringref_t sr = map(3);
+     assert(eq(*sr, "hello"));
+     sr = map(2);
+-    assert(*sr == nullptr);
++    assert(*sr == UCOMMON_NULLPTR);
+     typeref<int> ki(3);
+     sr = "goodbye";
+     map(ki, sr);
+@@ -213,7 +221,7 @@
+     map(9, "9");
+     assert(map.used() == 2);
+     sr = map(7);
+-    assert(*sr == nullptr);
++    assert(*sr == UCOMMON_NULLPTR);
+ 
+     listref<int> intlist;
+     intlist << 3 << 5 << 7 << 9;
+@@ -228,7 +236,7 @@
+ 
+     mapped_pointer<char, maptest> pmap;
+     maptest *out = pmap.get("bye");
+-    assert(out == nullptr);
++    assert(out == UCOMMON_NULLPTR);
+     pmap.release(out);
+     pmap.set(mt[0].key, &mt[0]);
+     pmap.set(mt[1].key, &mt[1]);
+@@ -237,7 +245,7 @@
+     pmap.release(out);
+     pmap.remove("bye");
+     out = pmap.get("bye");
+-    assert(out == nullptr);
++    assert(out == UCOMMON_NULLPTR);
+     pmap.release(out);
+ 
+     int a = 1, b = 2;
+--- test/shell.cpp
++++ test/shell.cpp
+@@ -16,6 +16,10 @@
+ // You should have received a copy of the GNU Lesser General Public License
+ // along with GNU uCommon C++.  If not, see <http://www.gnu.org/licenses/>.
+ 
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif
+--- test/socket.cpp
++++ test/socket.cpp
+@@ -16,6 +16,10 @@
+ // You should have received a copy of the GNU Lesser General Public License
+ // along with GNU ucommon.  If not, see <http://www.gnu.org/licenses/>.
+ 
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif
+--- test/stdcpp.cpp
++++ test/stdcpp.cpp
+@@ -16,6 +16,10 @@
+ // You should have received a copy of the GNU Lesser General Public License
+ // along with GNU uCommon C++.  If not, see <http://www.gnu.org/licenses/>.
+ 
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif
+--- test/stream.cpp
++++ test/stream.cpp
+@@ -17,6 +17,10 @@
+ // along with GNU uCommon C++.  If not, see <http://www.gnu.org/licenses/>.
+ 
+ #ifndef UCOMMON_SYSRUNTIME
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif
+--- test/string.cpp
++++ test/string.cpp
+@@ -16,6 +16,10 @@
+ // You should have received a copy of the GNU Lesser General Public License
+ // along with GNU uCommon C++.  If not, see <http://www.gnu.org/licenses/>.
+ 
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif
+--- test/thread.cpp
++++ test/thread.cpp
+@@ -16,6 +16,10 @@
+ // You should have received a copy of the GNU Lesser General Public License
+ // along with GNU uCommon C++.  If not, see <http://www.gnu.org/licenses/>.
+ 
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif
+@@ -24,6 +28,10 @@
+ 
+ #include <stdio.h>
+ 
++#ifndef _UCOMMON_NULLPTR_H_
++#include <ucommon/nullptr.h>
++#endif
++
+ using namespace ucommon;
+ 
+ static unsigned count = 0;
+@@ -48,8 +56,8 @@
+     testThread() : JoinableThread() {};
+ 
+     void run(void) {
+-        assert(local.get() == nullptr);
+-        assert(*local != nullptr);
++        assert(local.get() == UCOMMON_NULLPTR);
++        assert(*local != UCOMMON_NULLPTR);
+ 
+         ++count;
+         ::sleep(2);
+@@ -62,9 +70,9 @@
+     testThread *thr;
+     void *mem;
+ 
+-    assert(local.get() == nullptr);
++    assert(local.get() == UCOMMON_NULLPTR);
+     mem = *local;
+-    assert(mem != nullptr);
++    assert(mem != UCOMMON_NULLPTR);
+     assert(mem == *local);
+ 
+     time(&now);
+--- test/unicode.cpp
++++ test/unicode.cpp
+@@ -16,6 +16,10 @@
+ // You should have received a copy of the GNU Lesser General Public License
+ // along with GNU uCommon C++.  If not, see <http://www.gnu.org/licenses/>.
+ 
++#ifdef NDEBUG
++#undef NDEBUG
++#endif
++
+ #ifndef DEBUG
+ #define DEBUG
+ #endif

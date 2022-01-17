@@ -1,0 +1,35 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with Bash.
+--- support/Makefile.in
++++ support/Makefile.in
+@@ -48,6 +48,8 @@
+ CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
+ CPPFLAGS = @CPPFLAGS@
+ CPPFLAGS_FOR_BUILD = @CPPFLAGS_FOR_BUILD@
++LDFLAGS = @LDFLAGS@
++LDFLAGS_FOR_BUILD = ${LDFLAGS}
+ LOCAL_CFLAGS = @LOCAL_CFLAGS@
+ DEFS = @DEFS@
+ LOCAL_DEFS = @LOCAL_DEFS@
+@@ -77,7 +79,7 @@
+ all: man2html$(EXEEXT)
+ 
+ man2html$(EXEEXT): $(OBJ1)
+-	$(CC_FOR_BUILD) $(CCFLAGS_FOR_BUILD) $(OBJ1) -o $@ ${LIBS_FOR_BUILD}
++	$(CC_FOR_BUILD) $(CCFLAGS_FOR_BUILD) $(OBJ1) -o $@ $(LDFLAGS_FOR_BUILD) $(LIBS_FOR_BUILD)
+ 
+ clean:
+ 	$(RM) man2html$(EXEEXT) $(OBJ1)
+--- lib/malloc/malloc.c
++++ lib/malloc/malloc.c
+@@ -847,7 +847,10 @@
+ 
+   /* Silently reject too-large requests. XXX - can increase this if HAVE_MMAP */
+   if (nunits >= NBUCKETS)
++    {
++    write (1, "nunits >= NBUCKETS, return NULL\n", 32);
+     return ((PTR_T) NULL);
++    }
+ 
+   /* In case this is reentrant use of malloc from signal handler,
+      pick a block size that no other malloc level is currently

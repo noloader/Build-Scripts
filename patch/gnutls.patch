@@ -1,0 +1,32 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with GnuTLS.
+--- lib/accelerated/x86/x86-common.c
++++ lib/accelerated/x86/x86-common.c
+@@ -150,8 +150,10 @@
+ 
+ #if defined(_MSC_VER) && !defined(__clang__)
+ 	xcr0 = _xgetbv(0);
+-#else
++#elif (__GNUC__ >= 5) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
+ 	__asm__ ("xgetbv" : "=a" (xcr0) : "c" (0) : "%edx");
++#else
++	__asm__ (".byte 0x0f, 0x01, 0xd0" : "=a" (xcr0) : "c" (0) : "%edx" );
+ #endif
+ 	/* Check if xmm and ymm state are enabled in XCR0. */
+ 	return (xcr0 & 6) == 6;
+--- lib/random.c
++++ lib/random.c
+@@ -35,6 +35,13 @@
+ extern gnutls_crypto_rnd_st _gnutls_fuzz_rnd_ops;
+ #endif
+ 
++#if defined(__APPLE__)
++# if defined(_ARCH_PPC)
++#  undef _Thread_local
++#  define _Thread_local
++# endif
++#endif
++
+ /* Per thread context of random generator, and a flag to indicate initialization */
+ static _Thread_local void *gnutls_rnd_ctx;
+ static _Thread_local unsigned rnd_initialized = 0;

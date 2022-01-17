@@ -1,0 +1,14 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with ntbTLS
+# Also see https://dev.gnupg.org/T5368
+--- src/protocol.c
++++ src/protocol.c
+@@ -687,7 +687,7 @@
+     }
+   else if (kex == KEY_EXCHANGE_ECDHE_PSK)
+     {
+-      size_t zlen;
++      size_t zlen = 0;
+
+       /* err = ecdh_calc_secret (&tls->handshake->ecdh_ctx, &zlen, */
+       /*                         p + 2, end - (p + 2)); */

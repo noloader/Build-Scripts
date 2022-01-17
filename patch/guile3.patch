@@ -1,0 +1,85 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch starts fixing some issues with Guile 3 and JIT.
+# JIT does not work yet. Configure with --disable-jit.
+--- libguile/jit.c
++++ libguile/jit.c
+@@ -42,6 +42,10 @@
+ 
+ #include "jit.h"
+ 
++#if defined(__APPLE__)
++# include <TargetConditionals.h>
++# include <pthread.h>
++#endif
+ 
+ 
+ 
+@@ -292,6 +300,37 @@
+ #define LENGTH_DOP3(a,b,c) 3
+ #define LENGTH_DOP4(a,b,c,d) 4
+ 
++#define GUILE_UNUSED(x) ((void)(x))
++
++inline int
++apple_mmap_write (void *base, size_t len)
++{
++  GUILE_UNUSED(base); GUILE_UNUSED(len);
++#if defined(TARGET_OSX)
++  if (__builtin_available(macOS 11, *) &&
++    pthread_jit_write_protect_supported_np())
++      return pthread_jit_write_protect_np(false);
++  else
++#endif
++    return 0;
++}
++
++inline int
++apple_mmap_execute (void *base, size_t len)
++{
++  GUILE_UNUSED(base); GUILE_UNUSED(len);
++#if defined(TARGET_OSX)
++  if (__builtin_available(macOS 11, *) &&
++    pthread_jit_write_protect_supported_np()) {
++      int ret = pthread_jit_write_protect_np(true);
++      sys_icache_invalidate(base, len);
++      return ret;
++	}
++  else
++#endif
++    return 0;
++}
++
+ static const uint8_t op_lengths[256] = {
+ #define OP_LENGTH(code, cname, name, arity) LENGTH_##arity,
+ FOR_EACH_VM_OPERATION(OP_LENGTH)
+@@ -1338,9 +1375,17 @@
+   ret->used = 0;
+   ret->size = size;
+   ret->prev = prev;
++
++#if defined(TARGET_OSX) && defined(MAP_JIT)
++  /* MAP_JIT will succeed, even with W+X */
++  ret->base = mmap (NULL, ret->size,
++                    PROT_EXEC | PROT_READ | PROT_WRITE,
++                    MAP_JIT | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++#else
+   ret->base = mmap (NULL, ret->size,
+                     PROT_EXEC | PROT_READ | PROT_WRITE,
+                     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++#endif
+ 
+   if (ret->base == MAP_FAILED)
+     {
+@@ -1372,8 +1417,12 @@
+ 
+       uint8_t *ret = jit_address (j->jit);
+ 
++      apple_mmap_write(arena->base, arena->size);
++
+       emit (j);
+ 
++      apple_mmap_execute(arena->base, arena->size);
++
+       size_t size;
+       if (!jit_has_overflow (j->jit) && jit_end (j->jit, &size))
+         {

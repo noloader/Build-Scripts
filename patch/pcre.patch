@@ -1,0 +1,261 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with PCRE.
+# It does not appear PCRE is going to fix the bugs.
+# https://bugs.exim.org/show_bug.cgi?id=2380
+--- pcretest.c
++++ pcretest.c
+@@ -500,7 +500,7 @@
+ #if (defined (SUPPORT_PCRE8) + defined (SUPPORT_PCRE16) + \
+      defined (SUPPORT_PCRE32)) >= 2
+ 
+-#define CHAR_SIZE (1 << pcre_mode)
++#define CHAR_SIZE (1U << pcre_mode)
+ 
+ /* There doesn't seem to be an easy way of writing these macros that can cope
+ with the 3 pairs of bit sizes plus all three bit sizes. So just handle all the
+@@ -4735,7 +4735,7 @@
+         if (isdigit(*p))    /* Set copy string */
+           {
+           while(isdigit(*p)) n = n * 10 + *p++ - '0';
+-          copystrings |= 1 << n;
++          copystrings |= 1U << n;
+           }
+         else if (isalnum(*p))
+           {
+@@ -4798,7 +4798,7 @@
+         if (isdigit(*p))
+           {
+           while(isdigit(*p)) n = n * 10 + *p++ - '0';
+-          getstrings |= 1 << n;
++          getstrings |= 1U << n;
+           }
+         else if (isalnum(*p))
+           {
+@@ -5335,7 +5335,7 @@
+ 
+         for (i = 0; i < 32; i++)
+           {
+-          if ((copystrings & (1 << i)) != 0)
++          if ((copystrings & (1U << i)) != 0)
+             {
+             int rc;
+             char copybuffer[256];
+@@ -5400,7 +5400,7 @@
+ 
+         for (i = 0; i < 32; i++)
+           {
+-          if ((getstrings & (1 << i)) != 0)
++          if ((getstrings & (1U << i)) != 0)
+             {
+             int rc;
+             const char *substring;
+--- pcre_compile.c
++++ pcre_compile.c
+@@ -68,7 +68,7 @@
+ 
+ /* Macro for setting individual bits in class bitmaps. */
+ 
+-#define SETBIT(a,b) a[(b)/8] |= (1 << ((b)&7))
++#define SETBIT(a,b) a[(b)/8] |= (1U << ((b)&7))
+ 
+ /* Maximum length value to check against when making sure that the integer that
+ holds the compiled pattern length does not overflow. We make it a bit less than
+@@ -129,8 +129,8 @@
+ 
+ /* Private flags added to firstchar and reqchar. */
+ 
+-#define REQ_CASELESS    (1 << 0)        /* Indicates caselessness */
+-#define REQ_VARY        (1 << 1)        /* Reqchar followed non-literal item */
++#define REQ_CASELESS    (1U << 0)        /* Indicates caselessness */
++#define REQ_VARY        (1U << 1)        /* Reqchar followed non-literal item */
+ /* Negative values for the firstchar and reqchar flags */
+ #define REQ_UNSET       (-2)
+ #define REQ_NONE        (-1)
+@@ -3611,7 +3611,7 @@
+       if (chr > 255) break;
+       class_bitset = (pcre_uint8 *)
+         ((list_ptr == list ? code : base_end) - list_ptr[2]);
+-      if ((class_bitset[chr >> 3] & (1 << (chr & 7))) != 0) return FALSE;
++      if ((class_bitset[chr >> 3] & (1U << (chr & 7))) != 0) return FALSE;
+       break;
+ 
+ #if defined SUPPORT_UTF || !defined COMPILE_PCRE8
+@@ -7456,7 +7456,7 @@
+               {
+               open_capitem *oc;
+               recno = GET2(slot, 0);
+-              cd->backref_map |= (recno < 32)? (1 << recno) : 1;
++              cd->backref_map |= (recno < 32)? (1U << recno) : 1;
+               if (recno > cd->top_backref) cd->top_backref = recno;
+ 
+               /* Check to see if this back reference is recursive, that it, it
+@@ -8067,7 +8067,7 @@
+         item_hwm_offset = cd->hwm - cd->start_workspace;
+         *code++ = ((options & PCRE_CASELESS) != 0)? OP_REFI : OP_REF;
+         PUT2INC(code, 0, recno);
+-        cd->backref_map |= (recno < 32)? (1 << recno) : 1;
++        cd->backref_map |= (recno < 32)? (1U << recno) : 1;
+         if (recno > cd->top_backref) cd->top_backref = recno;
+ 
+         /* Check to see if this back reference is recursive, that it, it
+@@ -8680,7 +8680,7 @@
+             op == OP_SCBRA || op == OP_SCBRAPOS)
+      {
+      int n = GET2(scode, 1+LINK_SIZE);
+-     int new_map = bracket_map | ((n < 32)? (1 << n) : 1);
++     int new_map = bracket_map | ((n < 32)? (1U << n) : 1);
+      if (!is_anchored(scode, new_map, cd, atomcount)) return FALSE;
+      }
+ 
+@@ -8808,7 +8808,7 @@
+             op == OP_SCBRA || op == OP_SCBRAPOS)
+      {
+      int n = GET2(scode, 1+LINK_SIZE);
+-     int new_map = bracket_map | ((n < 32)? (1 << n) : 1);
++     int new_map = bracket_map | ((n < 32)? (1U << n) : 1);
+      if (!is_startline(scode, new_map, cd, atomcount, inassert)) return FALSE;
+      }
+ 
+--- pcre_jit_compile.c
++++ pcre_jit_compile.c
+@@ -2753,13 +2753,13 @@
+ #ifdef SUPPORT_UTF
+ if (common->utf && c > 65535)
+   {
+-  if (bit >= (1 << 10))
++  if (bit >= (1U << 10))
+     bit >>= 10;
+   else
+     return (bit < 256) ? ((2 << 8) | bit) : ((3 << 8) | (bit >> 8));
+   }
+ #endif /* SUPPORT_UTF */
+-return (bit < 256) ? ((0 << 8) | bit) : ((1 << 8) | (bit >> 8));
++return (bit < 256) ? ((0 << 8) | bit) : ((1U << 8) | (bit >> 8));
+ 
+ #endif /* COMPILE_PCRE[8|16|32] */
+ }
+@@ -4022,7 +4022,7 @@
+ 
+   if (load_twice)
+     {
+-    instruction[3] = (1 << 3) | str_ptr_ind;
++    instruction[3] = (1U << 3) | str_ptr_ind;
+     sljit_emit_op_custom(compiler, instruction, 4);
+     }
+   }
+@@ -4036,7 +4036,7 @@
+ 
+   if (load_twice)
+     {
+-    instruction[4] = (1 << 3) | str_ptr_ind;
++    instruction[4] = (1U << 3) | str_ptr_ind;
+     sljit_emit_op_custom(compiler, instruction, 5);
+     }
+   instruction[1] = 0x0f;
+@@ -4050,7 +4050,7 @@
+ 
+ if (load_twice)
+   {
+-  instruction[3] = (1 << 3) | str_ptr_ind;
++  instruction[3] = (1U << 3) | str_ptr_ind;
+   sljit_emit_op_custom(compiler, instruction, 4);
+   }
+ 
+@@ -4071,7 +4071,7 @@
+ 
+ if (load_twice)
+   {
+-  instruction[3] = 0xc0 | (1 << 3) | 3;
++  instruction[3] = 0xc0 | (1U << 3) | 3;
+   sljit_emit_op_custom(compiler, instruction, 4);
+   }
+ 
+@@ -4127,7 +4127,7 @@
+ 
+   if (load_twice)
+     {
+-    instruction[3] = (1 << 3) | str_ptr_ind;
++    instruction[3] = (1U << 3) | str_ptr_ind;
+     sljit_emit_op_custom(compiler, instruction, 4);
+     }
+   }
+@@ -4141,7 +4141,7 @@
+ 
+   if (load_twice)
+     {
+-    instruction[4] = (1 << 3) | str_ptr_ind;
++    instruction[4] = (1U << 3) | str_ptr_ind;
+     sljit_emit_op_custom(compiler, instruction, 5);
+     }
+   instruction[1] = 0x0f;
+@@ -4155,7 +4155,7 @@
+ 
+ if (load_twice)
+   {
+-  instruction[3] = (1 << 3) | str_ptr_ind;
++  instruction[3] = (1U << 3) | str_ptr_ind;
+   sljit_emit_op_custom(compiler, instruction, 4);
+   }
+ 
+@@ -4176,7 +4176,7 @@
+ 
+ if (load_twice)
+   {
+-  instruction[3] = 0xc0 | (1 << 3) | 3;
++  instruction[3] = 0xc0 | (1U << 3) | 3;
+   sljit_emit_op_custom(compiler, instruction, 4);
+   }
+ 
+--- pcre_jit_compile.c
++++ pcre_jit_compile.c
+@@ -3938,10 +3938,10 @@
+ sljit_s32 value = (sljit_s32)chr;
+ #if defined COMPILE_PCRE8
+ #define SSE2_COMPARE_TYPE_INDEX 0
+-return (value << 24) | (value << 16) | (value << 8) | value;
++return (((unsigned int)value) << 24) | (((unsigned int)value) << 16) | (((unsigned int)value) << 8) | ((unsigned int)value);
+ #elif defined COMPILE_PCRE16
+ #define SSE2_COMPARE_TYPE_INDEX 1
+-return (value << 16) | value;
++return (((unsigned int)value) << 16) | value;
+ #elif defined COMPILE_PCRE32
+ #define SSE2_COMPARE_TYPE_INDEX 2
+ return value;
+@@ -8507,7 +8507,7 @@
+   /* We temporarily encode the needs_control_head in the lowest bit.
+      Note: on the target architectures of SLJIT the ((x << 1) >> 1) returns
+      the same value for small signed numbers (including negative numbers). */
+-  BACKTRACK_AS(bracket_backtrack)->u.framesize = (BACKTRACK_AS(bracket_backtrack)->u.framesize << 1) | (needs_control_head ? 1 : 0);
++  BACKTRACK_AS(bracket_backtrack)->u.framesize = ((unsigned int)(BACKTRACK_AS(bracket_backtrack)->u.framesize) << 1) | (needs_control_head ? 1 : 0);
+   }
+ return cc + repeat_length;
+ }
+--- pcretest.c
++++ pcretest.c
+@@ -4445,7 +4445,7 @@
+ 
+           if (extra != NULL)
+             {
+-            if (fwrite(extra->study_data, 1, true_study_size, f) <
++            if (extra->study_data && fwrite(extra->study_data, 1, true_study_size, f) <
+                 true_study_size)
+               {
+               fprintf(outfile, "Write error on %s: %s\n", to_file,
+--- sljit/sljitNativeMIPS_common.c
++++ sljit/sljitNativeMIPS_common.c
+@@ -500,6 +500,7 @@
+ 
+ 	compiler->error = SLJIT_ERR_COMPILED;
+ 	compiler->executable_offset = executable_offset;
++{
+ 	compiler->executable_size = (code_ptr - code) * sizeof(sljit_ins);
+ 
+ 	code = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(code, executable_offset);
+@@ -509,6 +510,7 @@
+ 	SLJIT_CACHE_FLUSH(code, code_ptr);
+ #else
+ 	/* GCC workaround for invalid code generation with -O2. */
++}
+ 	sljit_cache_flush(code, code_ptr);
+ #endif
+ 	return code;

@@ -1,0 +1,386 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with CPUID program.
+--- Makefile
++++ Makefile
+@@ -1,10 +1,5 @@
+-CFLAGS+=-g
+-CPPFLAGS?=
+-LDFLAGS?=
+-ifneq (,$(findstring arch=i386,$(CFLAGS)))
+-CISA=-m32
+-endif
+-CFL=$(CPPFLAGS) $(CFLAGS) $(CISA) -Wall -Wshadow -Wcast-align -Wredundant-decls -Wbad-function-cast -Wcast-qual -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -D_FILE_OFFSET_BITS=64 -DVERSION=$(VERSION)
++
++ALL_CFLAGS=$(CPPFLAGS) $(CFLAGS) -Wall -D_FILE_OFFSET_BITS=64 -DVERSION=$(VERSION)
+ 
+ PACKAGE=cpuid
+ VERSION=20180519
+@@ -12,172 +7,26 @@
+ 
+ PROG=$(PACKAGE)
+ 
+-SRC_TAR=$(PACKAGE)-$(VERSION).src.tar.gz
+-i386_TAR=$(PACKAGE)-$(VERSION).i386.tar.gz
+-x86_64_TAR=$(PACKAGE)-$(VERSION).x86_64.tar.gz
+-TARS=$(SRC_TAR) $(i386_TAR) $(x86_64_TAR)
+-SRC_RPM=$(PACKAGE)-$(VERSION)-$(RELEASE).src.rpm
+-i386_RPM=$(PACKAGE)-$(VERSION)-$(RELEASE).i386.rpm
+-x86_64_RPM=$(PACKAGE)-$(VERSION)-$(RELEASE).x86_64.rpm
+-RPMS=$(SRC_RPM) $(i386_RPM) $(x86_64_RPM)
+-i386_DEBUG_RPM=$(PACKAGE)-debuginfo-$(VERSION)-$(RELEASE).i386.rpm
+-x86_64_DEBUG_RPM=$(PACKAGE)-debuginfo-$(VERSION)-$(RELEASE).x86_64.rpm
+-DEBUG_RPMS=$(i386_DEBUG_RPM) $(x86_64_DEBUG_RPM)
+-
+ SRCS=cpuid.c
+ 
+-OTHER_SRCS=Makefile $(PROG).man cpuinfo2cpuid \
+-           $(PACKAGE).proto.spec $(PACKAGE).spec \
+-           ChangeLog FUTURE LICENSE
+-OTHER_BINS=$(PROG).man cpuinfo2cpuid.man
++OTHER_SRCS=Makefile cpuinfo2cpuid
+ 
+ REL_DIR=../$(shell date +%Y-%m-%d)
+ WEB_DIR=/toad2/apps.mine/www/www/$(PROG)
+ 
+-BUILDROOT=
++PREFIX ?= /usr/local
++LIBDIR ?= $(PREFIX)/lib
++BINDIR ?= $(PREFIX)/bin
+ 
+-default: $(PROG) $(PROG).man.gz cpuinfo2cpuid cpuinfo2cpuid.man.gz
++default: $(PROG) cpuinfo2cpuid
+ 
+ $(PROG): cpuid.c Makefile
+-	$(CC) $(CFL) $(LDFLAGS) -o $@ cpuid.c
+-
+-$(PROG).man.gz: $(PROG).man
+-	gzip < $< > $@
+-
+-cpuinfo2cpuid.man: cpuinfo2cpuid Makefile
+-	pod2man -r "$(VERSION)" -c "" $< > $@
++	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cpuid.c $(LIBS)
+ 
+-cpuinfo2cpuid.man.gz: cpuinfo2cpuid.man
+-	gzip < $< > $@
+-
+-install: $(PROG) $(PROG).man.gz cpuinfo2cpuid cpuinfo2cpuid.man.gz
+-	install -D -s -m 755 $(PROG)              $(BUILDROOT)/usr/bin/$(PROG)
+-	install -D    -m 444 $(PROG).man.gz       $(BUILDROOT)/usr/share/man/man1/$(PROG).1.gz
+-	install -D    -m 755 cpuinfo2cpuid        $(BUILDROOT)/usr/bin/cpuinfo2cpuid
+-	install -D    -m 444 cpuinfo2cpuid.man.gz $(BUILDROOT)/usr/share/man/man1/cpuinfo2cpuid.1.gz
++install: $(PROG) cpuinfo2cpuid
++	install -d -m 755                    $(DESTDIR)$(BINDIR)
++	install -s -m 755 $(PROG)            $(DESTDIR)$(BINDIR)/$(PROG)
++	install    -m 755 cpuinfo2cpuid      $(DESTDIR)$(BINDIR)/cpuinfo2cpuid
+ 
+ clean:
+-	rm -f $(PROG) $(PROG).i386 $(PROG).x86_64
+-	rm -f $(PROG).man.gz
+-	rm -f cpuinfo2cpuid.man cpuinfo2cpuid.man.gz
+-	rm -f $(PACKAGE).spec
+-	rm -f $(TARS)
+-	rm -f $(RPMS)
+-	rm -f $(DEBUG_RPMS)
+-	rm -f $(PACKAGE)-*.src.tar.gz $(PACKAGE)-*.i386.tar.gz $(PACKAGE)-*.x86_64.tar.gz
+-	rm -f $(PACKAGE)-*.src.rpm $(PACKAGE)-*.i386.rpm $(PACKAGE)-*.x86_64.rpm
+-	rm -f $(PACKAGE)-debuginfo-*.i386.rpm $(PACKAGE)-debuginfo-*.x86_64.rpm
+-
+-# Todd's Development rules
+-
+-$(PROG).i386: cpuid.c Makefile
+-	$(CC) -m32 -Wl,--hash-style=both $(CFL) $(LDFLAGS) -o $@ cpuid.c
+-
+-$(PROG).x86_64: cpuid.c Makefile
+-	$(CC) -m64 $(CFL) $(LDFLAGS) -o $@ cpuid.c
+-
+-todd: $(PROG).i386 $(PROG).x86_64
+-	rm -f ~/.bin/execs/i586/$(PROG)
+-	rm -f ~/.bin/execs/x86_64/$(PROG)
+-	cp -p $(PROG).i386   ~/.bin/execs/i586/$(PROG)
+-	cp -p $(PROG).x86_64 ~/.bin/execs/x86_64/$(PROG)
+-	chmod 777 ~/.bin/execs/i586/$(PROG)
+-	chmod 777 ~/.bin/execs/x86_64/$(PROG)
+-	(cd ~/.bin/execs; prop i586/$(PROG) x86_64/$(PROG))
+-
+-# Release rules
+-
+-$(PACKAGE).spec: $(PACKAGE).proto.spec
+-	@(echo "%define version $(VERSION)"; \
+-	  echo "%define release $(RELEASE)"; \
+-	  cat $<) > $@
+-
+-$(SRC_TAR): $(SRCS) $(OTHER_SRCS)
+-	@echo "Tarring source"
+-	@rm -rf $(PACKAGE)-$(VERSION)
+-	@mkdir $(PACKAGE)-$(VERSION)
+-	@ls -1d $(SRCS) $(OTHER_SRCS) | cpio -pdmuv $(PACKAGE)-$(VERSION)
+-	@tar cvf - $(PACKAGE)-$(VERSION) | gzip -c >| $(SRC_TAR)
+-	@rm -rf $(PACKAGE)-$(VERSION)
+-
+-$(i386_TAR): $(PROG).i386 $(OTHER_BINS)
+-	@echo "Tarring i386 binary"
+-	@rm -rf $(PACKAGE)-$(VERSION)
+-	@mkdir $(PACKAGE)-$(VERSION)
+-	@ls -1d $(PROG).i386 $(OTHER_BINS) | cpio -pdmuv $(PACKAGE)-$(VERSION)
+-	@mv $(PACKAGE)-$(VERSION)/$(PROG).i386 $(PACKAGE)-$(VERSION)/$(PROG)
+-	@(cd $(PACKAGE)-$(VERSION); strip $(PROG))
+-	@tar cvf - $(PACKAGE)-$(VERSION) | gzip -c >| $(i386_TAR)
+-	@rm -rf $(PACKAGE)-$(VERSION)
+-
+-$(x86_64_TAR): $(PROG).x86_64 $(OTHER_BINS)
+-	@echo "Tarring x86_64 binary"
+-	@rm -rf $(PACKAGE)-$(VERSION)
+-	@mkdir $(PACKAGE)-$(VERSION)
+-	@ls -1d $(PROG).x86_64 $(OTHER_BINS) | cpio -pdmuv $(PACKAGE)-$(VERSION)
+-	@mv $(PACKAGE)-$(VERSION)/$(PROG).x86_64 $(PACKAGE)-$(VERSION)/$(PROG)
+-	@(cd $(PACKAGE)-$(VERSION); strip $(PROG))
+-	@tar cvf - $(PACKAGE)-$(VERSION) | gzip -c >| $(x86_64_TAR)
+-	@rm -rf $(PACKAGE)-$(VERSION)
+-
+-src_tar: $(SRC_TAR)
+-
+-tar tars: $(TARS)
+-
+-$(i386_RPM) $(i386_DEBUG_RPM) $(SRC_RPM): $(SRC_TAR) $(PACKAGE).spec
+-	@echo "Building i386 RPMs"
+-	@rm -rf build
+-	@mkdir build
+-	@rpmbuild -ba --target i386 \
+-	          --buildroot "${PWD}/build" \
+-	          --define "_builddir ${PWD}/build" \
+-	          --define "_rpmdir ${PWD}" \
+-	          --define "_srcrpmdir ${PWD}" \
+-	          --define "_sourcedir ${PWD}" \
+-	          --define "_specdir ${PWD}" \
+-	          --define "__check_files ''" \
+-	          --define "_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" \
+-	          $(PACKAGE).spec
+-	@rm -rf build
+-
+-$(x86_64_RPM) $(x86_64_DEBUG_RPM): $(SRC_TAR) $(PACKAGE).spec
+-	@echo "Building x86_64 RPMs"
+-	@rm -rf build
+-	@mkdir build
+-	@rpmbuild -ba --target x86_64 \
+-	          --buildroot "${PWD}/build" \
+-	          --define "_builddir ${PWD}/build" \
+-	          --define "_rpmdir ${PWD}" \
+-	          --define "_srcrpmdir ${PWD}" \
+-	          --define "_sourcedir ${PWD}" \
+-	          --define "_specdir ${PWD}" \
+-	          --define "__check_files ''" \
+-	          --define "_rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm" \
+-	          $(PACKAGE).spec
+-	@rm -rf build
+-
+-rpm rpms: $(RPMS)
+-
+-# Todd's release rules
+-
+-release: $(PROG) $(PROG).i386 $(PROG).x86_64 $(TARS) $(RPMS)
+-	if [ -d $(REL_DIR) ]; then                         \
+-	   echo "Makefile: $(REL_DIR) already exists" >&2; \
+-	   exit 1;                                         \
+-	fi
+-	mkdir $(REL_DIR)
+-	cp -p $(PROG) $(PROG).i386 $(PROG).x86_64 $(SRCS) $(OTHER_SRCS) $(REL_DIR)
+-	mv $(TARS) $(RPMS) $(REL_DIR)
+-	if [ -e $(i386_DEBUG_RPM) ]; then   \
+-	   mv $(i386_DEBUG_RPM) $(REL_DIR); \
+-	fi
+-	if [ -e $(x86_64_DEBUG_RPM) ]; then  \
+-	   mv $(x86_64_DEBUG_RPM) $(REL_DIR); \
+-	fi
+-	chmod -w $(REL_DIR)/*
+-	cp -f -p $(REL_DIR)/*.tar.gz $(REL_DIR)/*.rpm $(WEB_DIR)
+-	rm -f $(PACKAGE).spec
+-
+-rerelease:
+-	rm -rf $(REL_DIR)
+-	$(MAKE) -$(MAKEFLAGS) release
++	rm -f $(PROG)
+--- cpuid.c
++++ cpuid.c
+@@ -19,19 +19,23 @@
+ */
+ 
+ #ifdef __linux__
+-#define USE_CPUID_MODULE
+-#define USE_KERNEL_SCHED_SETAFFINITY
++#define USE_CPUID_MODULE 1
++#define USE_KERNEL_SCHED_SETAFFINITY 1
+ #endif
+ 
+ #if __GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__ >= 40300
+-#define USE_CPUID_COUNT
++#define USE_CPUID_COUNT 1
++#endif
++
++#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
++#define BSD_FAMILY 1
+ #endif
+ 
+ #define _GNU_SOURCE
++
+ #include <stdio.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+-#include <sys/sysmacros.h>
+ #include <fcntl.h>
+ #include <errno.h>
+ #include <unistd.h>
+@@ -40,6 +44,18 @@
+ #include <regex.h>
+ #include <getopt.h>
+ 
++#if defined(__APPLE__)
++#include <mach/thread_policy.h>
++#include <pthread.h>
++#elif defined(__sun)
++#include <sys/processor.h>
++#include <sys/procset.h>
++#include <strings.h>
++#include <pthread.h>
++#elif defined(__linux__)
++#include <sys/sysmacros.h>
++#endif
++
+ #ifdef USE_CPUID_MODULE
+ #include <linux/major.h>
+ #endif
+@@ -48,12 +64,30 @@
+ #include <cpuid.h>
+ #endif
+ 
+-#ifdef USE_KERNEL_SCHED_SETAFFINITY
++#if defined(USE_KERNEL_SCHED_SETAFFINITY)
+ #include <sys/syscall.h>
+-#else
++#elif defined(__linux__) || defined(BSD_FAMILY)
+ #include <sched.h>
+ #endif
+ 
++#if defined(__APPLE__) || defined(BSD_FAMILY)
++#define OFF64_T off_t
++#define LSEEK64 lseek
++#else
++#define OFF64_T off64_t
++#define LSEEK64 lseek64
++#endif
++
++/* Commented out in current headers */
++#ifdef __APPLE__
++extern kern_return_t 
++thread_policy_set(
++    thread_t                thread,
++    thread_policy_flavor_t  flavor,
++    thread_policy_t         policy_info,
++    mach_msg_type_number_t  count);
++#endif
++
+ typedef int   boolean;
+ #define TRUE  1
+ #define FALSE 0
+@@ -66,8 +100,9 @@
+ #define STR(x)   #x
+ #define XSTR(x)  STR(x)
+ 
+-
++#ifndef MAX
+ #define MAX(l,r)            ((l) > (r) ? (l) : (r))
++#endif
+ 
+ #define LENGTH(array, type) (sizeof(array) / sizeof(type))
+ #define STRLEN(s)           (LENGTH(s,char) - 1)
+@@ -273,10 +308,10 @@
+    unsigned int   val_80000001_edx;
+    unsigned int   val_80000008_ecx;
+    unsigned int   transmeta_proc_rev;
+-   char           brand[48];
+-   char           transmeta_info[48];
+-   char           override_brand[48];
+-   char           soc_brand[48];
++   char           brand[98];
++   char           transmeta_info[98];
++   char           override_brand[98];
++   char           soc_brand[98];
+    hypervisor_t   hypervisor;
+ 
+    struct mp {
+@@ -358,7 +393,7 @@
+                     0, 0, 0, 0, 0, 0, \
+                     "", "", "", "", \
+                     HYPERVISOR_UNKNOWN, \
+-                    { NULL, -1, -1 }, \
++                    { NULL, ((unsigned int)-1), ((unsigned int)-1) }, \
+                     { FALSE, \
+                       { FALSE, FALSE, FALSE, FALSE, FALSE, \
+                         FALSE, FALSE, FALSE, FALSE }, \
+@@ -6850,6 +6885,26 @@
+ 
+          int  status;
+          status = syscall(__NR_sched_setaffinity, 0, sizeof(mask), &mask);
++#elif defined(__APPLE__)
++         /*
++          ** https://developer.apple.com/library/archive/releasenotes/Performance/RN-AffinityAPI/
++          ** https://stackoverflow.com/a/39839919/608639
++          */
++         pthread_t thread = pthread_self();
++         mach_port_t mthread = pthread_mach_thread_np(thread);
++         thread_affinity_policy_data_t policy = { cpu };
++         int status = thread_policy_set(mthread, THREAD_AFFINITY_POLICY, (thread_policy_t)&policy, 1);
++         if (status != KERN_SUCCESS) {
++             errno = EINVAL;
++             status = -1;
++         }
++#elif defined(__sun)
++         /*
++          ** https://www.oracle.com/technetwork/server-storage/solaris/solaris-linux-app-139382.html
++          ** https://docs.oracle.com/cd/E19455-01/806-0626/6j9vgh685/index.html
++          */
++         pthread_t thread = pthread_self();
++         int status = processor_bind(P_LWPID, thread, cpu, NULL);
+ #else
+          cpu_set_t  cpuset;
+          CPU_ZERO(&cpuset);
+@@ -6978,11 +7033,11 @@
+             "c" (ecx));
+ #endif
+    } else {
+-      off64_t  result;
+-      off64_t  offset = ((off64_t)ecx << 32) + reg;
++      OFF64_T  result;
++      OFF64_T  offset = ((OFF64_T)ecx << 32) + reg;
+       int      status;
+ 
+-      result = lseek64(cpuid_fd, offset, SEEK_SET);
++      result = LSEEK64(cpuid_fd, offset, SEEK_SET);
+       if (result == -1) {
+          if (quiet) {
+             return FALSE;
+@@ -7391,7 +7446,7 @@
+         boolean   debug)
+ {
+    boolean       seen_cpu    = FALSE;
+-   unsigned int  cpu         = -1;
++   unsigned int  cpu         = (unsigned int)-1;
+    /*
+    ** The try* variables are a kludge to deal with those leaves that depended on
+    ** the try (a.k.a. ecx) values that existed with cpuid's old-style method of
+@@ -7399,11 +7454,11 @@
+    ** It is not necessary to add more kludges for more modern ecx-dependent
+    ** leaves.
+    */
+-   unsigned int  try2        = -1;
+-   unsigned int  try4        = -1;
+-   unsigned int  try7        = -1;
+-   unsigned int  tryb        = -1;
+-   unsigned int  try8000001d = -1;
++   unsigned int  try2        = (unsigned int)-1;
++   unsigned int  try4        = (unsigned int)-1;
++   unsigned int  try7        = (unsigned int)-1;
++   unsigned int  tryb        = (unsigned int)-1;
++   unsigned int  try8000001d = (unsigned int)-1;
+    code_stash_t  stash       = NIL_STASH;
+ 
+    FILE*  file;

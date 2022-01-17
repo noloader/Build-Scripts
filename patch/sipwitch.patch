@@ -1,0 +1,2973 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with GNU SIP Witch.
+--- common/voip.cpp
++++ common/voip.cpp
+@@ -19,6 +19,9 @@
+ #include <ucommon/export.h>
+ #include <sipwitch/voip.h>
+ 
++// For voip::make_prack_message
++#include <cassert>
++
+ namespace sipwitch {
+ 
+ static int family = AF_INET;
+@@ -133,6 +136,8 @@
+     eXosip_unlock(ctx);
+ }
+ 
++// Documentation of data structures and macros at
++// https://www.gnu.org/software/osip/doc/html/osip__message_8h-source.html
+ bool voip::make_prack_message(context_t ctx, tid_t tid, msg_t *msg)
+ {
+     if(!msg)
+@@ -140,7 +145,18 @@
+ 
+     *msg = NULL;
+     eXosip_lock(ctx);
+-    eXosip_call_build_prack(ctx, tid, msg);
++
++    // TODO: verify this change to fix compile error
++    // eXosip_call_build_prack(ctx, tid, msg);
++    osip_message_t resp;  // unused
++    memset(&resp, 0x00, sizeof(osip_message_t));
++    eXosip_call_build_prack(ctx, tid, &resp, msg);
++
++    // TODO: verify this change to fix compile error
++    int code = osip_message_get_status_code(&resp);
++    assert(MSG_IS_STATUS_1XX(&resp));
++    osip_message_free(&resp);
++
+     if(!*msg) {
+         eXosip_unlock(ctx);
+         return false;
+@@ -359,7 +375,7 @@
+ void voip::send_registry_request(context_t c, reg_t r, msg_t msg) 
+ {
+     if(!msg)
+-	    return;
++        return;
+     eXosip_register_send_register(c, r, msg);
+     eXosip_unlock(c);
+ }
+@@ -417,7 +433,7 @@
+     port = port & 0xfffe;
+     if(tls) {
+         tlsmode = 1;
+-        ++port;	// tls always next odd port...
++        ++port;    // tls always next odd port...
+     }
+ 
+     if(eXosip_listen_addr(ctx, proto, addr, port, family, tlsmode))
+@@ -438,7 +454,15 @@
+ 
+ #ifdef  AF_INET6
+     if(family == AF_INET6)
++    {
++#ifdef HAVE_EXOSIP_ENABLE_IPV6
++        // eXosip_enable_ipv6 deprecated in 2013 at commit ff8d5b5c073d.
+         eXosip_enable_ipv6(1);
++#else
++        int val = 1;
++        eXosip_set_option(*ctx, EXOSIP_OPT_ENABLE_IPV6, &val);
++#endif
++    }
+ #endif
+ }
+ 
+@@ -844,7 +868,7 @@
+     port = port & 0xfffe;
+     if(tls) {
+         tlsmode = 1;
+-        ++port;	// tls always next odd port...
++        ++port;    // tls always next odd port...
+     }
+ 
+     if(eXosip_listen_addr(proto, addr, port, family, tlsmode))
+@@ -870,7 +894,15 @@
+ 
+ #ifdef  AF_INET6
+     if(family == AF_INET6)
++    {
++#ifdef HAVE_EXOSIP_ENABLE_IPV6
++        // eXosip_enable_ipv6 deprecated in 2013 at commit ff8d5b5c073d.
+         eXosip_enable_ipv6(1);
++#else
++        int val = 1;
++        eXosip_set_option(*ctx, EXOSIP_OPT_ENABLE_IPV6, &val);
++#endif
++    }
+ #endif
+ }
+ 
+--- utils/sipquery.cpp
++++ utils/sipquery.cpp
+@@ -224,9 +224,16 @@
+     if(eXosip_init(EXOSIP_CONTEXT))
+         shell::errexit(3, "*** sipuser: failed exosip init\n");
+ 
+-#ifdef  AF_INET6
+-    if(family == AF_INET6) {
++#ifdef  AF_INET6
++    if(family == AF_INET6)
++    {
++#ifdef HAVE_EXOSIP_ENABLE_IPV6
++        // eXosip_enable_ipv6 deprecated in 2013 at commit ff8d5b5c073d.
+         eXosip_enable_ipv6(1);
++#else
++        int val = 1;
++        eXosip_set_option(context, EXOSIP_OPT_ENABLE_IPV6, &val);
++#endif
+         if(binding == NULL)
+             binding = "::0";
+     }
+--- server/stack.cpp
++++ server/stack.cpp
+@@ -16,6 +16,17 @@
+ 
+ #include "server.h"
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ static volatile unsigned allocated_segments = 0;
+@@ -505,6 +516,7 @@
+     voip::body_t body = NULL;
+     session *target = NULL;
+     call *cr = source->parent;
++    int rc = 0;
+ 
+     if(cr->source == source)
+         target = cr->target;
+@@ -522,10 +534,14 @@
+     osip_message_get_body(sevent->request, 0, &body);
+     if(!voip::make_dialog_info(target->context, did, &msg))
+         return;
+-    if(ct->subtype)
+-        snprintf(type, sizeof(type), "%s/%s", ct->type, ct->subtype);
+-    else
+-        snprintf(type, sizeof(type), "%s", ct->type);
++    if(ct->subtype) {
++        rc = snprintf(type, sizeof(type), "%s/%s", ct->type, ct->subtype);
++        printf_term(type, sizeof(type), rc);
++    }
++    else {
++        rc = snprintf(type, sizeof(type), "%s", ct->type);
++        printf_term(type, sizeof(type), rc);
++    }
+     voip::attach(msg, type, body->body);
+     voip::server_allows(msg);
+     voip::send_dialog_message(target->context, did, msg);
+@@ -1043,6 +1059,7 @@
+     assert(user == NULL || *user != 0);
+     assert(size > 0);
+ 
++    int rc = 0;
+     char pbuf[10];
+     bool ipv6 = false;
+ 
+@@ -1068,10 +1085,14 @@
+         String::add(buf, size, "[");
+ 
+     String::add(buf, size, sip.published);
+-    if(ipv6)
+-        snprintf(pbuf, sizeof(pbuf), "]:%u", sip_port);
+-    else
+-        snprintf(pbuf, sizeof(pbuf), ":%u", sip_port);
++    if(ipv6) {
++        rc = snprintf(pbuf, sizeof(pbuf), "]:%u", sip_port);
++        printf_term(pbuf, sizeof(pbuf), rc);
++    }
++    else {
++        rc = snprintf(pbuf, sizeof(pbuf), ":%u", sip_port);
++        printf_term(pbuf, sizeof(pbuf), rc);
++    }
+     String::add(buf, size, pbuf);
+     return buf;
+ }
+@@ -1085,6 +1106,7 @@
+ 
+     char pbuf[10];
+     unsigned port = 0;
++    int rc = 0;
+     bool ipv6 = false;
+     const char *defaddr = NULL;
+ 
+@@ -1135,10 +1157,14 @@
+ 
+     len = strlen(buf);
+     Socket::query((struct sockaddr *)addr, buf + len, size - len);
+-    if(ipv6)
+-        snprintf(pbuf, sizeof(pbuf), "]:%u", port);
+-    else
+-        snprintf(pbuf, sizeof(pbuf), ":%u", port);
++    if(ipv6) {
++        rc = snprintf(pbuf, sizeof(pbuf), "]:%u", port);
++        printf_term(pbuf, sizeof(pbuf), rc);
++    }
++    else {
++        rc = snprintf(pbuf, sizeof(pbuf), ":%u", port);
++        printf_term(pbuf, sizeof(pbuf), rc);
++    }
+     String::add(buf, size, pbuf);
+     return buf;
+ }
+@@ -1217,6 +1243,7 @@
+ {
+     char route[MAX_URI_SIZE];
+     char touri[MAX_URI_SIZE];
++    int rc = 0;
+ 
+     if(!call->diverting)
+         return;
+@@ -1224,23 +1251,28 @@
+     uri::publish(call->request, route, call->divert, sizeof(route));
+ 
+     if(String::equal(call->diverting, "all")) {
+-        snprintf(touri, sizeof(touri), "<%s>;reason=unconditional", route);
++        rc = snprintf(touri, sizeof(touri), "<%s>;reason=unconditional", route);
++        printf_term(touri, sizeof(touri), rc);
+         voip::header(invite, "Diversion", touri);
+     }
+     else if(String::equal(call->diverting, "na")) {
+-        snprintf(touri, sizeof(touri), "<%s>;reason=no-answer", route);
++        rc = snprintf(touri, sizeof(touri), "<%s>;reason=no-answer", route);
++        printf_term(touri, sizeof(touri), rc);
+         voip::header(invite, "Diversion", touri);
+     }
+     else if(String::equal(call->diverting, "busy")) {
+-        snprintf(touri, sizeof(touri), "<%s>;reason=user-busy", route);
++        rc = snprintf(touri, sizeof(touri), "<%s>;reason=user-busy", route);
++        printf_term(touri, sizeof(touri), rc);
+         voip::header(invite, "Diversion", touri);
+     }
+     else if(String::equal(call->diverting, "dnd")) {
+-        snprintf(touri, sizeof(touri), "<%s>;reason=do-not-disturb", route);
++        rc = snprintf(touri, sizeof(touri), "<%s>;reason=do-not-disturb", route);
++        printf_term(touri, sizeof(touri), rc);
+         voip::header(invite, "Diversion", touri);
+     }
+     else if(String::equal(call->diverting, "away")) {
+-        snprintf(touri, sizeof(touri), "<%s>;reason=away", route);
++        rc = snprintf(touri, sizeof(touri), "<%s>;reason=away", route);
++        printf_term(touri, sizeof(touri), rc);
+         voip::header(invite, "Diversion", touri);
+     }
+ }
+@@ -1260,7 +1292,7 @@
+     voip::msg_t invite = NULL;
+     char expheader[32];
+     char seqid[64];
+-    int cid;
++    int cid, rc;
+     unsigned icount = 0;
+     time_t now;
+     srv resolv;
+@@ -1290,7 +1322,8 @@
+     }
+ 
+     if(schema) {
+-        snprintf(rewrite, sizeof(rewrite), "%s:%s", schema, uri_target);
++        rc = snprintf(rewrite, sizeof(rewrite), "%s:%s", schema, uri_target);
++        printf_term(rewrite, sizeof(rewrite), rc);
+         uri_target = rewrite;
+     }
+ 
+@@ -1316,7 +1349,8 @@
+         sp.next();
+     }
+ 
+-    snprintf(touri, sizeof(touri), "<%s>", uri_target);
++    rc = snprintf(touri, sizeof(touri), "<%s>", uri_target);
++    printf_term(touri, sizeof(touri), rc);
+ 
+     invite = NULL;
+ 
+@@ -1337,7 +1371,8 @@
+         char nounce[64];
+         char *req = NULL;
+         osip_uri_to_str(invite->req_uri, &req);
+-        snprintf(authbuf, 1024, "%s:%s", invite->sip_method, req);
++        rc = snprintf(authbuf, 1024, "%s:%s", invite->sip_method, req);
++        printf_term(authbuf, 1024, rc);
+         Random::uuid(nounce);
+ 
+         digest_t auth("md5");
+@@ -1346,11 +1381,12 @@
+         auth = registry::getDigest();
+         auth.puts(authbuf);
+         response = *auth;
+-        snprintf(authbuf, 1024, "%s:%s:%s", digest, *once, *response);
++        rc = snprintf(authbuf, 1024, "%s:%s:%s", digest, *once, *response);
++        printf_term(authbuf, 1024, rc);
+         auth.reset();
+         auth.puts(authbuf);
+         response = *auth;
+-        snprintf(authbuf, 1024,
++        rc = snprintf(authbuf, 1024,
+             "Digest username=\"%s\""
+             ",realm=\"%s\""
+             ",uri=\"%s\""
+@@ -1358,6 +1394,7 @@
+             ",nonce=\"%s\""
+             ",algorithm=%s"
+             ,s->reg->userid, registry::getRealm(), req, *response, *once, registry::getDigest());
++        printf_term(authbuf, 1024, rc);
+         voip::header(invite, AUTHORIZATION, authbuf);
+         delete[] authbuf;
+         osip_free(req);
+@@ -1366,7 +1403,8 @@
+         voip::header(invite, P_SIPWITCH_NODE, "no");
+ 
+     if(call->expires) {
+-        snprintf(expheader, sizeof(expheader), "%ld", (long)(call->expires - now));
++        rc = snprintf(expheader, sizeof(expheader), "%ld", (long)(call->expires - now));
++        printf_term(expheader, sizeof(expheader), rc);
+         voip::header(invite, SESSION_EXPIRES, expheader);
+     }
+ 
+@@ -1383,7 +1421,8 @@
+     stack::siplog(invite);
+     cid = voip::send_invite_request(context, invite);
+     if(cid > 0) {
+-        snprintf(seqid, sizeof(seqid), "%08x-%d", s->sequence, s->cid);
++        rc = snprintf(seqid, sizeof(seqid), "%08x-%d", s->sequence, s->cid);
++        printf_term(seqid, sizeof(seqid), rc);
+         uri::publish(call->request, route, seqid, sizeof(route));
+         voip::call_reference(context, cid, route);
+         ++icount;
+@@ -1398,7 +1437,8 @@
+     registry::incUse(NULL, stats::OUTGOING);
+     String::set(invited->identity, sizeof(invited->identity), uri_target);
+     String::set(invited->display, sizeof(invited->display), username);
+-    snprintf(invited->from, sizeof(invited->from), "<%s>", uri_target);
++    rc = snprintf(invited->from, sizeof(invited->from), "<%s>", uri_target);
++    printf_term(invited->from, sizeof(invited->from), rc);
+     String::set(invited->network, sizeof(invited->network), network);
+     invited->nat = nat;
+     uri::identity(*resolv, invited->sysident, username, sizeof(invited->sysident));
+@@ -1419,6 +1459,7 @@
+     const char *target;
+     char buffer[MAX_URI_SIZE];
+     registry::mapped *rr = NULL;
++    int rc = 0;
+ 
+     String::set(cr->divert, sizeof(cr->divert), cr->forward);
+     cr->forwarding = NULL;
+@@ -1468,8 +1509,10 @@
+     goto test;
+ 
+ remote:
+-    if(!String::equal(target, "sip:", 4) && !String::equal(target, "sips:", 5))
+-        snprintf(buffer, sizeof(buffer), "%s:%s", getScheme(), target);
++    if(!String::equal(target, "sip:", 4) && !String::equal(target, "sips:", 5)) {
++        rc = snprintf(buffer, sizeof(buffer), "%s:%s", getScheme(), target);
++        printf_term(buffer, sizeof(buffer), rc);
++    }
+     else
+         String::set(buffer, sizeof(buffer), target);
+     target = buffer;
+@@ -1507,7 +1550,7 @@
+     char seqid[64];
+     char route[MAX_URI_SIZE];
+     char touri[MAX_URI_SIZE];
+-    int cid;
++    int cid, rc;
+     unsigned icount = 0;
+ 
+     time(&now);
+@@ -1540,12 +1583,17 @@
+ 
+         if(dest == ROUTED) {
+             stack::sipPublish(&tp->address, route, call->dialed, sizeof(route));
+-            snprintf(touri, sizeof(touri), "\"%s\" <%s;user=phone>", call->dialed, route);
++            rc = snprintf(touri, sizeof(touri), "\"%s\" <%s;user=phone>", call->dialed, route);
++            printf_term(touri, sizeof(touri), rc);
++        }
++        else if(call->phone) {
++            rc = snprintf(touri, sizeof(touri), "<%s;user=phone>", tp->contact);
++            printf_term(touri, sizeof(touri), rc);
++        }
++        else {
++            rc = snprintf(touri, sizeof(touri), "<%s>", tp->contact);
++            printf_term(touri, sizeof(touri), rc);
+         }
+-        else if(call->phone)
+-            snprintf(touri, sizeof(touri), "<%s;user=phone>", tp->contact);
+-        else
+-            snprintf(touri, sizeof(touri), "<%s>", tp->contact);
+ 
+         stack::sipPublish(&tp->address, route + 1, NULL, sizeof(route) - 5);
+         route[0] = '<';
+@@ -1562,7 +1610,8 @@
+             stack::sipPublish(&tp->address, route, call->dialed, sizeof(route));
+             if(call->phone)
+                 String::add(route, sizeof(route), ";user=phone");
+-            snprintf(touri, sizeof(touri), "\"%s\" <%s>", call->dialed, route);
++            rc = snprintf(touri, sizeof(touri), "\"%s\" <%s>", call->dialed, route);
++            printf_term(touri, sizeof(touri), rc);
+             if(invite->to) {
+                 osip_to_free(invite->to);
+                 invite->to = NULL;
+@@ -1576,7 +1625,8 @@
+         voip::server_supports(invite, "100rel,replaces,timer");
+ 
+         if(call->expires) {
+-            snprintf(expheader, sizeof(expheader), "%ld", (long)(call->expires - now));
++            rc = snprintf(expheader, sizeof(expheader), "%ld", (long)(call->expires - now));
++            printf_term(expheader, sizeof(expheader), rc);
+             voip::header(invite, SESSION_EXPIRES, expheader);
+         }
+ 
+@@ -1592,7 +1642,8 @@
+         stack::siplog(invite);
+         cid = voip::send_invite_request(tp->context, invite);
+         if(cid > 0) {
+-            snprintf(seqid, sizeof(seqid), "%08x-%d", s->sequence, s->cid);
++            rc = snprintf(seqid, sizeof(seqid), "%08x-%d", s->sequence, s->cid);
++            printf_term(seqid, sizeof(seqid), rc);
+             stack::sipAddress((struct sockaddr_internet *)&tp->peering, route, seqid, sizeof(route));
+             voip::call_reference(tp->context, cid, route);
+             ++icount;
+@@ -1610,8 +1661,10 @@
+         invited->peering = tp->peering;
+         invited->nat = nat;
+ 
+-        if(rr->ext)
+-            snprintf(invited->sysident, sizeof(invited->sysident), "%u", rr->ext);
++        if(rr->ext) {
++            rc = snprintf(invited->sysident, sizeof(invited->sysident), "%u", rr->ext);
++            printf_term(invited->sysident, sizeof(invited->sysident), rc);
++        }
+         else
+             String::set(invited->sysident, sizeof(invited->sysident), rr->userid);
+         if(rr->display[0])
+@@ -1619,15 +1672,21 @@
+         else
+             String::set(invited->display, sizeof(invited->display), invited->sysident);
+         stack::sipPublish((struct sockaddr_internet *)&tp->peering, invited->identity, invited->sysident, sizeof(invited->identity));
+-        if(rr->ext && !rr->display[0])
+-            snprintf(invited->from, sizeof(invited->from),
++        if(rr->ext && !rr->display[0]) {
++            rc = snprintf(invited->from, sizeof(invited->from),
+                 "\"%s\" <%s;user=phone>", invited->sysident, invited->identity);
+-        else if(rr->display[0])
+-            snprintf(invited->from, sizeof(invited->from),
++            printf_term(invited->from, sizeof(invited->from), rc);
++        }
++        else if(rr->display[0]) {
++            rc = snprintf(invited->from, sizeof(invited->from),
+                 "\"%s\" <%s>", rr->display, invited->identity);
+-        else
+-            snprintf(invited->from, sizeof(invited->from),
++            printf_term(invited->from, sizeof(invited->from), rc);
++        }
++        else {
++            rc = snprintf(invited->from, sizeof(invited->from),
+                 "<%s>", invited->identity);
++            printf_term(invited->from, sizeof(invited->from), rc);
++         }
+         registry::incUse(rr, stats::OUTGOING);
+         invited->reg = rr;
+ 
+--- server/thread.cpp
++++ server/thread.cpp
+@@ -16,6 +16,17 @@
+ 
+ #include "server.h"
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ static volatile bool warning_registry = false;
+@@ -138,7 +149,7 @@
+ 
+ void thread::publish(void)
+ {
+-    int error = SIP_BAD_REQUEST;
++    int error = SIP_BAD_REQUEST, rc;
+     voip::body_t mbody = NULL;
+     voip::ctype_t ct;
+     const char *tmp = NULL;
+@@ -175,8 +186,10 @@
+     if(msgheader && msgheader->hvalue)
+         event = msgheader->hvalue;
+ 
+-    if(ct && ct->subtype)
+-        snprintf(msgtype, sizeof(msgtype), "%s/%s", ct->type, ct->subtype);
++    if(ct && ct->subtype) {
++        rc = snprintf(msgtype, sizeof(msgtype), "%s/%s", ct->type, ct->subtype);
++        printf_term(msgtype, sizeof(msgtype), rc);
++    }
+     else if(ct && ct->type)
+         String::set(msgtype, sizeof(msgtype), ct->type);
+     else
+@@ -259,6 +272,7 @@
+ {
+     voip::ctype_t ct;
+     voip::body_t body = NULL;
++    int rc = 0;
+     char address[MAX_URI_SIZE];
+     char fromhdr[MAX_URI_SIZE];
+     char target[MAX_URI_SIZE];
+@@ -311,28 +325,40 @@
+         return;
+     }
+ 
+-    if(ct->subtype)
+-        snprintf(msgtype, sizeof(msgtype), "%s/%s",
++    if(ct->subtype) {
++        rc = snprintf(msgtype, sizeof(msgtype), "%s/%s",
+             ct->type, ct->subtype);
+-    else
+-        snprintf(msgtype, sizeof(msgtype), "%s",
++        printf_term(msgtype, sizeof(msgtype), rc);
++    }
++    else {
++        rc = snprintf(msgtype, sizeof(msgtype), "%s",
+             ct->type);
++        printf_term(msgtype, sizeof(msgtype), rc);
++    }
+ 
+-    if(extension && !digest)
+-        snprintf(sysid, sizeof(sysid), "%u", extension);
++    if(extension && !digest) {
++        rc = snprintf(sysid, sizeof(sysid), "%u", extension);
++        printf_term(sysid, sizeof(sysid), rc);
++    }
+     else
+         String::set(sysid, sizeof(sysid), identity);
+ 
+     uri::publish(requesting, address, sysid, sizeof(address));
+-    if(extension && !display[0])
+-        snprintf(fromhdr, sizeof(fromhdr),
++    if(extension && !display[0]) {
++        rc = snprintf(fromhdr, sizeof(fromhdr),
+             "\"%u\" <%s;user=phone>", extension, address);
+-    else if(display[0])
+-        snprintf(fromhdr, sizeof(fromhdr),
++        printf_term(fromhdr, sizeof(fromhdr), rc);
++    }
++    else if(display[0]) {
++        rc = snprintf(fromhdr, sizeof(fromhdr),
+             "\"%s\" <%s>", display, address);
+-    else
+-        snprintf(fromhdr, sizeof(fromhdr),
++        printf_term(fromhdr, sizeof(fromhdr), rc);
++    }
++    else {
++        rc = snprintf(fromhdr, sizeof(fromhdr),
+             "<%s>", address);
++        printf_term(fromhdr, sizeof(fromhdr), rc);
++     }
+ 
+     shell::debug(3, "sending message from %s to %s\n", sysid, target);
+     osip_content_length_to_str(sevent->request->content_length, &msglen);
+@@ -351,10 +377,11 @@
+     const char *target = dialing;
+     voip::body_t body = NULL;
+     stack::call *call = session->parent;
++    cdr *cdrnode = NULL;
+     unsigned toext = 0;
++    int rc = 0;
+     voip::hdr_t msgheader = NULL;
+-    char fromext[32];
+-    cdr *cdrnode = NULL;
++    char fromext[64];
+     const char *domain = registry::getDomain();
+ 
+     uri::serviceid(requesting, call->request, sizeof(call->request));
+@@ -382,8 +409,10 @@
+         call->failed(this, session);
+     }
+ 
+-    if(extension)
+-        snprintf(fromext, sizeof(fromext), "%u", extension);
++    if(extension) {
++        rc = snprintf(fromext, sizeof(fromext), "%u", extension);
++        printf_term(fromext, sizeof(fromext), rc);
++    }
+ 
+     msgheader = NULL;
+     osip_message_header_get_byname(sevent->request, SESSION_EXPIRES, 0, &msgheader);
+@@ -433,8 +462,10 @@
+     call->type = destination;
+     switch(destination) {
+     case LOCAL:
+-        if(extension)
+-            snprintf(session->sysident, sizeof(session->sysident), "%u", extension);
++        if(extension) {
++            rc = snprintf(session->sysident, sizeof(session->sysident), "%u", extension);
++            printf_term(session->sysident, sizeof(session->sysident), rc);
++        }
+         else
+             String::set(session->sysident, sizeof(session->sysident), identity);
+         if(display[0])
+@@ -446,12 +477,14 @@
+         String::set(cdrnode->ident, sizeof(cdrnode->ident), session->sysident);
+         String::set(cdrnode->dialed, sizeof(cdrnode->dialed), call->dialed);
+         String::set(cdrnode->display, sizeof(cdrnode->display), session->display);
+-        snprintf(session->identity, sizeof(session->identity), "%s:%s@%s",
++        rc = snprintf(session->identity, sizeof(session->identity), "%s:%s@%s",
+             stack::sip.getScheme(), session->sysident, domain);
++        printf_term(session->identity, sizeof(session->identity), rc);
+ 
+         if(toext) {
+             call->phone = true;
+-            snprintf(call->dialed, sizeof(call->dialed), "%u", toext);
++            rc = snprintf(call->dialed, sizeof(call->dialed), "%u", toext);
++            printf_term(call->dialed, sizeof(call->dialed), rc);
+         }
+         else
+             String::set(call->dialed, sizeof(call->dialed), target);
+@@ -466,15 +499,21 @@
+             return;
+         }
+ 
+-        if(extension && !display[0])
+-            snprintf(session->from, sizeof(session->from),
++        if(extension && !display[0]) {
++            rc = snprintf(session->from, sizeof(session->from),
+                 "\"%s\" <%s;user=phone>", session->sysident, session->identity);
+-        else if(display[0])
+-            snprintf(session->from, sizeof(session->from),
++            printf_term(session->from, sizeof(session->from), rc);
++        }
++        else if(display[0]) {
++            rc = snprintf(session->from, sizeof(session->from),
+                 "\"%s\" <%s>", session->display, session->identity);
+-        else
+-            snprintf(session->from, sizeof(session->from),
++            printf_term(session->from, sizeof(session->from), rc);
++        }
++        else {
++            rc = snprintf(session->from, sizeof(session->from),
+                 "<%s>", session->identity);
++            printf_term(session->from, sizeof(session->from), rc);
++        }
+ 
+         session->closed = false;
+         session->reg = registry::invite(identity, stats::INCOMING);
+@@ -483,18 +522,22 @@
+         break;
+     case PUBLIC:
+         String::set(call->dialed, sizeof(call->dialed), target);
+-        snprintf(session->identity, sizeof(session->identity), "%s:%s@%s:%s",
++        rc = snprintf(session->identity, sizeof(session->identity), "%s:%s@%s:%s",
+             from->url->scheme, from->url->username, from->url->host, from->url->port);
+-        snprintf(session->sysident, sizeof(session->sysident), "%s@%s", from->url->username, from->url->host);
++        printf_term(session->identity, sizeof(session->identity), rc);
++        rc = snprintf(session->sysident, sizeof(session->sysident), "%s@%s", from->url->username, from->url->host);
++        printf_term(session->sysident, sizeof(session->sysident), rc);
+         if(from->displayname) {
+             String::set(session->display, sizeof(session->display), from->displayname);
+-            snprintf(session->from, sizeof(session->from),
++            rc = snprintf(session->from, sizeof(session->from),
+                 "\"%s\" <%s>", from->displayname, session->identity);
++            printf_term(session->from, sizeof(session->from), rc);
+         }
+         else {
+             String::set(session->display, sizeof(session->display), from->url->username);
+-            snprintf(session->from, sizeof(session->from),
++            rc = snprintf(session->from, sizeof(session->from),
+                 "<%s>", session->identity);
++            printf_term(session->from, sizeof(session->from), rc);
+         }
+         shell::debug(1, "incoming call %08x:%u for %s from %s\n",
+             session->sequence, session->cid, call->dialed, session->sysident);
+@@ -507,8 +550,10 @@
+         break;
+     case REDIRECTED:
+     case EXTERNAL:
+-        if(extension)
+-            snprintf(session->sysident, sizeof(session->sysident), "%u", extension);
++        if(extension) {
++            rc = snprintf(session->sysident, sizeof(session->sysident), "%u", extension);
++            printf_term(session->sysident, sizeof(session->sysident), rc);
++        }
+         else
+             String::set(session->sysident, sizeof(session->sysident), identity);
+         session->reg = registry::invite(identity, stats::INCOMING);
+@@ -517,13 +562,16 @@
+         else
+             String::set(session->display, sizeof(session->display), identity);
+ 
+-        if(registry::getDomain() || destination != EXTERNAL)
+-            snprintf(session->identity, sizeof(session->identity), "%s:%s@%s",
++        if(registry::getDomain() || destination != EXTERNAL) {
++            rc = snprintf(session->identity, sizeof(session->identity), "%s:%s@%s",
+                 stack::sip.getScheme(), session->sysident, domain);
++            printf_term(session->identity, sizeof(session->identity), rc);
++        }
+         else {
+             gethostname(buftemp, sizeof(buftemp));
+-            snprintf(session->identity, sizeof(session->identity), "%s:%s@%s",
++            rc = snprintf(session->identity, sizeof(session->identity), "%s:%s@%s",
+                 stack::sip.getScheme(), session->sysident, buftemp);
++            printf_term(session->identity, sizeof(session->identity), rc);
+         }
+ 
+         if(destination == EXTERNAL)
+@@ -531,15 +579,21 @@
+         else
+             String::set(call->dialed, sizeof(call->dialed), dialing);
+ 
+-        if(extension && !display[0])
+-            snprintf(session->from, sizeof(session->from),
++        if(extension && !display[0]) {
++            rc = snprintf(session->from, sizeof(session->from),
+                 "\"%s\" <%s;user=phone>", session->sysident, session->identity);
+-        else if(display[0])
+-            snprintf(session->from, sizeof(session->from),
++            printf_term(session->from, sizeof(session->from), rc);
++        }
++        else if(display[0]) {
++            rc = snprintf(session->from, sizeof(session->from),
+                 "\"%s\" <%s>", display, session->identity);
+-        else
+-            snprintf(session->from, sizeof(session->from),
++            printf_term(session->from, sizeof(session->from), rc);
++        }
++        else {
++            rc = snprintf(session->from, sizeof(session->from),
+                 "<%s>", session->identity);
++            printf_term(session->from, sizeof(session->from), rc);
++        }
+ 
+         shell::debug(1, "outgoing call %08x:%u from %s to %s",
+             session->sequence, session->cid, getIdent(), requesting);
+@@ -557,8 +611,10 @@
+     case ROUTED:
+         call->phone = true;
+ 
+-        if(extension)
+-            snprintf(session->sysident, sizeof(session->sysident), "%u", extension);
++        if(extension) {
++            rc = snprintf(session->sysident, sizeof(session->sysident), "%u", extension);
++            printf_term(session->sysident, sizeof(session->sysident), rc);
++        }
+         else
+             String::set(session->sysident, sizeof(session->sysident), identity);
+         if(display[0])
+@@ -566,15 +622,20 @@
+         else
+             String::set(session->display, sizeof(session->display), session->sysident);
+ 
+-        snprintf(session->identity, sizeof(session->identity), "%s:%s@%s",
++        rc = snprintf(session->identity, sizeof(session->identity), "%s:%s@%s",
+             stack::sip.getScheme(), session->sysident, domain);
++        printf_term(session->identity, sizeof(session->identity), rc);
+ 
+-        if(extension)
+-            snprintf(session->from, sizeof(session->from),
++        if(extension) {
++            rc = snprintf(session->from, sizeof(session->from),
+                 "\"%s\" <%s;user=phone>", session->display, session->identity);
+-        else
+-            snprintf(session->from, sizeof(session->from),
++            printf_term(session->from, sizeof(session->from), rc);
++        }
++        else {
++            rc = snprintf(session->from, sizeof(session->from),
+                 "\"%s\" <%s>", session->display, session->identity);
++            printf_term(session->from, sizeof(session->from), rc);
++        }
+ 
+         String::set(call->dialed, sizeof(call->dialed), dialing);
+ 
+@@ -654,14 +715,18 @@
+ 
+ const char *thread::getIdent(void)
+ {
++    int rc = 0;
++
+     if(!extension)
+         return identity;
+ 
+     if(registry::isExtension(identity) && (unsigned)atoi(identity) == extension)
+         return identity;
+ 
+-    if(!identbuf[0])
+-        snprintf(identbuf, sizeof(identbuf), "%s(%u)", identity, extension);
++    if(!identbuf[0]) {
++        rc = snprintf(identbuf, sizeof(identbuf), "%s(%u)", identity, extension);
++        printf_term(identbuf, sizeof(identbuf), rc);
++    }
+ 
+     return identbuf;
+ }
+@@ -699,7 +764,7 @@
+ 
+ bool thread::authorize(void)
+ {
+-    int error = SIP_UNDECIPHERABLE;
++    int error = SIP_UNDECIPHERABLE, rc;
+     const char *scheme = "sip";
+     const char *cp;
+     time_t now;
+@@ -760,20 +825,28 @@
+     }
+ 
+     if(uri->username && uri->username[0]) {
+-        if(uri->port && uri->port[0])
+-            snprintf(requesting, sizeof(requesting), "%s:%s@%s%s%s:%s",
++        if(uri->port && uri->port[0]) {
++            rc = snprintf(requesting, sizeof(requesting), "%s:%s@%s%s%s:%s",
+                 uri->scheme, uri->username, sep1, uri_host, sep2, uri->port);
+-        else
+-            snprintf(requesting, sizeof(requesting), "%s:%s@%s%s%s",
++            printf_term(requesting, sizeof(requesting), rc);
++        }
++        else {
++            rc = snprintf(requesting, sizeof(requesting), "%s:%s@%s%s%s",
+                 uri->scheme, uri->username, sep1, uri_host, sep2);
++            printf_term(requesting, sizeof(requesting), rc);
++        }
+     }
+     else {
+-        if(uri->port && uri->port[0])
+-            snprintf(requesting, sizeof(requesting), "%s:%s%s%s:%s",
++        if(uri->port && uri->port[0]) {
++            rc = snprintf(requesting, sizeof(requesting), "%s:%s%s%s:%s",
+                 uri->scheme, sep1, uri_host, sep2, uri->port);
+-        else
+-            snprintf(requesting, sizeof(requesting), "%s:%s%s%s",
++            printf_term(requesting, sizeof(requesting), rc);
++        }
++        else {
++            rc = snprintf(requesting, sizeof(requesting), "%s:%s%s%s",
+                 uri->scheme, sep1, uri_host, sep2);
++            printf_term(requesting, sizeof(requesting), rc);
++        }
+     }
+ 
+     if(uri->port && uri->port[0])
+@@ -1058,19 +1131,27 @@
+         if(!cp)
+             cp = service::getValue(routed, "target");
+         if(cp && !strchr(cp, '@')) {
+-            if(String::equal(cp, "sip:", 4) || String::equal(cp, "sips:", 5))
+-                snprintf(buffer, sizeof(buffer), "%s@%s", target, cp);
+-            else
+-                snprintf(buffer, sizeof(buffer), "sip:%s@%s", target, cp);
++            if(String::equal(cp, "sip:", 4) || String::equal(cp, "sips:", 5)) {
++                rc = snprintf(buffer, sizeof(buffer), "%s@%s", target, cp);
++                printf_term(buffer, sizeof(buffer), rc);
++            }
++            else {
++                rc = snprintf(buffer, sizeof(buffer), "sip:%s@%s", target, cp);
++                printf_term(buffer, sizeof(buffer), rc);
++            }
+             refer = buffer;
+             goto redirect;
+         }
+         if(!cp)
+             goto invalid;
+-        if(String::equal(cp, "sip:", 4) || String::equal(cp, "sips:"))
+-            snprintf(buffer, sizeof(buffer), "%s", cp);
+-        else
+-            snprintf(buffer, sizeof(buffer), "sip:%s", cp);
++        if(String::equal(cp, "sip:", 4) || String::equal(cp, "sips:")) {
++            rc = snprintf(buffer, sizeof(buffer), "%s", cp);
++            printf_term(buffer, sizeof(buffer), rc);
++        }
++        else {
++            rc = snprintf(buffer, sizeof(buffer), "sip:%s", cp);
++            printf_term(buffer, sizeof(buffer), rc);
++        }
+         refer = buffer;
+         goto redirect;
+     }
+@@ -1102,10 +1183,14 @@
+     }
+     if(!stricmp(routed->getId(), "rewrite")) {
+         if(strchr(dialing, '@')) {
+-            if(String::equal(dialing, "sips:", 5) || String::equal("sip:", dialing, 4))
+-                snprintf(dbuf, sizeof(dbuf), "%s", dialing);
+-            else
+-                snprintf(dbuf, sizeof(dbuf), "sip:%s", dialing);
++            if(String::equal(dialing, "sips:", 5) || String::equal("sip:", dialing, 4)) {
++                rc = snprintf(dbuf, sizeof(dbuf), "%s", dialing);
++                printf_term(dbuf, sizeof(dbuf), rc);
++            }
++            else {
++                rc = snprintf(dbuf, sizeof(dbuf), "sip:%s", dialing);
++                printf_term(dbuf, sizeof(dbuf), rc);
++            }
+             refer = dbuf;
+             goto redirect;
+         }
+@@ -1266,6 +1351,7 @@
+     service::keynode *node = NULL, *leaf;
+     stringbuf<64> digest;
+     int error = SIP_PROXY_AUTHENTICATION_REQUIRED;
++    int rc = 0;
+     const char *cp;
+     const char *hash = NULL;
+     digest_t calc(registry::getDigest());
+@@ -1340,16 +1426,21 @@
+     }
+ 
+     // compute service request digest string
+-    snprintf(buffer, sizeof(buffer), "%s:%s", sevent->request->sip_method, auth->uri);
++    rc = snprintf(buffer, sizeof(buffer), "%s:%s", sevent->request->sip_method, auth->uri);
++    printf_term(buffer, sizeof(buffer), rc);
+ 
+     calc.puts(buffer);
+     digest = *calc;
+ 
+     // apply user digest pointer with nonce, and service digest string
+-    if(hash)
+-        snprintf(buffer, sizeof(buffer), "%s:%s:%s", hash, auth->nonce, *digest);
+-    else
+-        snprintf(buffer, sizeof(buffer), "%s:%s:%s", leaf->getPointer(), auth->nonce, *digest);
++    if(hash) {
++        rc = snprintf(buffer, sizeof(buffer), "%s:%s:%s", hash, auth->nonce, *digest);
++        printf_term(buffer, sizeof(buffer), rc);
++     }
++    else {
++        rc = snprintf(buffer, sizeof(buffer), "%s:%s:%s", leaf->getPointer(), auth->nonce, *digest);
++        printf_term(buffer, sizeof(buffer), rc);
++    }
+     digests::release(hash);
+ 
+     calc.reset();
+@@ -1374,14 +1465,17 @@
+ void thread::challenge(void)
+ {
+     voip::msg_t reply = NULL;
++    int rc = 0;
+     char nonce[32];
+     time_t now;
+ 
+     time(&now);
+-    snprintf(nonce, sizeof(nonce), "%08lx", (long)now);
+-    snprintf(buffer, sizeof(buffer),
++    rc = snprintf(nonce, sizeof(nonce), "%08lx", (long)now);
++    printf_term(nonce, sizeof(nonce), rc);
++    rc = snprintf(buffer, sizeof(buffer),
+         "Digest realm=\"%s\", nonce=\"%s\", algorithm=%s",
+                 registry::getRealm(), nonce, registry::getDigest());
++    printf_term(buffer, sizeof(buffer), rc);
+ 
+     switch(authorizing) {
+     case REGISTRAR:
+@@ -1462,6 +1556,7 @@
+     service::keynode *node = NULL, *leaf;
+     stringbuf<64> digest;
+     int error = SIP_PROXY_AUTHENTICATION_REQUIRED;
++    int rc = 0;
+     const char *cp;
+     char temp[64];
+     voip::msg_t reply = NULL;
+@@ -1507,15 +1602,21 @@
+     }
+ 
+     // compute a method/uri hash
+-    snprintf(buffer, sizeof(buffer), "%s:%s", sevent->request->sip_method, auth->uri);
++    rc = snprintf(buffer, sizeof(buffer), "%s:%s", sevent->request->sip_method, auth->uri);
++    printf_term(buffer, sizeof(buffer), rc);
++
+     calc.puts(buffer);
+     digest = *calc;
+ 
+     // compute with user digest
+-    if(hash)
+-        snprintf(buffer, sizeof(buffer), "%s:%s:%s", hash, auth->nonce, *digest);
+-    else
+-        snprintf(buffer, sizeof(buffer), "%s:%s:%s", leaf->getPointer(), auth->nonce, *digest);
++    if(hash) {
++        rc = snprintf(buffer, sizeof(buffer), "%s:%s:%s", hash, auth->nonce, *digest);
++        printf_term(buffer, sizeof(buffer), rc);
++    }
++    else {
++        rc = snprintf(buffer, sizeof(buffer), "%s:%s:%s", leaf->getPointer(), auth->nonce, *digest);
++        printf_term(buffer, sizeof(buffer), rc);
++    }
+ 
+     digests::release(hash);
+ 
+@@ -1535,9 +1636,11 @@
+     server::release(user);
+     if(voip::make_response_message(context, sevent->tid, error, &reply)) {
+         if(error == SIP_OK) {
+-            snprintf(temp, sizeof(temp), ";expires=%lu", (long)registry::getExpires());
++            rc = snprintf(temp, sizeof(temp), ";expires=%lu", (long)registry::getExpires());
++            printf_term(temp, sizeof(temp), rc);
+             osip_message_set_contact(reply, temp);
+-            snprintf(temp, sizeof(temp), "%lu", (long)registry::getExpires());
++            rc = snprintf(temp, sizeof(temp), "%lu", (long)registry::getExpires());
++            printf_term(temp, sizeof(temp), rc);
+             osip_message_set_expires(reply, temp);
+         }
+         voip::server_allows(reply);
+@@ -1557,6 +1660,7 @@
+     int interval = -1;
+     int pos = 0;
+     int error = SIP_ADDRESS_INCOMPLETE;
++    int rc = 0;
+     voip::msg_t reply = NULL;
+     struct sockaddr_internet iface;
+ 
+@@ -1572,9 +1676,11 @@
+ 
+     if(registry::getDomain())
+         String::set(binding, sizeof(binding), registry::getDomain());
+-    else if(sevent->request->req_uri->port && !eq(sevent->request->req_uri->port, "5060"))
+-        snprintf(binding, sizeof(binding), "%s:%s",
++    else if(sevent->request->req_uri->port && !eq(sevent->request->req_uri->port, "5060")) {
++        rc = snprintf(binding, sizeof(binding), "%s:%s",
+             sevent->request->req_uri->host, sevent->request->req_uri->port);
++        printf_term(binding, sizeof(binding), rc);
++    }
+     else
+         String::set(binding, sizeof(binding), sevent->request->req_uri->host);
+ 
+@@ -1591,8 +1697,9 @@
+         port = reguri->port;
+         if(!port || !port[0])
+             port = (char *)"5060";
+-        snprintf(buffer, sizeof(buffer), "%s:%s@%s:%s",
++        rc = snprintf(buffer, sizeof(buffer), "%s:%s@%s:%s",
+             reguri->scheme, reguri->username, reguri->host, port);
++        printf_term(buffer, sizeof(buffer), rc);
+ 
+         // auto-detect registration from ephemerial ports...
+         contact_port = atoi(port);
+@@ -1644,8 +1751,9 @@
+             shell::debug(3, "query rejected for %s; error=%d", reguri->username, error);
+         if(voip::make_response_message(context, sevent->tid, error, &reply)) {
+             if(error == SIP_OK) {
+-                snprintf(buftemp, sizeof(buftemp), "<%s:%s@%s>",
++                rc = snprintf(buftemp, sizeof(buftemp), "<%s:%s@%s>",
+                     stack::getScheme(), reguri->username, binding);
++                printf_term(buftemp, sizeof(buftemp), rc);
+                 osip_message_set_contact(reply, buftemp);
+             }
+             voip::server_allows(reply);
+@@ -1680,6 +1788,7 @@
+     unsigned count = 0;
+     voip::contact_t c = NULL;
+     int pos = 0;
++    int rc = 0;
+     bool refresh;
+ 
+     if(extension && (extension < registry::getPrefix() || extension >= registry::getPrefix() + registry::getRange())) {
+@@ -1743,13 +1852,15 @@
+     if(voip::make_response_message(context, sevent->tid, answer, &reply)) {
+         if(answer == SIP_OK) {
+             if(reginfo->ext) {
+-                snprintf(buftemp, sizeof(buftemp), "<%s:%d@%s>;expires=%ld",
++                rc = snprintf(buftemp, sizeof(buftemp), "<%s:%d@%s>;expires=%ld",
+                     stack::getScheme(), reginfo->ext, binding, (long)interval);
++                printf_term(buftemp, sizeof(buftemp), rc);
+                 osip_message_set_contact(reply, buftemp);
+             }
+ 
+-            snprintf(buftemp, sizeof(buftemp), "<%s:%s@%s>;expires=%ld",
++            rc = snprintf(buftemp, sizeof(buftemp), "<%s:%s@%s>;expires=%ld",
+                 stack::getScheme(), reginfo->userid, binding, (long)interval);
++            printf_term(buftemp, sizeof(buftemp), rc);
+             osip_message_set_contact(reply, buftemp);
+         }
+         voip::server_allows(reply);
+--- common/uri.cpp
++++ common/uri.cpp
+@@ -20,6 +20,17 @@
+ #include <sipwitch/uri.h>
+ #include <sipwitch/service.h>
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ void uri::serviceid(const char *addr, char *buf, size_t size)
+@@ -133,6 +144,7 @@
+ 
+     const char *schema = "sip";
+     const char *cp;
++    int rc = 0;
+ 
+     if(String::equal(uri, "sip:", 4)) {
+         uri += 4;
+@@ -147,10 +159,14 @@
+     if(cp && user != NULL)
+         uri = ++cp;
+ 
+-    if(user)
+-        snprintf(buf, size, "%s:%s@%s", schema, user, uri);
+-    else
+-        snprintf(buf, size, "%s:%s", schema, uri);
++    if(user) {
++        rc = snprintf(buf, size, "%s:%s@%s", schema, user, uri);
++        printf_term(buf, size, rc);
++    }
++    else {
++        rc = snprintf(buf, size, "%s:%s", schema, uri);
++        printf_term(buf, size, rc);
++    }
+ }
+ 
+ voip::context_t uri::route(const char *uri, char *buf, size_t size)
+@@ -158,7 +174,8 @@
+     buf[0] = 0;
+     const char *schema="sip:";
+     voip::context_t ctx = service::callback::out_context;
+-    
++    int rc = 0;
++
+     if(eq(uri, "sips:", 5)) {
+         ctx = service::callback::tls_context;
+         schema="sips:";
+@@ -179,7 +196,9 @@
+     if(sp)
+         uri = ++sp;
+ 
+-    snprintf(buf, size, "%s%s", schema, uri);
++    rc = snprintf(buf, size, "%s%s", schema, uri);    
++    printf_term(buf, size, rc);
++
+     return ctx;
+ }
+ 
+@@ -190,6 +209,7 @@
+     assert(size > 0);
+ 
+     char host[256];
++    int rc = 0;
+ 
+     buf[0] = 0;
+ 
+@@ -197,11 +217,17 @@
+         return false;
+ 
+ #ifdef  AF_INET6
+-    if(addr->sa_family == AF_INET6)
+-        snprintf(buf, size, "sip:[%s]:%u", host, (unsigned)ntohs(((struct sockaddr_in6 *)(addr))->sin6_port) & 0xffff);
++    if(addr->sa_family == AF_INET6) {
++        rc = snprintf(buf, size, "sip:[%s]:%u", host, (unsigned)ntohs(((struct sockaddr_in6 *)(addr))->sin6_port) & 0xffff);
++        printf_term(buf, size, rc);
++    }
+     else
+ #endif
+-        snprintf(buf, size, "sip:%s:%u", host, (unsigned)ntohs(((struct sockaddr_in *)(addr))->sin_port) & 0xffff);
++    {
++        rc = snprintf(buf, size, "sip:%s:%u", host, (unsigned)ntohs(((struct sockaddr_in *)(addr))->sin_port) & 0xffff);
++        printf_term(buf, size, rc);
++    }
++
+     return true;
+ }
+ 
+--- common/control.cpp
++++ common/control.cpp
+@@ -26,6 +26,17 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ static const char *replytarget = NULL;
+@@ -222,6 +233,7 @@
+     char *sid;
+     fsys fd;
+     char buffer[256];
++    int rc = 0;
+ 
+     if(msg)
+         shell::log(shell::ERR, "control failed; %s", msg);
+@@ -245,10 +257,14 @@
+ 
+         else
+             sid = (char *)"-";
+-        if(msg)
+-            snprintf(buffer, sizeof(buffer), "%s msg %s\n", sid, msg);
+-        else
+-            snprintf(buffer, sizeof(buffer), "%s ok\n", sid);
++        if(msg) {
++            rc = snprintf(buffer, sizeof(buffer), "%s msg %s\n", sid, msg);
++            printf_term(buffer, sizeof(buffer), rc);
++        }
++        else {
++            rc = snprintf(buffer, sizeof(buffer), "%s ok\n", sid);
++            printf_term(buffer, sizeof(buffer), rc);
++        }
+         fd.open(replytarget, fsys::WRONLY);
+         if(is(fd)) {
+             fd.write(buffer, strlen(buffer));
+@@ -264,10 +280,13 @@
+ 
+     va_list vargs;
+     char buf[256];
++    int rc = 0;
+ 
+     va_start(vargs, fmt);
+-    if(fmt)
+-        vsnprintf(buf, sizeof(buf), fmt, vargs);
++    if(fmt) {
++        rc = vsnprintf(buf, sizeof(buf), fmt, vargs);
++        printf_term(buf, sizeof(buf), rc);
++    }
+     va_end(vargs);
+ 
+     shell::debug(5, "executing %s", buf);
+@@ -312,7 +331,7 @@
+ 
+     char buf[512];
+     fd_t fd;
+-    int len;
++    int len, rc;
+     bool rtn = true;
+     va_list vargs;
+ 
+@@ -332,7 +351,8 @@
+     }
+ #endif
+ 
+-    vsnprintf(buf, sizeof(buf) - 1, fmt, vargs);
++    rc = vsnprintf(buf, sizeof(buf) - 1, fmt, vargs);
++    printf_term(buf, sizeof(buf) - 1, rc);
+     va_end(vargs);
+     len = strlen(buf);
+     if(buf[len - 1] != '\n')
+--- common/srv.cpp
++++ common/srv.cpp
+@@ -35,19 +35,30 @@
+ #define MAXPACKET PACKETSZ
+ #else
+ #define MAXPACKET 1024
+-#endif 
++#endif
+ 
+ typedef union {
+         HEADER hdr;
+         char buf[MAXPACKET];
+ } query;
+ 
+-#ifndef T_SRV 
++#ifndef T_SRV
+ #define T_SRV           33
+ #endif
+ 
+ #endif
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ srv::srv(const char *uri) : Socket::address()
+@@ -98,7 +109,7 @@
+         ++index;
+     }
+     return result;
+-}        
++}
+ 
+ struct sockaddr *srv::find(uint16_t priority, uint32_t weight)
+ {
+@@ -121,6 +132,7 @@
+ {
+     int protocol = IPPROTO_UDP;
+     int port = uri::portid(uri);
++    int rc = 0;
+     char host[256], svc[10];
+     struct addrinfo hint;
+ 
+@@ -139,7 +151,8 @@
+ #ifdef  HAVE_RESOLV_H
+         nosrv = true;
+ #endif
+-        snprintf(svc, sizeof(svc), "%d", port);
++        rc = snprintf(svc, sizeof(svc), "%d", port);
++        printf_term(svc, sizeof(svc), rc);
+     }
+     else if(eq(uri, "sips:", 5)) {
+         protocol = IPPROTO_TCP;
+@@ -147,11 +160,11 @@
+     }
+     else if(eq(uri, "tcp:", 4)) {
+         protocol = IPPROTO_TCP;
+-        uri += 4;    
++        uri += 4;
+     }
+     else if(eq(uri, "udp:", 4)) {
+         protocol = IPPROTO_UDP;
+-        uri += 4;    
++        uri += 4;
+     }
+ 
+     uri::hostid(uri, host, sizeof(host));
+@@ -213,11 +226,15 @@
+ 
+     query reply;
+     char zone[256];
+-    
+-    if(hint.ai_protocol == IPPROTO_TCP)
+-        snprintf(zone, sizeof(zone), "_%s._tcp.%s", svc, host);
+-    else
+-        snprintf(zone, sizeof(zone), "_%s._udp.%s", svc, host);
++
++    if(hint.ai_protocol == IPPROTO_TCP) {
++        rc = snprintf(zone, sizeof(zone), "_%s._tcp.%s", svc, host);
++        printf_term(zone, sizeof(zone), rc);
++    }
++    else {
++        rc = snprintf(zone, sizeof(zone), "_%s._udp.%s", svc, host);
++        printf_term(zone, sizeof(zone), rc);
++    }
+ 
+     result = res_query(zone, C_IN, T_SRV, (unsigned char *)&reply, sizeof(reply));
+     if(result < (int)sizeof(HEADER))
+@@ -245,38 +262,38 @@
+         result = dn_expand(mp, ep, cp, hbuf, sizeof(hbuf));
+         if(result < 0)
+             goto nosrv;
+-        
++
+         cp += result;
+ 
+         type = ntohs(*((uint16_t *)cp));
+         cp += sizeof(uint16_t);
+ 
+-		// class
+-		cp += sizeof(uint16_t);
++        // class
++        cp += sizeof(uint16_t);
+ 
+         // ttl
+         cp += sizeof(uint32_t);
+ 
+         dlen = ntohs(*((uint16_t *)cp));
+         cp += sizeof(uint16_t);
+-        
+-		if(type != T_SRV) {
+-	        cp += dlen;
+-			continue;
+-		}
+-		
++
++        if(type != T_SRV) {
++            cp += dlen;
++            continue;
++        }
++
+         priority = ntohs(*((uint16_t *)cp));
+-		cp += sizeof(uint16_t);
+-	
+-		weight = ntohs(*((uint16_t *)cp));
+-		cp += sizeof(uint16_t);
+-
+-		hport = ntohs(*((uint16_t *)cp));
+-		cp += sizeof(uint16_t);
+-
+-		result = dn_expand(mp, ep, cp, hbuf, sizeof(hbuf));
+-		if(result < 0)
+-			break;
++        cp += sizeof(uint16_t);
++
++        weight = ntohs(*((uint16_t *)cp));
++        cp += sizeof(uint16_t);
++
++        hport = ntohs(*((uint16_t *)cp));
++        cp += sizeof(uint16_t);
++
++        result = dn_expand(mp, ep, cp, hbuf, sizeof(hbuf));
++        if(result < 0)
++            break;
+ 
+         Socket::address resolv(hbuf, hport);
+         const struct sockaddr *sp = resolv.getAddr();
+@@ -288,7 +305,7 @@
+             rand &= 0x7fff;
+             if(weight)
+                 weight = (1 + rand) % ( 10000 * weight);
+-        
++
+             srvlist[count].weight = weight;
+             srvlist[count].priority = priority;
+             Socket::store(&srvlist[count].addr, sp);
+@@ -299,10 +316,10 @@
+             }
+             ++count;
+         }
+-		cp += result;
++        cp += result;
+     }
+-	
+-	return;
++
++    return;
+ nosrv:
+     if(srvlist) {
+         delete[] srvlist;
+@@ -315,15 +332,15 @@
+     else if(eq(svc, "sip"))
+         String::set(svc, sizeof(svc), "5060");
+     getaddrinfo(host, svc, &hint, &list);
+-	struct addrinfo *ap = list;
++    struct addrinfo *ap = list;
+     count = 0;
+ 
+     if(ap)
+         entry = ap->ai_addr;
+-	while(ap) {
+-		++count;
+-		ap = ap->ai_next;
+-	}
++    while(ap) {
++        ++count;
++        ap = ap->ai_next;
++    }
+ }
+ 
+ srv::~srv()
+@@ -341,11 +358,11 @@
+     if(list) {
+         freeaddrinfo(list);
+         list = NULL;
+-    } 
++    }
+ 
+     entry = NULL;
+-	count = 0;
+-}       
++    count = 0;
++}
+ 
+ struct sockaddr *srv::next(void)
+ {
+@@ -379,6 +396,7 @@
+     const char *sid = uri;
+     unsigned short port = uri::portid(uri);
+     voip::context_t ctx = service::callback::out_context;
++    int rc = 0;
+ 
+     if(!uri::hostid(uri, host, sizeof(host)))
+         return NULL;
+@@ -403,10 +421,14 @@
+             else
+                 port = 5060;
+         }
+-        if(strchr(host, ':'))
+-            snprintf(buf, size, "%s:[%s]:%u", schema, host, port);
+-        else
+-            snprintf(buf, size, "%s:%s:%u", schema, host, port);
++        if(strchr(host, ':')) {
++            rc = snprintf(buf, size, "%s:[%s]:%u", schema, host, port);
++            printf_term(buf, size, rc);
++        }
++        else {
++            rc = snprintf(buf, size, "%s:%s:%u", schema, host, port);
++            printf_term(buf, size, rc);
++        }
+         sid = buf;
+     }
+     set(sid);
+@@ -414,12 +436,17 @@
+         return NULL;
+     if(!Socket::query(entry, host, sizeof(host)))
+         return NULL;
+-#ifdef	AF_INET6
+-	if(entry->sa_family == AF_INET6)
+-		snprintf(buf, size, "%s:[%s]:%u", schema, host, (unsigned)ntohs(((struct sockaddr_in6 *)(entry))->sin6_port) & 0xffff);
+-	else
++#ifdef  AF_INET6
++    if(entry->sa_family == AF_INET6) {
++        rc = snprintf(buf, size, "%s:[%s]:%u", schema, host, (unsigned)ntohs(((struct sockaddr_in6 *)(entry))->sin6_port) & 0xffff);
++        printf_term(buf, size, rc);
++    }
++    else
+ #endif
+-		snprintf(buf, size, "%s:%s:%u", schema, host, (unsigned)ntohs(((struct sockaddr_in *)(entry))->sin_port) & 0xffff);
++    {
++        rc = snprintf(buf, size, "%s:%s:%u", schema, host, (unsigned)ntohs(((struct sockaddr_in *)(entry))->sin_port) & 0xffff);
++        printf_term(buf, size, rc);
++    }
+     return ctx;
+ }
+ 
+--- common/stats.cpp
++++ common/stats.cpp
+@@ -20,6 +20,17 @@
+ #include <sipwitch/stats.h>
+ #include <sipwitch/control.h>
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ static unsigned used = 0, total = 7;
+@@ -59,12 +70,15 @@
+ stats *stats::request(const char *id)
+ {
+     assert(id && *id);
++    int rc = 0;
+ 
+     if(used >= total)
+         return NULL;
+ 
+     stats *node = shm(used++);
+-    snprintf(node->id, sizeof(node->id), "%s", id);
++    rc = snprintf(node->id, sizeof(node->id), "%s", id);
++    printf_term(node->id, sizeof(node->id), rc);
++
+     return node;
+ }
+ 
+@@ -120,6 +134,7 @@
+     char text[80];
+     size_t len;
+     time_t last;
++    int rc = 0;
+ 
+     while(pos < total) {
+         stats *node = shm(pos++);
+@@ -127,7 +142,8 @@
+             continue;
+ 
+         if(fp) {
+-            snprintf(text, sizeof(text), " %-12s", node->id);
++            rc = snprintf(text, sizeof(text), " %-12s", node->id);
++            printf_term(text, sizeof(text), rc);
+             len = strlen(text);
+         }
+         else
+@@ -136,8 +152,10 @@
+         Mutex::protect(node);
+         for(unsigned entry = 0; entry < 2; ++entry) {
+             if(fp) {
+-                snprintf(text + len, sizeof(text) - len, " %09lu %05hu %05hu",
+-                node->data[entry].period, node->data[entry].min, node->data[entry].max);
++                rc = snprintf(text + len, sizeof(text) - len, " %09lu %05hu %05hu",
++                    node->data[entry].period, node->data[entry].min, node->data[entry].max);
++                // I don't quite follow this loop. Play it safe.
++                // printf_term(text + len, sizeof(text) - len, rc);
+                 len = strlen(text);
+             }
+             node->data[entry].pperiod = node->data[entry].period;
+@@ -146,6 +164,9 @@
+             node->data[entry].min = node->data[entry].max = node->data[entry].current;
+             node->data[entry].period = 0;
+         }
++        // Terminate text buffer at full buffer size.
++        printf_term(text, sizeof(text), (int)sizeof(text));
++
+         last = node->lastcall;
+         Mutex::release(node);
+         if(fp)
+--- server/registry.cpp
++++ server/registry.cpp
+@@ -16,6 +16,17 @@
+ 
+ #include "server.h"
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ static volatile unsigned active_routes = 0;
+@@ -253,6 +264,7 @@
+ 
+     mapped *rr;
+     unsigned regcount = 0;
++    int rc = 0;
+     time_t now;
+     linked_pointer<target> tp;
+     linked_pointer<route> rp;
+@@ -276,8 +288,10 @@
+             fprintf(fp, "  temp %s; use=%d\n", rr->userid, rr->inuse);
+         }
+         else if(rr->type != MappedRegistry::EXPIRED && (!rr->expires || rr->expires >= now)) {
+-            if(rr->ext)
+-                snprintf(buffer, sizeof(buffer), "%d", rr->ext);
++            if(rr->ext) {
++                rc = snprintf(buffer, sizeof(buffer), "%d", rr->ext);
++                printf_term(buffer, sizeof(buffer), rc);
++            }
+             else
+                 String::set(buffer, sizeof(buffer), "none");
+             if(rr->type == MappedRegistry::USER)
+--- server/server.cpp
++++ server/server.cpp
+@@ -37,6 +37,17 @@
+ #include <sys/sockio.h>
+ #endif
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ static mempager mempool(PAGING_SIZE);
+@@ -243,6 +254,7 @@
+     const char *dirpath = ".";
+     const char *fn;
+     digest_t digest(registry::getDigest());
++    int rc = 0;
+ 
+     // add any missing keys
+     getPath("devices");
+@@ -311,13 +323,15 @@
+         if(!ext || !String::equal(ext, ".xml"))
+             continue;
+         if(state) {
+-            snprintf(buf, sizeof(buf), "%s/%s/%s", dirpath, state, filename);
++            rc = snprintf(buf, sizeof(buf), "%s/%s/%s", dirpath, state, filename);
++            printf_term(buf, sizeof(buf), rc);
+             fp = fopen(buf, "r");
+         }
+         else
+             fp = NULL;
+         if(!fp) {
+-            snprintf(buf, sizeof(buf), "%s/%s", dirpath, filename);
++            rc = snprintf(buf, sizeof(buf), "%s/%s", dirpath, filename);
++            printf_term(buf, sizeof(buf), rc);
+             fp = fopen(buf, "r");
+         }
+         fn = strrchr(buf, '/');
+@@ -369,7 +383,8 @@
+         if(ifr->ifr_addr.sa_family != AF_INET)
+             continue;
+         struct sockaddr_in *saddr = (struct sockaddr_in *)&(ifr->ifr_addr);
+-        snprintf(buf, sizeof(buf), "%s/", inet_ntoa(saddr->sin_addr));
++        rc = snprintf(buf, sizeof(buf), "%s/", inet_ntoa(saddr->sin_addr));
++        printf_term(buf, sizeof(buf), rc);
+         if(ioctl(ifd, SIOCGIFNETMASK, ifr) == 0) {
+             saddr = (struct sockaddr_in *)&(ifr->ifr_addr);
+             String::add(buf, sizeof(buf), inet_ntoa(saddr->sin_addr));
+@@ -533,7 +548,8 @@
+                 extmap[number - prefix] = *node;
+ 
+             if(number) {
+-                snprintf(buf, 16, "%d", number);
++                rc = snprintf(buf, 16, "%d", number);
++                printf_term(buf, 16, rc);
+                 addNode(*node, "extension", buf);
+             }
+         }
+@@ -915,14 +931,17 @@
+     FILE *state = NULL;
+     const char *cp;
+     keynode *node;
++    int rc = 0;
+ 
+ #ifdef _MSWINDOWS_
+     GetEnvironmentVariable("APPDATA", buf, 192);
+     unsigned len = strlen(buf);
+-    snprintf(buf + len, sizeof(buf) - len, "\\sipwitch\\state.xml");
++    rc = snprintf(buf + len, sizeof(buf) - len, "\\sipwitch\\state.xml");
++    printf_term(buf + len, sizeof(buf) - len, rc);
+     state = fopen(buf, "r");
+ #else
+-    snprintf(buf, sizeof(buf), DEFAULT_VARPATH "/run/sipwitch/state.xml");
++    rc = snprintf(buf, sizeof(buf), DEFAULT_VARPATH "/run/sipwitch/state.xml");
++    printf_term(buf, sizeof(buf), rc);
+     state = fopen(buf, "r");
+ #endif
+ 
+@@ -990,7 +1009,8 @@
+             continue;
+         if(!String::equal(filename, "user-", 5))
+             continue; 
+-        snprintf(buf, sizeof(buf), "%s/%s", dirpath, filename);
++        rc = snprintf(buf, sizeof(buf), "%s/%s", dirpath, filename);
++        printf_term(buf, sizeof(buf), rc);
+         fp = fopen(buf, "r");
+         if(!fp)
+             continue;
+@@ -1060,6 +1080,7 @@
+     dir_t   dir;
+     char *ep;
+     unsigned el;
++    int rc = 0;
+ 
+     if(!list || !*list || eq(list, "none"))
+         return;
+@@ -1074,7 +1095,8 @@
+                 continue;
+             if(eq(buffer, "lib", 3))
+                 continue;
+-            snprintf(path + el, sizeof(path) - el, "/%s", buffer);
++            rc = snprintf(path + el, sizeof(path) - el, "/%s", buffer);
++            printf_term(path + el, sizeof(path) - el, rc);
+             shell::log(shell::INFO, "loading %s%s", buffer, MODULE_EXT);
+             if(fsys::load(path))
+                 shell::log(shell::ERR, "failed loading %s", path);
+@@ -1084,7 +1106,8 @@
+     else {
+         String::set(buffer, sizeof(buffer), list);
+         while(NULL != (cp = String::token(buffer, &tp, ", ;:\r\n"))) {
+-            snprintf(path, sizeof(path), "%s/%s%s", prefix, cp, MODULE_EXT);
++            rc = snprintf(path, sizeof(path), "%s/%s%s", prefix, cp, MODULE_EXT);
++            printf_term(path, sizeof(path), rc);
+             shell::log(shell::INFO, "loading %s" MODULE_EXT, cp);
+             if(fsys::load(path))
+                 shell::log(shell::ERR, "failed loading %s", path);
+@@ -1377,13 +1400,14 @@
+     fsys_t log;
+     va_list vargs;
+     char buf[1024];
+-    int len;
++    int len, rc;
+     char *cp;
+ 
+     va_start(vargs, fmt);
+ 
+     log.open(control::env("logfile"), fsys::GROUP_PRIVATE, fsys::APPEND);
+-    vsnprintf(buf, sizeof(buf) - 1, fmt, vargs);
++    rc = vsnprintf(buf, sizeof(buf) - 1, fmt, vargs);
++    printf_term(buf, sizeof(buf) - 1, rc);
+     len = strlen(buf);
+     if(buf[len - 1] != '\n')
+         buf[len++] = '\n';
+--- server/scripting.cpp
++++ server/scripting.cpp
+@@ -17,6 +17,17 @@
+ #include <sipwitch-config.h>
+ #include <sipwitch/sipwitch.h>
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ static const char *dirpath = NULL;
+@@ -70,13 +81,15 @@
+ 
+     static char buf[256];
+     const char *home = control::env("HOME");
++    int rc = 0;
+ 
+     if(fsys::is_dir(DEFAULT_CFGPATH "/sysconfig/sipwitch-scripts"))
+         dirpath = DEFAULT_CFGPATH "/sysconfig/sipwitch-scripts";
+     else if(fsys::is_dir(DEFAULT_LIBEXEC "/sipwitch"))
+         dirpath = DEFAULT_LIBEXEC "/sipwitch";
+     else if(home) {
+-        snprintf(buf, sizeof(buf), "%s/.sipwitch-scripts", home);
++        rc = snprintf(buf, sizeof(buf), "%s/.sipwitch-scripts", home);
++        printf_term(buf, sizeof(buf), rc);
+         if(fsys::is_dir(buf))
+             dirpath = buf;
+     }
+--- server/zeroconf.cpp
++++ server/zeroconf.cpp
+@@ -17,6 +17,17 @@
+ #include <sipwitch-config.h>
+ #include <sipwitch/sipwitch.h>
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ #ifdef  ZEROCONF_AVAHI
+@@ -113,8 +124,8 @@
+ 
+ void zeroconf::setClient(AvahiClientState state)
+ {
+-    int ret;
+     AvahiProtocol avifamily = AVAHI_PROTO_UNSPEC;
++    int ret = 0, rc;
+ 
+     switch(state) {
+     case AVAHI_CLIENT_S_RUNNING:
+@@ -145,10 +156,14 @@
+         char range[32];
+         char uuid[64];
+ 
+-        snprintf(domain, sizeof(domain), "domain=%s", sip_domain);
+-        snprintf(prefix, sizeof(prefix), "prefix=%u", sip_prefix);
+-        snprintf(range, sizeof(range), "range=%u", sip_range);
+-        snprintf(uuid, sizeof(uuid), "uuid=%s", session_uuid);
++        rc = snprintf(domain, sizeof(domain), "domain=%s", sip_domain);
++        printf_term(domain, sizeof(domain), rc);
++        rc = snprintf(prefix, sizeof(prefix), "prefix=%u", sip_prefix);
++        printf_term(prefix, sizeof(prefix), rc);
++        rc = snprintf(range, sizeof(range), "range=%u", sip_range);
++        printf_term(range, sizeof(range), rc);
++        rc = snprintf(uuid, sizeof(uuid), "uuid=%s", session_uuid);
++        printf_term(uuid, sizeof(uuid), rc);
+         ret = avahi_entry_group_add_service(group, AVAHI_IF_UNSPEC, avifamily,
+             (AvahiPublishFlags)0, name, protocol, NULL, NULL, sip_port,
+             "type=sipwitch", domain, prefix, range, uuid, NULL);
+@@ -218,13 +233,17 @@
+ 
+     static bool started = false;
+     AvahiProtocol avifamily = AVAHI_PROTO_UNSPEC;
+-    int ret = 0;
++    int ret = 0, rc;
+ 
+     if(started && group && sip_domain) {
+-        snprintf(domain, sizeof(domain), "domain=%s", sip_domain);
+-        snprintf(prefix, sizeof(prefix), "prefix=%u", sip_prefix);
+-        snprintf(range, sizeof(range), "range=%u", sip_range);
+-        snprintf(uuid, sizeof(uuid), "uuid=%s", session_uuid);
++        rc = snprintf(domain, sizeof(domain), "domain=%s", sip_domain);
++        printf_term(domain, sizeof(domain), rc);
++        rc = snprintf(prefix, sizeof(prefix), "prefix=%u", sip_prefix);
++        printf_term(prefix, sizeof(prefix), rc);
++        rc = snprintf(range, sizeof(range), "range=%u", sip_range);
++        printf_term(range, sizeof(range), rc);
++        rc = snprintf(uuid, sizeof(uuid), "uuid=%s", session_uuid);
++        printf_term(uuid, sizeof(uuid), rc);
+         ret = avahi_entry_group_update_service_txt(group, AVAHI_IF_UNSPEC, avifamily,
+             (AvahiPublishFlags)0, name, protocol, NULL,
+             "type=sipwitch", domain, prefix, range, uuid, NULL);
+--- server/history.cpp
++++ server/history.cpp
+@@ -16,6 +16,17 @@
+ 
+ #include "server.h"
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ static mutex_t histlock;
+@@ -34,10 +45,12 @@
+ {
+     Time now;
+     char buf[20];
++    int rc;
+ 
+     now.put(buf);
+-    snprintf(text, sizeof(text), "%s %02d %s",
++    rc = snprintf(text, sizeof(text), "%s %02d %s",
+         buf, (int)lid, msg);
++    printf_term(text, sizeof(text), rc);
+ 
+     char *cp = strchr(text, '\n');
+     if(cp)
+--- server/media.cpp
++++ server/media.cpp
+@@ -16,6 +16,17 @@
+ 
+ #include "server.h"
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ static unsigned tpriority = 0;
+@@ -305,6 +316,7 @@
+     char mtype[32];
+     unsigned tport;
+     unsigned tcount = 1;
++    int rc = 0;
+     media::proxy *pp;
+ 
+     if(strnicmp(buffer, "m=", 2))
+@@ -360,12 +372,16 @@
+ 
+     *sp = 0;
+     String::set(mtype, sizeof(mtype), buffer);
+-    if(mediacount > 1)
+-        snprintf(buffer, len, "%s %u/%u %s",
++    if(mediacount > 1) {
++        rc = snprintf(buffer, len, "%s %u/%u %s",
+             mtype, tport, mediacount, tmp);
+-    else
+-        snprintf(buffer, len, "%s %u %s",
++        printf_term(buffer, len, rc);
++    }
++    else {
++        rc = snprintf(buffer, len, "%s %u %s",
+             mtype, tport, tmp);
++        printf_term(buffer, len, rc);
++    }
+ 
+     mediacount = align(mediacount);
+ }
+--- server/subscriber.cpp
++++ server/subscriber.cpp
+@@ -19,6 +19,17 @@
+ #include <ucommon/secure.h>
+ #include <stddef.h>
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ static class __LOCAL subscriber : private modules::sipwitch
+@@ -71,19 +82,24 @@
+     char uri[MAX_URI_SIZE];
+     char reg[MAX_URI_SIZE];
+     unsigned len;
++    int rc = 0;
+     Socket::address dest = server;
+ 
+     Random::uuid(provider.remote);
+-    snprintf(uri, sizeof(uri), "%s:%s@%s", schema, userid, server);
+-    snprintf(reg, sizeof(reg), "%s:%s", schema, server);
+-    snprintf(contact, sizeof(contact), "%s:%s@", schema, provider.remote);
++    rc = snprintf(uri, sizeof(uri), "%s:%s@%s", schema, userid, server);
++    printf_term(uri, sizeof(uri), rc);
++    rc = snprintf(reg, sizeof(reg), "%s:%s", schema, server);
++    printf_term(reg, sizeof(reg), rc);
++    rc = snprintf(contact, sizeof(contact), "%s:%s@", schema, provider.remote);
++    printf_term(contact, sizeof(contact), rc);
+ 
+     changed = false;
+     len = strlen(contact);
+     Socket::via((struct sockaddr *)&provider.contact, dest.getAddr());
+     Socket::query((struct sockaddr *)&provider.contact, contact + len, sizeof(contact) - len);
+     len = strlen(contact);
+-    snprintf(contact + len, sizeof(contact) - len, ":%u", sip_port);
++    rc = snprintf(contact + len, sizeof(contact) - len, ":%u", sip_port);
++    printf_term(contact + len, sizeof(contact) - len, rc);
+     shell::debug(3, "registering %s with %s", contact, server);
+ 
+     voip::msg_t msg = NULL;
+--- server/forward.cpp
++++ server/forward.cpp
+@@ -17,6 +17,17 @@
+ #include <sipwitch-config.h>
+ #include <sipwitch/sipwitch.h>
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ #define INDEX_SIZE  177
+@@ -302,19 +313,24 @@
+     char uri[MAX_URI_SIZE];
+     char reg[MAX_URI_SIZE];
+     unsigned len;
++    int rc = 0;
+ 
+     if(!enabled || rr->rid != -1)
+         return;
+ 
+     // must also have extension to forward...
+     if(rr->remote[0] && rr->ext && rr->type == MappedRegistry::USER) {
+-        snprintf(uri, sizeof(uri), "%s:%s@%s", schema, rr->userid, server);
+-        snprintf(reg, sizeof(reg), "%s:%s", schema, server);
+-        snprintf(contact, sizeof(contact), "%s:%s@", schema, rr->remote);
++        rc = snprintf(uri, sizeof(uri), "%s:%s@%s", schema, rr->userid, server);
++        printf_term(uri, sizeof(uri), rc);
++        rc = snprintf(reg, sizeof(reg), "%s:%s", schema, server);
++        printf_term(reg, sizeof(reg), rc);
++        rc = snprintf(contact, sizeof(contact), "%s:%s@", schema, rr->remote);
++        printf_term(contact, sizeof(contact), rc);
+         len = strlen(contact);
+         Socket::query((struct sockaddr *)&rr->contact, contact + len, sizeof(contact) - len);
+         len = strlen(contact);
+-        snprintf(contact + len, sizeof(contact) - len, ":%d", Socket::address::getPort((struct sockaddr *)&rr->contact));
++        rc = snprintf(contact + len, sizeof(contact) - len, ":%d", Socket::address::getPort((struct sockaddr *)&rr->contact));
++        printf_term(contact + len, sizeof(contact) - len, rc);
+         shell::debug(3, "registering %s with %s", contact, server);
+         voip::msg_t msg = NULL;
+         rr->rid = voip::make_registry_request(context, uri, reg, contact, (unsigned)expires, &msg);
+@@ -333,16 +349,20 @@
+     char uri_to[MAX_URI_SIZE];
+     char contact[MAX_URI_SIZE];
+     size_t len;
++    int rc = 0;
+ 
+     if(!isActive(rr->rid) || !rr->remote[0])
+         return false;
+ 
+-    snprintf(uri_to, sizeof(uri_to), "sip:%s@%s", rr->userid, server);
+-    snprintf(contact, sizeof(contact), "sip:%s@", rr->remote);
++    rc = snprintf(uri_to, sizeof(uri_to), "sip:%s@%s", rr->userid, server);
++    printf_term(uri_to, sizeof(uri_to), rc);
++    rc = snprintf(contact, sizeof(contact), "sip:%s@", rr->remote);
++    printf_term(contact, sizeof(contact), rc);
+     len = strlen(contact);
+     Socket::query((struct sockaddr *)&rr->contact, contact + len, sizeof(contact) - len);
+     len = strlen(contact);
+-    snprintf(contact + len, sizeof(contact) - len, ":%d", Socket::address::getPort((struct sockaddr *)&rr->contact));
++    rc = snprintf(contact + len, sizeof(contact) - len, ":%d", Socket::address::getPort((struct sockaddr *)&rr->contact));
++    printf_term(contact + len, sizeof(contact) - len, rc);
+     shell::debug(3, "publishing %s with %s", contact, server);
+ 
+     voip::publish(context, uri_to, contact, event, expiration, msgtype, body);
+@@ -366,16 +386,22 @@
+ 
+ char *forward::referLocal(MappedRegistry *rr, const char *target, char *buffer, size_t size)
+ {
++    int rc = 0;
++
+     if(!refer)
+         return NULL;
+ 
+     if(!isActive(rr->rid))
+         return NULL;
+ 
+-    if(sip_tlsmode)
+-        snprintf(buffer, size, "sips:%s@%s", target, refer);
+-    else
+-        snprintf(buffer, size, "sip:%s@%s", target, refer);
++    if(sip_tlsmode) {
++        rc = snprintf(buffer, size, "sips:%s@%s", target, refer);
++        printf_term(buffer, size, rc);
++    }
++    else {
++        rc = snprintf(buffer, size, "sip:%s@%s", target, refer);
++        printf_term(buffer, size, rc);
++    }
+     return buffer;
+ }
+ 
+--- utils/sipquery.cpp
++++ utils/sipquery.cpp
+@@ -56,9 +56,20 @@
+ static Socket::address localhost("127.0.0.1");
+ #endif
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ PROGRAM_MAIN(argc, argv)
+ {
+-    int error = 2;
++    int error = 2, rc;
+     eXosip_event_t *sevent;
+     const char *cp, *user;
+     char buffer[256];
+@@ -277,21 +288,33 @@
+         proxy = server;
+ 
+     if(strncmp(proxy, "sip:", 4) && strncmp(proxy, "sips:", 5)) {
+-        if(tls)
+-            snprintf(pbuffer, sizeof(pbuffer), "sips:%s", proxy);
+-        else
+-            snprintf(pbuffer, sizeof(pbuffer), "sip:%s", proxy);
++        if(tls) {
++            rc = snprintf(pbuffer, sizeof(pbuffer), "sips:%s", proxy);
++            printf_term(pbuffer, sizeof(pbuffer), rc);
++        }
++        else {
++            rc = snprintf(pbuffer, sizeof(pbuffer), "sip:%s", proxy);
++            printf_term(pbuffer, sizeof(pbuffer), rc);
++        }
+         proxy = pbuffer;
+     }
+ 
+-    if(tls && !strchr(user, '@'))
+-        snprintf(buffer, sizeof(buffer), "sips:%s@%s", user, server);
+-    else if(!strchr(user, '@'))
+-        snprintf(buffer, sizeof(buffer), "sip:%s@%s", user, server);
+-    else if(tls)
+-        snprintf(buffer, sizeof(buffer), "sips:%s", user);
+-    else
+-        snprintf(buffer, sizeof(buffer), "sip:%s", user);
++    if(tls && !strchr(user, '@')) {
++        rc = snprintf(buffer, sizeof(buffer), "sips:%s@%s", user, server);
++        printf_term(buffer, sizeof(buffer), rc);
++    }
++    else if(!strchr(user, '@')) {
++        rc = snprintf(buffer, sizeof(buffer), "sip:%s@%s", user, server);
++        printf_term(buffer, sizeof(buffer), rc);
++    }
++    else if(tls) {
++        rc = snprintf(buffer, sizeof(buffer), "sips:%s", user);
++        printf_term(buffer, sizeof(buffer), rc);
++    }
++    else {
++        rc = snprintf(buffer, sizeof(buffer), "sip:%s", user);
++        printf_term(buffer, sizeof(buffer), rc);
++    }
+ 
+ 
+     EXOSIP_LOCK
+@@ -300,7 +323,8 @@
+         EXOSIP_UNLOCK
+         shell::errexit(3, "*** sipuser: cannot create query for %s\n", user);
+     }
+-    snprintf(tbuffer, sizeof(tbuffer), "<%s>", buffer);
++    rc = snprintf(tbuffer, sizeof(tbuffer), "<%s>", buffer);
++    printf_term(tbuffer, sizeof(tbuffer), rc);
+     osip_message_set_to(msg, tbuffer);
+     osip_list_ofchar_free(&msg->contacts);
+     eXosip_register_send_register(OPTION_CONTEXT rid, msg);
+--- server/messages.cpp
++++ server/messages.cpp
+@@ -16,6 +16,17 @@
+ 
+ #include "server.h"
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ namespace sipwitch {
+ 
+ static mutex_t msglock;
+@@ -185,6 +196,7 @@
+     const char *sysid = stack::sip.system;
+     const char *host = stack::sip.published;
+     unsigned short port  = sip_port;
++    int rc = 0;
+ 
+     if(stack::sip_tlsmode)
+         scheme = "sips";
+@@ -199,12 +211,16 @@
+ #endif
+     }
+ 
+-    if(strchr(host, ':'))
+-        snprintf(from, sizeof(from), "<%s:%s@[%s]:%u>",
++    if(strchr(host, ':')) {
++        rc = snprintf(from, sizeof(from), "<%s:%s@[%s]:%u>",
+             scheme, sysid, host, port);
+-    else
+-        snprintf(from, sizeof(from), "<%s:%s@%s:%u>",
++        printf_term(from, sizeof(from), rc);
++    }
++    else {
++        rc = snprintf(from, sizeof(from), "<%s:%s@%s:%u>",
+             scheme, sysid, host, port);
++        printf_term(from, sizeof(from), rc);
++    }
+ 
+     return deliver(to, sysid, from, (caddr_t)text, strlen(text), "text/plain");
+ }
+@@ -220,6 +236,7 @@
+     voip::context_t ctx = resolv.route(to, route, sizeof(route));
+     char rewrite[MAX_URI_SIZE];
+     const char *schema = NULL;
++    int rc = 0;
+ 
+     if(!ctx)
+         return error;
+@@ -234,7 +251,8 @@
+     }
+ 
+     if(schema) {
+-        snprintf(rewrite, sizeof(rewrite), "%s:%s", schema, to);
++        rc = snprintf(rewrite, sizeof(rewrite), "%s:%s", schema, to);
++        printf_term(rewrite, sizeof(rewrite), rc);
+         to = rewrite;
+     }
+ 
+@@ -245,7 +263,8 @@
+         char nounce[64];
+         char *req = NULL;
+         osip_uri_to_str(im->req_uri, &req);
+-        snprintf(authbuf, 1024, "%s:%s", im->sip_method, req);
++        rc = snprintf(authbuf, 1024, "%s:%s", im->sip_method, req);
++        printf_term(authbuf, 1024, rc);
+         Random::uuid(nounce);
+ 
+         digest_t auth("md5");
+@@ -254,11 +273,12 @@
+         auth = registry::getDigest();
+         auth.puts(authbuf);
+         response = *auth;
+-        snprintf(authbuf, 1024, "%s:%s:%s", digest, *once, *response);
++        rc = snprintf(authbuf, 1024, "%s:%s:%s", digest, *once, *response);
++        printf_term(authbuf, 1024, rc);
+         auth.reset();
+         auth.puts(authbuf);
+         response = *auth;
+-        snprintf(authbuf, 1024,
++        rc = snprintf(authbuf, 1024,
+             "Digest username=\"%s\""
+             ",realm=\"%s\""
+             ",uri=\"%s\""
+@@ -266,6 +286,7 @@
+             ",nonce=\"%s\""
+             ",algorithm=%s"
+             ,msg->reply, registry::getRealm(), req, *response, *once, registry::getDigest());
++        printf_term(authbuf, 1024, rc);
+         voip::header(im, AUTHORIZATION, authbuf);
+         delete[] authbuf;
+         osip_free(req);
+--- utils/sipcontrol.cpp
++++ utils/sipcontrol.cpp
+@@ -31,6 +31,17 @@
+ #include <sys/un.h>
+ #endif
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ using namespace sipwitch;
+ 
+ static string_t statmap = STAT_MAP;
+@@ -64,8 +75,10 @@
+ {
+     char buffer[512];
+     FILE *fp;
++    int rc = 0;
+ 
+-    snprintf(buffer, sizeof(buffer), "/tmp/.sipwitch.%ld", (long)getpid());
++    rc = snprintf(buffer, sizeof(buffer), "/tmp/.sipwitch.%ld", (long)getpid());
++    printf_term(buffer, sizeof(buffer), rc);
+     fp = fopen(buffer, "r");
+     fsys::erase(buffer);
+     while(fp && fgets(buffer, sizeof(buffer), fp) != NULL)
+@@ -248,6 +261,7 @@
+     char replace[256];
+     char *cp = NULL;
+     FILE *fp;
++    int rc = 0;
+ 
+ #ifdef  _MSWINDOWS_
+     const char *control = "\\\\.\\mailslot\\sipwitch_ctrl";
+@@ -293,8 +307,10 @@
+     // create replacement realm string...
+     if(eq(mode, "md5"))
+         String::set(replace, sizeof(replace), realm);
+-    else
+-        snprintf(replace, sizeof(replace), "%s:%s", realm, mode);
++    else {
++        rc = snprintf(replace, sizeof(replace), "%s:%s", realm, mode);
++        printf_term(replace, sizeof(replace), rc);
++    }
+ 
+     ::remove(DEFAULT_CFGPATH "/siprealm");
+     fs.open(DEFAULT_CFGPATH "/siprealm", fsys::GROUP_PUBLIC, fsys::WRONLY);
+@@ -346,6 +362,8 @@
+ 
+ static void calls(char **argv)
+ {
++    int rc = 0;
++
+     if(argv[1])
+         shell::errexit(1, "*** sipcontrol: calls: no arguments used\n");
+ 
+@@ -378,6 +396,7 @@
+ static void periodic(char **argv)
+ {
+     char text[80];
++    int rc = 0;
+ 
+     if(argv[1])
+         shell::errexit(1, "*** sipcontrol: pstats: no arguments used\n");
+@@ -398,18 +417,23 @@
+         if(!map->id[0])
+             continue;
+ 
+-        if(map->limit)
+-            snprintf(text, sizeof(text), "%-12s %05hu", map->id, map->limit);
+-        else
+-            snprintf(text, sizeof(text), "%-12s -    ", map->id);
++        if(map->limit) {
++            rc = snprintf(text, sizeof(text), "%-12s %05hu", map->id, map->limit);
++            printf_term(text, sizeof(text), rc);
++        }
++        else {
++            rc = snprintf(text, sizeof(text), "%-12s -    ", map->id);
++            printf_term(text, sizeof(text), rc);
++        }
+ 
+         for(unsigned entry = 0; entry < 2; ++entry) {
+             size_t len = strlen(text);
+-            snprintf(text + len, sizeof(text) - len, " %07lu %05hu %05hu",
++            rc = snprintf(text + len, sizeof(text) - len, " %07lu %05hu %05hu",
+                 map->data[entry].pperiod,
+                 map->data[entry].pmin,
+                 map->data[entry].pmax);
+         }
++        printf_term(text, sizeof(text), (int)sizeof(text));
+         printf("%s\n", text);
+     }
+     exit(0);
+@@ -429,6 +453,7 @@
+ 
+     static string_t contact = "-";
+     static string_t publish = "-";
++    int rc = 0;
+ 
+     if(argv[1])
+         shell::errexit(1, "*** sipcontrol: events: no arguments used\n");
+@@ -477,7 +502,8 @@
+ 
+         memset(&addr, 0, sizeof(addr));
+         addr.sun_family = AF_UNIX;
+-        snprintf(addr.sun_path, sizeof(addr.sun_path), "/tmp/sipwitch-%s/events", userid);
++        rc = snprintf(addr.sun_path, sizeof(addr.sun_path), "/tmp/sipwitch-%s/events", userid);
++        printf_term(addr.sun_path, sizeof(addr.sun_path), rc);
+         if(::connect(ipc, (struct sockaddr *)&addr, SUN_LEN(&addr)) < 0)
+             shell::errexit(10, "*** sipcontrol: events: server offline\n");
+     }
+@@ -555,6 +581,7 @@
+ {
+     char text[80];
+     time_t now;
++    int rc = 0;
+ 
+     if(argv[1])
+         shell::errexit(1, "*** sipcontrol: stats: no arguments used\n");
+@@ -576,18 +603,24 @@
+         if(!map.id[0])
+             continue;
+ 
+-        if(map.limit)
+-            snprintf(text, sizeof(text), "%-12s %05hu", map.id, map.limit);
+-        else
+-            snprintf(text, sizeof(text), "%-12s -    ", map.id);
++        if(map.limit) {
++            rc = snprintf(text, sizeof(text), "%-12s %05hu", map.id, map.limit);
++            printf_term(text, sizeof(text), rc);
++        }
++        else {
++            rc = snprintf(text, sizeof(text), "%-12s -    ", map.id);
++            printf_term(text, sizeof(text), rc);
++        }
+ 
+         for(unsigned entry = 0; entry < 2; ++entry) {
+             size_t len = strlen(text);
+-            snprintf(text + len, sizeof(text) - len, " %09lu %05hu %05hu",
++            rc = snprintf(text + len, sizeof(text) - len, " %09lu %05hu %05hu",
+                 map.data[entry].total,
+                 map.data[entry].current,
+                 map.data[entry].peak);
+         }
++        printf_term(text, sizeof(text), (int)sizeof(text));
++
+         current = map.data[0].current + map.data[1].current;
+         if(current)
+             printf("%s 0s\n", text);
+@@ -607,6 +640,8 @@
+ 
+ static void registry(char **argv)
+ {
++    int rc = 0;
++
+     mapinit();
+ 
+     mapped_view<MappedRegistry> reg(*regmap);
+@@ -634,13 +669,18 @@
+         if(!found++)
+             printf("%7s %-30s type %-30s  use expires address\n", "ext", "user", "profile");
+         ext[0] = 0;
+-        if(buffer.ext)
+-            snprintf(ext, sizeof(ext), "%7d", buffer.ext);
++        if(buffer.ext) {
++            rc = snprintf(ext, sizeof(ext), "%7d", buffer.ext);
++            printf_term(ext, sizeof(ext), rc);
++        }
+         exp[0] = '-';
+         exp[1] = 0;
+-        snprintf(use, sizeof(use), "%u", buffer.inuse);
+-        if(buffer.expires && buffer.type != MappedRegistry::TEMPORARY)
+-            snprintf(exp, sizeof(exp), "%ld", (long)(buffer.expires - now));
++        rc = snprintf(use, sizeof(use), "%u", buffer.inuse);
++        printf_term(use, sizeof(use), rc);
++        if(buffer.expires && buffer.type != MappedRegistry::TEMPORARY) {
++            rc = snprintf(exp, sizeof(exp), "%ld", (long)(buffer.expires - now));
++            printf_term(exp, sizeof(exp), rc);
++        }
+         switch(buffer.type) {
+         case MappedRegistry::REJECT:
+             type = "rej";
+@@ -674,9 +714,11 @@
+     char buffer[512];
+     size_t len;
+     fd_t fd;
++    int rc = 0;
+ 
+ #ifdef  _MSWINDOWS_
+-    snprintf(buffer, sizeof(buffer), "\\\\.\\mailslot\\sipwitch_ctrl");
++    rc = snprintf(buffer, sizeof(buffer), "\\\\.\\mailslot\\sipwitch_ctrl");
++    printf_term(buffer, sizeof(buffer), rc);
+     fd = CreateFile(buffer, GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+ #else
+     sigset_t sigs;
+@@ -697,7 +739,8 @@
+         if(!pwd || !userid)
+             shell::errexit(4, "*** sipcontrol: events: invalid login\n");
+ 
+-        snprintf(buffer, sizeof(buffer), "/tmp/sipwitch-%s/control", userid);
++        rc = snprintf(buffer, sizeof(buffer), "/tmp/sipwitch-%s/control", userid);
++        printf_term(buffer, sizeof(buffer), rc);
+         fd = ::open(buffer, O_WRONLY | O_NONBLOCK);
+     }
+ #endif
+@@ -706,16 +749,21 @@
+         shell::errexit(10, "*** sipcontrol: command: offline\n");
+ 
+ #ifndef _MSWINDOWS_
+-    if(timeout)
+-        snprintf(buffer, sizeof(buffer), "%ld", (long)getpid());
++    if(timeout) {
++        rc = snprintf(buffer, sizeof(buffer), "%ld", (long)getpid());
++        printf_term(buffer, sizeof(buffer), rc);
++    }
+     else
+ #endif
++    {
+         buffer[0] = 0;
++    }
+ 
+     while(*argv) {
+         len = strlen(buffer);
+-        snprintf(buffer + len, sizeof(buffer) - len - 1, " %s", *(argv++));
++        rc = snprintf(buffer + len, sizeof(buffer) - len - 1, " %s", *(argv++));
+     }
++    printf_term(buffer, sizeof(buffer), (int)sizeof(buffer));
+ 
+ #ifdef  _MSWINDOWS_
+     if(!WriteFile(fd, buffer, (DWORD)strlen(buffer) + 1, NULL, NULL))
+@@ -905,6 +953,7 @@
+ static void message(char **argv)
+ {
+     char buffer[500];
++    int rc = 0;
+ 
+     if(!argv[1])
+         shell::errexit(1, "*** sipcontrol: message: extension missing\n");
+@@ -916,7 +965,8 @@
+         shell::errexit(1, "*** sipcontrol: message: too many arguments\n");
+ 
+     if(argv[2][0] != '{') {
+-        snprintf(buffer, sizeof(buffer), "{%s}", argv[2]);
++        rc = snprintf(buffer, sizeof(buffer), "{%s}", argv[2]);
++        printf_term(buffer, sizeof(buffer), rc);
+         argv[2] = buffer;
+     }
+     command(argv, 10);
+@@ -978,13 +1028,16 @@
+ static void enable(char **argv)
+ {
+     char source[128], target[128];
++    int rc = 0;
+ 
+     if(!argv[1])
+         shell::errexit(1, "*** sipcontrol: enable: no configs specified\n");
+ 
+     while(*(++argv)) {
+-        snprintf(source, sizeof(source), "%s/sipwitch.d/%s.xml", DEFAULT_CFGPATH, *argv);
+-        snprintf(target, sizeof(target), "%s/lib/sipwitch/%s.xml", DEFAULT_VARPATH, *argv);
++        rc = snprintf(source, sizeof(source), "%s/sipwitch.d/%s.xml", DEFAULT_CFGPATH, *argv);
++        printf_term(source, sizeof(source), rc);
++        rc = snprintf(target, sizeof(target), "%s/lib/sipwitch/%s.xml", DEFAULT_VARPATH, *argv);
++        printf_term(target, sizeof(target), rc);
+         fsys::link(source, target);
+     }
+     exit(0);
+@@ -993,12 +1046,14 @@
+ static void disable(char **argv)
+ {
+     char target[128];
++    int rc = 0;
+ 
+     if(!argv[1])
+         shell::errexit(1, "*** sipcontrol: disable: no configs specified\n");
+ 
+     while(*(++argv)) {
+-        snprintf(target, sizeof(target), "%s/lib/sipwitch/%s.xml", DEFAULT_VARPATH, *argv);
++        rc = snprintf(target, sizeof(target), "%s/lib/sipwitch/%s.xml", DEFAULT_VARPATH, *argv);
++        printf_term(target, sizeof(target), rc);
+         fsys::erase(target);
+     }
+     exit(0);
+--- utils/sippasswd.cpp
++++ utils/sippasswd.cpp
+@@ -22,6 +22,17 @@
+ #include <pwd.h>
+ #endif
+ 
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++}
++
+ using namespace sipwitch;
+ 
+ #ifdef  _MSWINDOWS_
+@@ -56,6 +67,7 @@
+     string_t digestbuf;
+     fpos_t pos;
+     FILE *fp;
++    int rc = 0;
+ 
+ #ifdef  _MSWINDOWS_
+     const char *control = "\\\\.\\mailslot\\sipwitch_ctrl";
+@@ -137,7 +149,8 @@
+     else
+         digestbuf = *digest;
+ 
+-    snprintf(replace, sizeof(replace), "%s:%s\n", user, *digestbuf);
++    rc = snprintf(replace, sizeof(replace), "%s:%s\n", user, *digestbuf);
++    printf_term(replace, sizeof(replace), rc);
+ 
+     // create work directory if it does not exist
+     dir::create(DEFAULT_VARPATH "/lib/sipwitch", fsys::GROUP_PRIVATE);
+--- utils/cgiserver.cpp
++++ utils/cgiserver.cpp
+@@ -16,8 +16,39 @@
+ 
+ #include <sipwitch-config.h>
+ #include <sipwitch/sipwitch.h>
+-#include <ctype.h>
+ #include <sys/stat.h>
++#include <ctype.h>
++#include <assert.h>
++
++namespace {
++    // printf family does not add terminating NULL if data fills buffer
++    inline void printf_term(void* buffer, size_t size, int written)
++    {
++        // printf family returns -1 on error
++        char * p = (char *) buffer;
++        size_t w = (size_t) written;
++        written == -1 ? p[0] = '\0' : size >= w ? p[w-1] = '\0' : p[w] = '\0';
++    }
++
++    // This is a std::min function for {int, size_t}
++    inline unsigned int min_length(int a, size_t b)
++    {
++        return static_cast<unsigned int>(a < 0 ? 0 : a < b ? a : b);
++    }
++
++    // This is a short memcpy for escaped XML characters. It only needs to
++    // handle 6 chars. This version produces the shortest code on x86. A
++    // switch statement is 120 bytes longer. A memcpy is 42 bytes longer.
++    inline void copy_bytes(char* dest, const char* src, unsigned int count) {
++        assert(count > 0 && count <= 6);
++        if (count >= 6) dest[5] = src[5];
++        if (count >= 5) dest[4] = src[4];
++        if (count >= 4) dest[3] = src[3];
++        if (count >= 3) dest[2] = src[2];
++        if (count >= 2) dest[1] = src[1];
++        if (count >= 1) dest[0] = src[0];
++    }
++}
+ 
+ using namespace sipwitch;
+ 
+@@ -96,13 +127,15 @@
+ static size_t xmlformat(char *dp, size_t max, const char *fmt, ...)
+ {
+     va_list args;
++    int rc;
+ 
+     if(max < 1)
+         return 0;
+ 
+     va_start(args, fmt);
+-    vsnprintf(dp, max, fmt, args);
++    rc = vsnprintf(dp, max, fmt, args);
+     va_end(args);
++    printf_term(dp, max, rc);
+     return strlen(dp);
+ }
+ 
+@@ -181,40 +214,72 @@
+ 
+ */
+ 
++/**
++ * Adds XML escaping to a text string. xmltext() provides full data
++ * escaping, but it does not handle comments properly. xmltext()
++ * returns the strlen() of the C-string in dp. The C-string is
++ * always NULL-terminated, and may truncate the original string.
++ * @author David Sugar <dyfet@gnutelephony.org>
++ */
+ static size_t xmltext(char *dp, size_t max, const char *src)
+ {
++    // GCC analyzer findings
++    if (! dp) return 0;
++    dp[0] = '\0';
++    if (! src) return 0;
++
++    char ch;
+     unsigned count = 0;
+-    while(*src && count < max) {
+-        switch(*src) {
++    unsigned elems = 0;
++    const char* escaped;
++
++    while((ch = *src++) && count < max) {
++        switch(ch) {
+         case '&':
+-            snprintf(dp + count, max - count, "&amp;");
+-            count += strlen(dp + count);
+-            ++src;
++            //rc = snprintf(dp + count, max - count, "&amp;");
++            //count += strlen(dp + count);
++            //++src;
++            elems = min_length(5, max - count);
++            escaped = "&amp;";
+             break;
+         case '<':
+-            snprintf(dp + count, max - count, "&lt;");
+-            count += strlen(dp + count);
+-            ++src;
++            //rc = snprintf(dp + count, max - count, "&lt;");
++            //count += strlen(dp + count);
++            //++src;
++            elems = min_length(4, max - count);
++            escaped = "&lt;";
+             break;
+         case '>':
+-            snprintf(dp + count, max - count, "&gt;");
+-            count += strlen(dp + count);
+-            ++src;
++            //rc = snprintf(dp + count, max - count, "&gt;");
++            //count += strlen(dp + count);
++            //++src;
++            elems = min_length(4, max - count);
++            escaped = "&gt;";
+             break;
+         case '\"':
+-            snprintf(dp + count, max - count, "&quot;");
+-            count += strlen(dp + count);
+-            ++src;
++            //rc = snprintf(dp + count, max - count, "&quot;");
++            //count += strlen(dp + count);
++            //++src;
++            elems = min_length(6, max - count);
++            escaped = "&quot;";
+             break;
+          case '\'':
+-            snprintf(dp + count, max - count, "&apos;");
+-            count = strlen(dp + count);
+-            ++src;
++            //rc = snprintf(dp + count, max - count, "&apos;");
++            //count = strlen(dp + count);
++            //++src;
++            elems = min_length(6, max - count);
++            escaped = "&apos;";
+             break;
+         default:
+-            dp[count++] = *(src++);
++            //dp[count++] = *(src++);
++            dp[count++] = ch;
++            continue; // don't fallthrough
+         }
++
++        copy_bytes(dp + count, escaped, elems);
++        count += elems;
+     }
++    count < max ? dp[count] = '\0' : count = max-1, dp[count] = '\0';
+     return count;
+ }
+ 
+@@ -276,7 +341,7 @@
+         if(*cp != '&') {
+             *(dp++) = *(cp++);
+             continue;
+-            }
++        }
+         if(!strncmp(cp, "&amp;", 5)) {
+                     *(dp++) = '&';
+             cp += 5;
+@@ -464,6 +529,7 @@
+     pid_t opid;
+     fd_t fd;
+     char buf[65];
++    int rc = 0;
+ 
+ retry:
+     fd = open(DEFAULT_VARPATH "/run/sipwitch/cgilock", O_CREAT|O_WRONLY|O_TRUNC|O_EXCL, fsys::OWNER_PUBLIC);
+@@ -481,7 +547,8 @@
+             error(408, "Lock timed out");
+     }
+ 
+-    snprintf(buf, sizeof(buf), "%ld\n", (long)getpid());
++    rc = snprintf(buf, sizeof(buf), "%ld\n", (long)getpid());
++    printf_term(buf, sizeof(buf), rc);
+     if(write(fd, buf, strlen(buf)) < (ssize_t)strlen(buf))
+         error(500, "Failed Lock");
+     close(fd);
+@@ -495,6 +562,7 @@
+     unsigned len = 0;
+     va_list args;
+     FILE *fp;
++    int rc = 0;
+ 
+ #ifndef _MSWINDOWS_
+     int signo;
+@@ -504,13 +572,16 @@
+     sigaddset(&sigs, SIGUSR2);
+     sigaddset(&sigs, SIGALRM);
+     sigprocmask(SIG_BLOCK, &sigs, NULL);
+-    snprintf(buf, sizeof(buf), "%ld ", (long)getpid());
++    rc = snprintf(buf, sizeof(buf), "%ld ", (long)getpid());
++    printf_term(buf, sizeof(buf), rc);
+     len = strlen(buf);
+ #endif
+ 
+     va_start(args, fmt);
+-    vsnprintf(buf + len, sizeof(buf) - len, fmt, args);
++    rc = vsnprintf(buf + len, sizeof(buf) - len, fmt, args);
+     va_end(args);
++    printf_term(buf + len, sizeof(buf) - len, rc);
++
+     if(!strchr(buf, '\n'))
+         String::add(buf, sizeof(buf), "\n");
+ 
+@@ -965,10 +1036,14 @@
+ {
+     char buffer[512];
+     FILE *fp;
++    int rc = 0;
++
+ #ifdef  _MSWINDOWS_
+-    snprintf(buffer, sizeof(buffer), "%s\n", cmd);
++    rc = snprintf(buffer, sizeof(buffer), "%s\n", cmd);
++    printf_term(buffer, sizeof(buffer), rc);
+ #else
+-    snprintf(buffer, sizeof(buffer), "%ld %s\n", (long)getpid(), cmd);
++    rc = snprintf(buffer, sizeof(buffer), "%ld %s\n", (long)getpid(), cmd);
++    printf_term(buffer, sizeof(buffer), rc);
+ #endif
+     char *ep = strchr(buffer, '\n');
+     if(ep)
+@@ -1029,6 +1104,7 @@
+     char buffer[1024];
+     rpcint_t diff = 0;
+     time_t now;
++    int rc = 0;
+ 
+     if(params.argc != 1)
+         fault(3, "Invalid Parameters");
+@@ -1048,7 +1124,8 @@
+         if(!map.created)
+             continue;
+ 
+-        snprintf(id, sizeof(id), "%08x:%d", map.sequence, map.cid);
++        rc = snprintf(id, sizeof(id), "%08x:%d", map.sequence, map.cid);
++        printf_term(id, sizeof(id), rc);
+         if(!eq(id, cid))
+             continue;
+ 
+@@ -1062,6 +1139,8 @@
+             map.source, map.target, map.display, diff);
+         reply(buffer);
+     }
++    printf_term(id, sizeof(id), (int)sizeof(id));
++
+     fault(6, "Unknown Call");
+     reset_unsafe<MappedCall>(map);
+ }
+@@ -1073,6 +1152,7 @@
+     unsigned index = 0;
+     char id[32];
+     MappedCall map;
++    int rc = 0;
+ 
+     if(params.argc != 0)
+         fault(3, "Invalid Parameters");
+@@ -1091,7 +1171,8 @@
+         if(!map.created)
+             continue;
+ 
+-        snprintf(id, sizeof(id), "%08x:%d", map.sequence, map.cid);
++        rc = snprintf(id, sizeof(id), "%08x:%d", map.sequence, map.cid);
++        printf_term(id, sizeof(id), rc);
+         response(buffer, size, "!s", buffer);
+     }
+     response(buffer, size, "]");
+@@ -1204,6 +1285,7 @@
+     char buffer[2048];
+     time_t now;
+     const char *status = "idle";
++    int rc = 0;
+ 
+     if(params.argc != 1)
+         fault(3, "Invalid Parameters");
+@@ -1229,8 +1311,10 @@
+         if(!eq(map.userid, id))
+             continue;
+ 
+-        if(map.ext)
+-            snprintf(ext, sizeof(ext), "%u", map.ext);
++        if(map.ext) {
++            rc = snprintf(ext, sizeof(ext), "%u", map.ext);
++            printf_term(ext, sizeof(ext), rc);
++        }
+         else
+             String::set(ext, sizeof(ext), map.userid);
+ 
+@@ -1656,6 +1740,7 @@
+     MappedCall buffer;
+     char idbuf[32];
+     time_t now;
++    int rc = 0;
+ 
+     if(!count)
+         error(405, "Server unavailable");
+@@ -1674,7 +1759,8 @@
+         if(!buffer.created)
+             continue;
+ 
+-        snprintf(idbuf, sizeof(idbuf), "%08x:%u", buffer.sequence, buffer.cid);
++        rc = snprintf(idbuf, sizeof(idbuf), "%08x:%u", buffer.sequence, buffer.cid);
++        printf_term(idbuf, sizeof(idbuf), rc);
+         if(id && !String::equal(id, idbuf))
+             continue;
+         printf(" <call id=\"%s\">\n", idbuf);
+@@ -1834,13 +1920,17 @@
+     char buf[256];
+     GetEnvironmentVariable("APPDATA", buf, 192);
+     unsigned len = strlen(buf);
+-    snprintf(buf + len, sizeof(buf) - len, "\\sipwitch\\config.xml");
++    rc = snprintf(buf + len, sizeof(buf) - len, "\\sipwitch\\config.xml");
++    printf_term(buf + len, sizeof(buf) - len, rc);
+     save_file = strdup(buf);
+-    snprintf(buf + len, sizeof(buf) - len, "\\sipwitch\\config.tmp");
++    rc = snprintf(buf + len, sizeof(buf) - len, "\\sipwitch\\config.tmp");
++    printf_term(buf + len, sizeof(buf) - len, rc);
+     temp_file = strdup(buf);
+-    snprintf(buf + len, sizeof(buf) - len, "\\sipwitch\\snapshot.log");
++    rc = snprintf(buf + len, sizeof(buf) - len, "\\sipwitch\\snapshot.log");
++    printf_term(buf + len, sizeof(buf) - len, rc);
+     snapshot_file = strdup(buf);
+-    snprintf(buf + len, sizeof(buf) - len, "\\sipwitch\\dumpfile.log");
++    rc = snprintf(buf + len, sizeof(buf) - len, "\\sipwitch\\dumpfile.log");
++    printf_term(buf + len, sizeof(buf) - len, rc);
+     dump_file = strdup(buf);
+     if(GetEnvironmentVariable("GATEWAY_INTERFACE", buf, sizeof(buf)) > 0)
+         cgi_version = strdup(buf);

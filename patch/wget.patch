@@ -1,0 +1,51 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with Wget 1.21.
+--- lib/tempname.c
++++ lib/tempname.c
+@@ -89,7 +89,11 @@
+   __clock_gettime64 (CLOCK_MONOTONIC, &tv);
+   var ^= tv.tv_nsec;
+ #endif
++#if defined(__APPLE__) && defined(_ARCH_PPC)
++  return 2862933555777941757ull * var + 3037000493u;
++#else
+   return 2862933555777941757 * var + 3037000493;
++#endif
+ }
+ 
+ #if _LIBC
+@@ -287,7 +291,8 @@
+ 
+   for (count = 0; count < attempts; ++count)
+     {
+-      for (size_t i = 0; i < x_suffix_len; i++)
++      size_t i;
++      for (i = 0; i < x_suffix_len; i++)
+         {
+           if (vdigits == 0)
+             {
+--- lib/utime.c
++++ lib/utime.c
+@@ -21,6 +21,10 @@
+ /* Specification.  */
+ #include <utime.h>
+ 
++#if defined(__APPLE__)
++# include <errno.h>
++#endif
++
+ #if defined _WIN32 && ! defined __CYGWIN__
+ 
+ # include <errno.h>
+--- src/progress.c
++++ src/progress.c
+@@ -1375,7 +1375,8 @@
+ #endif
+   if (params)
+     {
+-      for (const char *param = params; *param; )
++      const char* param;
++      for (param = params; *param; )
+         {
+           if (!strncmp (param, "force", 5))
+             current_impl_locked = 1;

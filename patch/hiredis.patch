@@ -1,0 +1,80 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with Hiredis.
+--- Makefile
++++ Makefile
+@@ -21,13 +21,13 @@
+ HIREDIS_SONAME=$(shell grep HIREDIS_SONAME hiredis.h | awk '{print $$3}')
+ 
+ # Installation related variables and target
+-PREFIX?=/usr/local
+-INCLUDE_PATH?=include/hiredis
+-LIBRARY_PATH?=lib
+-PKGCONF_PATH?=pkgconfig
+-INSTALL_INCLUDE_PATH= $(DESTDIR)$(PREFIX)/$(INCLUDE_PATH)
+-INSTALL_LIBRARY_PATH= $(DESTDIR)$(PREFIX)/$(LIBRARY_PATH)
+-INSTALL_PKGCONF_PATH= $(INSTALL_LIBRARY_PATH)/$(PKGCONF_PATH)
++PREFIX ?= /usr/local
++INCLUDE_PATH ?= $(PREFIX)/include
++LIBRARY_PATH ?= $(PREFIX)/lib
++PKGCONF_PATH ?= $(LIBRARY_PATH)/pkgconfig
++INSTALL_INCLUDE_PATH = $(DESTDIR)$(INCLUDE_PATH)/hiredis
++INSTALL_LIBRARY_PATH = $(DESTDIR)$(LIBRARY_PATH)
++INSTALL_PKGCONF_PATH = $(DESTDIR)$(PKGCONF_PATH)
+ 
+ # redis-server configuration used for testing
+ REDIS_PORT=56379
+@@ -41,11 +41,8 @@
+ endef
+ export REDIS_TEST_CONFIG
+ 
+-# Fallback to gcc when $CC is not in $PATH.
+-CC:=$(shell sh -c 'type $${CC%% *} >/dev/null 2>/dev/null && echo $(CC) || echo gcc')
+-CXX:=$(shell sh -c 'type $${CXX%% *} >/dev/null 2>/dev/null && echo $(CXX) || echo g++')
+ OPTIMIZATION?=-O3
+-WARNINGS=-Wall -W -Wstrict-prototypes -Wwrite-strings -Wno-missing-field-initializers
++WARNINGS=-Wall
+ DEBUG_FLAGS?= -g -ggdb
+ REAL_CFLAGS=$(OPTIMIZATION) -fPIC $(CPPFLAGS) $(CFLAGS) $(WARNINGS) $(DEBUG_FLAGS)
+ REAL_LDFLAGS=$(LDFLAGS)
+@@ -98,8 +95,8 @@
+ ifeq ($(uname_S),Darwin)
+   DYLIBSUFFIX=dylib
+   DYLIB_MINOR_NAME=$(LIBNAME).$(HIREDIS_SONAME).$(DYLIBSUFFIX)
+-  DYLIB_MAKE_CMD=$(CC) -dynamiclib -Wl,-install_name,$(PREFIX)/$(LIBRARY_PATH)/$(DYLIB_MINOR_NAME) -o $(DYLIBNAME) $(LDFLAGS)
+-  SSL_DYLIB_MAKE_CMD=$(CC) -dynamiclib -Wl,-install_name,$(PREFIX)/$(LIBRARY_PATH)/$(SSL_DYLIB_MINOR_NAME) -o $(SSL_DYLIBNAME) $(LDFLAGS) $(SSL_LDFLAGS)
++  DYLIB_MAKE_CMD=$(CC) -dynamiclib -Wl,-install_name,$(LIBRARY_PATH)/$(DYLIB_MINOR_NAME) -o $(DYLIBNAME) $(LDFLAGS)
++  SSL_DYLIB_MAKE_CMD=$(CC) -dynamiclib -Wl,-install_name,$(LIBRARY_PATH)/$(SSL_DYLIB_MINOR_NAME) -o $(SSL_DYLIBNAME) $(LDFLAGS) $(SSL_LDFLAGS)
+   DYLIB_PLUGIN=-Wl,-undefined -Wl,dynamic_lookup
+ endif
+ 
+@@ -234,8 +231,8 @@
+ 	@echo "Generating $@ for pkgconfig..."
+ 	@echo prefix=$(PREFIX) > $@
+ 	@echo exec_prefix=\$${prefix} >> $@
+-	@echo libdir=$(PREFIX)/$(LIBRARY_PATH) >> $@
+-	@echo includedir=$(PREFIX)/$(INCLUDE_PATH) >> $@
++	@echo libdir=$(LIBRARY_PATH) >> $@
++	@echo includedir=$(INCLUDE_PATH) >> $@
+ 	@echo >> $@
+ 	@echo Name: hiredis >> $@
+ 	@echo Description: Minimalistic C client library for Redis. >> $@
+@@ -247,8 +244,8 @@
+ 	@echo "Generating $@ for pkgconfig..."
+ 	@echo prefix=$(PREFIX) > $@
+ 	@echo exec_prefix=\$${prefix} >> $@
+-	@echo libdir=$(PREFIX)/$(LIBRARY_PATH) >> $@
+-	@echo includedir=$(PREFIX)/$(INCLUDE_PATH) >> $@
++	@echo libdir=$(LIBRARY_PATH) >> $@
++	@echo includedir=$(INCLUDE_PATH) >> $@
+ 	@echo >> $@
+ 	@echo Name: hiredis_ssl >> $@
+ 	@echo Description: SSL Support for hiredis. >> $@
+@@ -297,7 +294,7 @@
+ 	$(MAKE) CFLAGS="-fprofile-arcs -ftest-coverage" LDFLAGS="-fprofile-arcs"
+ 
+ coverage: gcov
+-	make check
++	$(MAKE) check
+ 	mkdir -p tmp/lcov
+ 	lcov -d . -c -o tmp/lcov/hiredis.info
+ 	genhtml --legend -o tmp/lcov/report tmp/lcov/hiredis.info

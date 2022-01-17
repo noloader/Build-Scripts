@@ -1,0 +1,1454 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with libunistring.
+--- lib/unictype/bidi_of.c
++++ lib/unictype/bidi_of.c
+@@ -48,7 +48,7 @@ uc_bidi_class (ucs4_t uc)
+               unsigned int index3 = ((uc & bidi_category_header_4) + lookup2) * 5;
+               /* level3 contains 5-bit values, packed into 16-bit words.  */
+               unsigned int lookup3 =
+-                ((u_bidi_category.level3[index3>>4]
++                (((unsigned int) u_bidi_category.level3[index3>>4]
+                   | ((unsigned int) u_bidi_category.level3[(index3>>4)+1] << 16))
+                  >> (index3 % 16))
+                 & 0x1f;
+--- lib/unictype/categ_of.c
++++ lib/unictype/categ_of.c
+@@ -48,7 +48,7 @@ lookup_withtable (ucs4_t uc)
+               unsigned int index3 = ((uc & category_header_4) + lookup2) * 5;
+               /* level3 contains 5-bit values, packed into 16-bit words.  */
+               unsigned int lookup3 =
+-                ((u_category.level3[index3>>4]
++                (((unsigned int) u_category.level3[index3>>4]
+                   | ((unsigned int) u_category.level3[(index3>>4)+1] << 16))
+                  >> (index3 % 16))
+                 & 0x1f;
+--- lib/unictype/joininggroup_of.c
++++ lib/unictype/joininggroup_of.c
+@@ -48,7 +48,7 @@ uc_joining_group (ucs4_t uc)
+               unsigned int index3 = ((uc & joining_group_header_4) + lookup2) * 7;
+               /* level3 contains 7-bit values, packed into 16-bit words.  */
+               unsigned int lookup3 =
+-                ((u_joining_group.level3[index3>>4]
++                (((unsigned int) u_joining_group.level3[index3>>4]
+                   | ((unsigned int) u_joining_group.level3[(index3>>4)+1] << 16))
+                  >> (index3 % 16))
+                 & 0x7f;
+--- lib/unictype/numeric.c
++++ lib/unictype/numeric.c
+@@ -48,8 +48,8 @@ uc_numeric_value (ucs4_t uc)
+               unsigned int index3 = ((uc & numeric_header_4) + lookup2) * 8;
+               /* level3 contains 8-bit values, packed into 16-bit words.  */
+               unsigned int lookup3 =
+-                ((u_numeric.level3[index3>>4]
+-                  | (u_numeric.level3[(index3>>4)+1] << 16))
++                (((unsigned int) u_numeric.level3[index3>>4]
++                  | ((unsigned int) u_numeric.level3[(index3>>4)+1] << 16))
+                  >> (index3 % 16))
+                 & 0xff;
+
+--- lib/unistr/u8-cmp.c
++++ lib/unistr/u8-cmp.c
+@@ -35,5 +35,5 @@ int
+ u8_cmp (const uint8_t *s1, const uint8_t *s2, size_t n)
+ {
+   /* Use the fact that the UTF-8 encoding preserves lexicographic order.  */
+-  return memcmp ((const char *) s1, (const char *) s2, n);
++  return n == 0 ? 0 : memcmp ((const char *) s1, (const char *) s2, n);
+ }
+--- lib/uniconv/u8-conv-from-enc.c
++++ lib/uniconv/u8-conv-from-enc.c
+@@ -86,7 +86,8 @@ u8_conv_from_encoding (const char *fromcode,
+             }
+         }
+ 
+-      memcpy ((char *) result, src, srclen);
++      if (result && src)
++        memcpy ((char *) result, src, srclen);
+       *lengthp = srclen;
+       return result;
+     }
+--- lib/uniconv/u8-conv-to-enc.c
++++ lib/uniconv/u8-conv-to-enc.c
+@@ -69,7 +69,8 @@ u8_conv_to_encoding (const char *tocode,
+             }
+         }
+ 
+-      memcpy (result, (const char *) src, srclen);
++      if (result && src)
++        memcpy (result, (const char *) src, srclen);
+       *lengthp = srclen;
+       return result;
+     }
+--- lib/unistr/u-cpy-alloc.h
++++ lib/unistr/u-cpy-alloc.h
+@@ -42,7 +42,8 @@ FUNC (const UNIT *s, size_t n)
+       for (; n > 0; n--)
+         *destptr++ = *s++;
+ #else
+-      memcpy ((char *) dest, (const char *) s, n * sizeof (UNIT));
++      if (dest && s)
++        memcpy ((char *) dest, (const char *) s, n * sizeof (UNIT));
+ #endif
+     }
+   return dest;
+--- lib/unistr/u-cpy.h
++++ lib/unistr/u-cpy.h
+@@ -35,7 +35,8 @@ FUNC (UNIT *dest, const UNIT *src, size_t n)
+   for (; n > 0; n--)
+     *destptr++ = *src++;
+ #else
+-  memcpy ((char *) dest, (const char *) src, n * sizeof (UNIT));
++  if (dest && src)
++    memcpy ((char *) dest, (const char *) src, n * sizeof (UNIT));
+ #endif
+   return dest;
+ }
+ --- lib/unilbrk/u16-possible-linebreaks.c
++++ lib/unilbrk/u16-possible-linebreaks.c
+@@ -39,135 +39,139 @@
+ void
+ u16_possible_linebreaks (const uint16_t *s, size_t n, const char *encoding, char *p)
+ {
+-  int LBP_AI_REPLACEMENT = (is_cjk_encoding (encoding) ? LBP_ID : LBP_AL);
+-  const uint16_t *s_end = s + n;
+-  int last_prop = LBP_BK; /* line break property of last non-space character */
+-  char *seen_space = NULL; /* Was a space seen after the last non-space character? */
+-  char *seen_space2 = NULL; /* At least two spaces after the last non-space? */
+-
+-  /* Don't break inside multibyte characters.  */
+-  memset (p, UC_BREAK_PROHIBITED, n);
+-
+-  while (s < s_end)
++  if (n > 0)
+     {
+-      ucs4_t uc;
+-      int count = u16_mbtouc_unsafe (&uc, s, s_end - s);
+-      int prop = unilbrkprop_lookup (uc);
++      int LBP_AI_REPLACEMENT = (is_cjk_encoding (encoding) ? LBP_ID : LBP_AL);
++      const uint16_t *s_end = s + n;
++      int last_prop = LBP_BK; /* line break property of last non-space character */
++      char *seen_space = NULL; /* Was a space seen after the last non-space character? */
++      char *seen_space2 = NULL; /* At least two spaces after the last non-space? */
+ 
+-      if (prop == LBP_BK)
+-        {
+-          /* Mandatory break.  */
+-          *p = UC_BREAK_MANDATORY;
+-          last_prop = LBP_BK;
+-          seen_space = NULL;
+-          seen_space2 = NULL;
+-        }
+-      else
+-        {
+-          char *q;
++      /* Don't break inside multibyte characters.  */
++      memset (p, UC_BREAK_PROHIBITED, n);
+ 
+-          /* Resolve property values whose behaviour is not fixed.  */
+-          switch (prop)
+-            {
+-            case LBP_AI:
+-              /* Resolve ambiguous.  */
+-              prop = LBP_AI_REPLACEMENT;
+-              break;
+-            case LBP_CB:
+-              /* This is arbitrary.  */
+-              prop = LBP_ID;
+-              break;
+-            case LBP_SA:
+-              /* We don't handle complex scripts yet.
+-                 Treat LBP_SA like LBP_XX.  */
+-            case LBP_XX:
+-              /* This is arbitrary.  */
+-              prop = LBP_AL;
+-              break;
+-            }
++      do
++        {
++          ucs4_t uc;
++          int count = u16_mbtouc_unsafe (&uc, s, s_end - s);
++          int prop = unilbrkprop_lookup (uc);
+ 
+-          /* Deal with spaces and combining characters.  */
+-          q = p;
+-          if (prop == LBP_SP)
+-            {
+-              /* Don't break just before a space.  */
+-              *p = UC_BREAK_PROHIBITED;
+-              seen_space2 = seen_space;
+-              seen_space = p;
+-            }
+-          else if (prop == LBP_ZW)
++          if (prop == LBP_BK)
+             {
+-              /* Don't break just before a zero-width space.  */
+-              *p = UC_BREAK_PROHIBITED;
+-              last_prop = LBP_ZW;
++              /* Mandatory break.  */
++              *p = UC_BREAK_MANDATORY;
++              last_prop = LBP_BK;
+               seen_space = NULL;
+               seen_space2 = NULL;
+             }
+-          else if (prop == LBP_CM)
++          else
+             {
+-              /* Don't break just before a combining character, except immediately after a
+-                 zero-width space.  */
+-              if (last_prop == LBP_ZW)
++              char *q;
++
++              /* Resolve property values whose behaviour is not fixed.  */
++              switch (prop)
+                 {
+-                  /* Break after zero-width space.  */
+-                  *p = UC_BREAK_POSSIBLE;
+-                  /* A combining character turns a preceding space into LBP_ID.  */
+-                  last_prop = LBP_ID;
++                case LBP_AI:
++                  /* Resolve ambiguous.  */
++                  prop = LBP_AI_REPLACEMENT;
++                  break;
++                case LBP_CB:
++                  /* This is arbitrary.  */
++                  prop = LBP_ID;
++                  break;
++                case LBP_SA:
++                  /* We don't handle complex scripts yet.
++                     Treat LBP_SA like LBP_XX.  */
++                case LBP_XX:
++                  /* This is arbitrary.  */
++                  prop = LBP_AL;
++                  break;
+                 }
+-              else
++
++              /* Deal with spaces and combining characters.  */
++              q = p;
++              if (prop == LBP_SP)
+                 {
++                  /* Don't break just before a space.  */
+                   *p = UC_BREAK_PROHIBITED;
+-                  /* A combining character turns a preceding space into LBP_ID.  */
+-                  if (seen_space != NULL)
+-                    {
+-                      q = seen_space;
+-                      seen_space = seen_space2;
+-                      prop = LBP_ID;
+-                      goto lookup_via_table;
+-                    }
++                  seen_space2 = seen_space;
++                  seen_space = p;
+                 }
+-            }
+-          else
+-            {
+-             lookup_via_table:
+-              /* prop must be usable as an index for table 7.3 of UTR #14.  */
+-              if (!(prop >= 0 && prop < sizeof (unilbrk_table) / sizeof (unilbrk_table[0])))
+-                abort ();
+-
+-              if (last_prop == LBP_BK)
++              else if (prop == LBP_ZW)
+                 {
+-                  /* Don't break at the beginning of a line.  */
+-                  *q = UC_BREAK_PROHIBITED;
++                  /* Don't break just before a zero-width space.  */
++                  *p = UC_BREAK_PROHIBITED;
++                  last_prop = LBP_ZW;
++                  seen_space = NULL;
++                  seen_space2 = NULL;
+                 }
+-              else if (last_prop == LBP_ZW)
++              else if (prop == LBP_CM)
+                 {
+-                  /* Break after zero-width space.  */
+-                  *q = UC_BREAK_POSSIBLE;
++                  /* Don't break just before a combining character, except immediately
++                     after a zero-width space.  */
++                  if (last_prop == LBP_ZW)
++                    {
++                      /* Break after zero-width space.  */
++                      *p = UC_BREAK_POSSIBLE;
++                      /* A combining character turns a preceding space into LBP_ID.  */
++                      last_prop = LBP_ID;
++                    }
++                  else
++                    {
++                      *p = UC_BREAK_PROHIBITED;
++                      /* A combining character turns a preceding space into LBP_ID.  */
++                      if (seen_space != NULL)
++                        {
++                          q = seen_space;
++                          seen_space = seen_space2;
++                          prop = LBP_ID;
++                          goto lookup_via_table;
++                        }
++                    }
+                 }
+               else
+                 {
+-                  switch (unilbrk_table [last_prop] [prop])
++                 lookup_via_table:
++                  /* prop must be usable as an index for table 7.3 of UTR #14.  */
++                  if (!(prop >= 0 && prop < sizeof (unilbrk_table) / sizeof (unilbrk_table[0])))
++                    abort ();
++
++                  if (last_prop == LBP_BK)
+                     {
+-                    case D:
+-                      *q = UC_BREAK_POSSIBLE;
+-                      break;
+-                    case I:
+-                      *q = (seen_space != NULL ? UC_BREAK_POSSIBLE : UC_BREAK_PROHIBITED);
+-                      break;
+-                    case P:
++                      /* Don't break at the beginning of a line.  */
+                       *q = UC_BREAK_PROHIBITED;
+-                      break;
+-                    default:
+-                      abort ();
+                     }
++                  else if (last_prop == LBP_ZW)
++                    {
++                      /* Break after zero-width space.  */
++                      *q = UC_BREAK_POSSIBLE;
++                    }
++                  else
++                    {
++                      switch (unilbrk_table [last_prop] [prop])
++                        {
++                        case D:
++                          *q = UC_BREAK_POSSIBLE;
++                          break;
++                        case I:
++                          *q = (seen_space != NULL ? UC_BREAK_POSSIBLE : UC_BREAK_PROHIBITED);
++                          break;
++                        case P:
++                          *q = UC_BREAK_PROHIBITED;
++                          break;
++                        default:
++                          abort ();
++                        }
++                    }
++                  last_prop = prop;
++                  seen_space = NULL;
++                  seen_space2 = NULL;
+                 }
+-              last_prop = prop;
+-              seen_space = NULL;
+-              seen_space2 = NULL;
+             }
+-        }
+ 
+-      s += count;
+-      p += count;
++          s += count;
++          p += count;
++        }
++      while (s < s_end);
+     }
+ }
+--- lib/unilbrk/u32-possible-linebreaks.c
++++ lib/unilbrk/u32-possible-linebreaks.c
+@@ -37,131 +37,135 @@
+ void
+ u32_possible_linebreaks (const uint32_t *s, size_t n, const char *encoding, char *p)
+ {
+-  int LBP_AI_REPLACEMENT = (is_cjk_encoding (encoding) ? LBP_ID : LBP_AL);
+-  const uint32_t *s_end = s + n;
+-  int last_prop = LBP_BK; /* line break property of last non-space character */
+-  char *seen_space = NULL; /* Was a space seen after the last non-space character? */
+-  char *seen_space2 = NULL; /* At least two spaces after the last non-space? */
+-
+-  while (s < s_end)
++  if (n > 0)
+     {
+-      ucs4_t uc = *s;
+-      int prop = unilbrkprop_lookup (uc);
++      int LBP_AI_REPLACEMENT = (is_cjk_encoding (encoding) ? LBP_ID : LBP_AL);
++      const uint32_t *s_end = s + n;
++      int last_prop = LBP_BK; /* line break property of last non-space character */
++      char *seen_space = NULL; /* Was a space seen after the last non-space character? */
++      char *seen_space2 = NULL; /* At least two spaces after the last non-space? */
+ 
+-      if (prop == LBP_BK)
+-        {
+-          /* Mandatory break.  */
+-          *p = UC_BREAK_MANDATORY;
+-          last_prop = LBP_BK;
+-          seen_space = NULL;
+-          seen_space2 = NULL;
+-        }
+-      else
++      do
+         {
+-          char *q;
++          ucs4_t uc = *s;
++          int prop = unilbrkprop_lookup (uc);
+ 
+-          /* Resolve property values whose behaviour is not fixed.  */
+-          switch (prop)
++          if (prop == LBP_BK)
+             {
+-            case LBP_AI:
+-              /* Resolve ambiguous.  */
+-              prop = LBP_AI_REPLACEMENT;
+-              break;
+-            case LBP_CB:
+-              /* This is arbitrary.  */
+-              prop = LBP_ID;
+-              break;
+-            case LBP_SA:
+-              /* We don't handle complex scripts yet.
+-                 Treat LBP_SA like LBP_XX.  */
+-            case LBP_XX:
+-              /* This is arbitrary.  */
+-              prop = LBP_AL;
+-              break;
+-            }
+-
+-          /* Deal with spaces and combining characters.  */
+-          q = p;
+-          if (prop == LBP_SP)
+-            {
+-              /* Don't break just before a space.  */
+-              *p = UC_BREAK_PROHIBITED;
+-              seen_space2 = seen_space;
+-              seen_space = p;
+-            }
+-          else if (prop == LBP_ZW)
+-            {
+-              /* Don't break just before a zero-width space.  */
+-              *p = UC_BREAK_PROHIBITED;
+-              last_prop = LBP_ZW;
++              /* Mandatory break.  */
++              *p = UC_BREAK_MANDATORY;
++              last_prop = LBP_BK;
+               seen_space = NULL;
+               seen_space2 = NULL;
+             }
+-          else if (prop == LBP_CM)
++          else
+             {
+-              /* Don't break just before a combining character, except immediately after a
+-                 zero-width space.  */
+-              if (last_prop == LBP_ZW)
++              char *q;
++
++              /* Resolve property values whose behaviour is not fixed.  */
++              switch (prop)
+                 {
+-                  /* Break after zero-width space.  */
+-                  *p = UC_BREAK_POSSIBLE;
+-                  /* A combining character turns a preceding space into LBP_ID.  */
+-                  last_prop = LBP_ID;
++                case LBP_AI:
++                  /* Resolve ambiguous.  */
++                  prop = LBP_AI_REPLACEMENT;
++                  break;
++                case LBP_CB:
++                  /* This is arbitrary.  */
++                  prop = LBP_ID;
++                  break;
++                case LBP_SA:
++                  /* We don't handle complex scripts yet.
++                     Treat LBP_SA like LBP_XX.  */
++                case LBP_XX:
++                  /* This is arbitrary.  */
++                  prop = LBP_AL;
++                  break;
+                 }
+-              else
++
++              /* Deal with spaces and combining characters.  */
++              q = p;
++              if (prop == LBP_SP)
+                 {
++                  /* Don't break just before a space.  */
+                   *p = UC_BREAK_PROHIBITED;
+-                  /* A combining character turns a preceding space into LBP_ID.  */
+-                  if (seen_space != NULL)
+-                    {
+-                      q = seen_space;
+-                      seen_space = seen_space2;
+-                      prop = LBP_ID;
+-                      goto lookup_via_table;
+-                    }
++                  seen_space2 = seen_space;
++                  seen_space = p;
+                 }
+-            }
+-          else
+-            {
+-             lookup_via_table:
+-              /* prop must be usable as an index for table 7.3 of UTR #14.  */
+-              if (!(prop >= 0 && prop < sizeof (unilbrk_table) / sizeof (unilbrk_table[0])))
+-                abort ();
+-
+-              if (last_prop == LBP_BK)
++              else if (prop == LBP_ZW)
+                 {
+-                  /* Don't break at the beginning of a line.  */
+-                  *q = UC_BREAK_PROHIBITED;
++                  /* Don't break just before a zero-width space.  */
++                  *p = UC_BREAK_PROHIBITED;
++                  last_prop = LBP_ZW;
++                  seen_space = NULL;
++                  seen_space2 = NULL;
+                 }
+-              else if (last_prop == LBP_ZW)
++              else if (prop == LBP_CM)
+                 {
+-                  /* Break after zero-width space.  */
+-                  *q = UC_BREAK_POSSIBLE;
++                  /* Don't break just before a combining character, except immediately
++                     after a zero-width space.  */
++                  if (last_prop == LBP_ZW)
++                    {
++                      /* Break after zero-width space.  */
++                      *p = UC_BREAK_POSSIBLE;
++                      /* A combining character turns a preceding space into LBP_ID.  */
++                      last_prop = LBP_ID;
++                    }
++                  else
++                    {
++                      *p = UC_BREAK_PROHIBITED;
++                      /* A combining character turns a preceding space into LBP_ID.  */
++                      if (seen_space != NULL)
++                        {
++                          q = seen_space;
++                          seen_space = seen_space2;
++                          prop = LBP_ID;
++                          goto lookup_via_table;
++                        }
++                    }
+                 }
+               else
+                 {
+-                  switch (unilbrk_table [last_prop] [prop])
++                 lookup_via_table:
++                  /* prop must be usable as an index for table 7.3 of UTR #14.  */
++                  if (!(prop >= 0 && prop < sizeof (unilbrk_table) / sizeof (unilbrk_table[0])))
++                    abort ();
++
++                  if (last_prop == LBP_BK)
+                     {
+-                    case D:
+-                      *q = UC_BREAK_POSSIBLE;
+-                      break;
+-                    case I:
+-                      *q = (seen_space != NULL ? UC_BREAK_POSSIBLE : UC_BREAK_PROHIBITED);
+-                      break;
+-                    case P:
++                      /* Don't break at the beginning of a line.  */
+                       *q = UC_BREAK_PROHIBITED;
+-                      break;
+-                    default:
+-                      abort ();
+                     }
++                  else if (last_prop == LBP_ZW)
++                    {
++                      /* Break after zero-width space.  */
++                      *q = UC_BREAK_POSSIBLE;
++                    }
++                  else
++                    {
++                      switch (unilbrk_table [last_prop] [prop])
++                        {
++                        case D:
++                          *q = UC_BREAK_POSSIBLE;
++                          break;
++                        case I:
++                          *q = (seen_space != NULL ? UC_BREAK_POSSIBLE : UC_BREAK_PROHIBITED);
++                          break;
++                        case P:
++                          *q = UC_BREAK_PROHIBITED;
++                          break;
++                        default:
++                          abort ();
++                        }
++                    }
++                  last_prop = prop;
++                  seen_space = NULL;
++                  seen_space2 = NULL;
+                 }
+-              last_prop = prop;
+-              seen_space = NULL;
+-              seen_space2 = NULL;
+             }
+-        }
+ 
+-      s++;
+-      p++;
++          s++;
++          p++;
++        }
++      while (s < s_end);
+     }
+ }
+--- lib/unilbrk/u8-possible-linebreaks.c
++++ lib/unilbrk/u8-possible-linebreaks.c
+@@ -39,136 +39,140 @@
+ void
+ u8_possible_linebreaks (const uint8_t *s, size_t n, const char *encoding, char *p)
+ {
+-  int LBP_AI_REPLACEMENT = (is_cjk_encoding (encoding) ? LBP_ID : LBP_AL);
+-  const uint8_t *s_end = s + n;
+-  int last_prop = LBP_BK; /* line break property of last non-space character */
+-  char *seen_space = NULL; /* Was a space seen after the last non-space character? */
+-  char *seen_space2 = NULL; /* At least two spaces after the last non-space? */
+-
+-  /* Don't break inside multibyte characters.  */
+-  memset (p, UC_BREAK_PROHIBITED, n);
+-
+-  while (s < s_end)
++  if (n > 0)
+     {
+-      ucs4_t uc;
+-      int count = u8_mbtouc_unsafe (&uc, s, s_end - s);
+-      int prop = unilbrkprop_lookup (uc);
++      int LBP_AI_REPLACEMENT = (is_cjk_encoding (encoding) ? LBP_ID : LBP_AL);
++      const uint8_t *s_end = s + n;
++      int last_prop = LBP_BK; /* line break property of last non-space character */
++      char *seen_space = NULL; /* Was a space seen after the last non-space character? */
++      char *seen_space2 = NULL; /* At least two spaces after the last non-space? */
+ 
+-      if (prop == LBP_BK)
+-        {
+-          /* Mandatory break.  */
+-          *p = UC_BREAK_MANDATORY;
+-          last_prop = LBP_BK;
+-          seen_space = NULL;
+-          seen_space2 = NULL;
+-        }
+-      else
+-        {
+-          char *q;
++      /* Don't break inside multibyte characters.  */
++      memset (p, UC_BREAK_PROHIBITED, n);
+ 
+-          /* Resolve property values whose behaviour is not fixed.  */
+-          switch (prop)
+-            {
+-            case LBP_AI:
+-              /* Resolve ambiguous.  */
+-              prop = LBP_AI_REPLACEMENT;
+-              break;
+-            case LBP_CB:
+-              /* This is arbitrary.  */
+-              prop = LBP_ID;
+-              break;
+-            case LBP_SA:
+-              /* We don't handle complex scripts yet.
+-                 Treat LBP_SA like LBP_XX.  */
+-            case LBP_XX:
+-              /* This is arbitrary.  */
+-              prop = LBP_AL;
+-              break;
+-            }
++      do
++        {
++          ucs4_t uc;
++          int count = u8_mbtouc_unsafe (&uc, s, s_end - s);
++          int prop = unilbrkprop_lookup (uc);
+ 
+-          /* Deal with spaces and combining characters.  */
+-          q = p;
+-          if (prop == LBP_SP)
+-            {
+-              /* Don't break just before a space.  */
+-              *p = UC_BREAK_PROHIBITED;
+-              seen_space2 = seen_space;
+-              seen_space = p;
+-            }
+-          else if (prop == LBP_ZW)
++          if (prop == LBP_BK)
+             {
+-              /* Don't break just before a zero-width space.  */
+-              *p = UC_BREAK_PROHIBITED;
+-              last_prop = LBP_ZW;
++              /* Mandatory break.  */
++              *p = UC_BREAK_MANDATORY;
++              last_prop = LBP_BK;
+               seen_space = NULL;
+               seen_space2 = NULL;
+             }
+-          else if (prop == LBP_CM)
++          else
+             {
+-              /* Don't break just before a combining character, except immediately after a
+-                 zero-width space.  */
+-              if (last_prop == LBP_ZW)
++              char *q;
++
++              /* Resolve property values whose behaviour is not fixed.  */
++              switch (prop)
+                 {
+-                  /* Break after zero-width space.  */
+-                  *p = UC_BREAK_POSSIBLE;
+-                  /* A combining character turns a preceding space into LBP_ID.  */
+-                  last_prop = LBP_ID;
++                case LBP_AI:
++                  /* Resolve ambiguous.  */
++                  prop = LBP_AI_REPLACEMENT;
++                  break;
++                case LBP_CB:
++                  /* This is arbitrary.  */
++                  prop = LBP_ID;
++                  break;
++                case LBP_SA:
++                  /* We don't handle complex scripts yet.
++                     Treat LBP_SA like LBP_XX.  */
++                case LBP_XX:
++                  /* This is arbitrary.  */
++                  prop = LBP_AL;
++                  break;
+                 }
+-              else
++
++              /* Deal with spaces and combining characters.  */
++              q = p;
++              if (prop == LBP_SP)
+                 {
++                  /* Don't break just before a space.  */
+                   *p = UC_BREAK_PROHIBITED;
+-                  /* A combining character turns a preceding space into LBP_ID.  */
+-                  if (seen_space != NULL)
+-                    {
+-                      q = seen_space;
+-                      seen_space = seen_space2;
+-                      prop = LBP_ID;
+-                      goto lookup_via_table;
+-                    }
++                  seen_space2 = seen_space;
++                  seen_space = p;
+                 }
+-            }
+-          else
+-            {
+-             lookup_via_table:
+-              /* prop must be usable as an index for table 7.3 of UTR #14.  */
+-              if (!(prop >= 0 && prop < sizeof (unilbrk_table) / sizeof (unilbrk_table[0])))
+-                abort ();
+-
+-              if (last_prop == LBP_BK)
++              else if (prop == LBP_ZW)
+                 {
+-                  /* Don't break at the beginning of a line.  */
+-                  *q = UC_BREAK_PROHIBITED;
++                  /* Don't break just before a zero-width space.  */
++                  *p = UC_BREAK_PROHIBITED;
++                  last_prop = LBP_ZW;
++                  seen_space = NULL;
++                  seen_space2 = NULL;
+                 }
+-              else if (last_prop == LBP_ZW)
++              else if (prop == LBP_CM)
+                 {
+-                  /* Break after zero-width space.  */
+-                  *q = UC_BREAK_POSSIBLE;
++                  /* Don't break just before a combining character, except immediately
++                     after a zero-width space.  */
++                  if (last_prop == LBP_ZW)
++                    {
++                      /* Break after zero-width space.  */
++                      *p = UC_BREAK_POSSIBLE;
++                      /* A combining character turns a preceding space into LBP_ID.  */
++                      last_prop = LBP_ID;
++                    }
++                  else
++                    {
++                      *p = UC_BREAK_PROHIBITED;
++                      /* A combining character turns a preceding space into LBP_ID.  */
++                      if (seen_space != NULL)
++                        {
++                          q = seen_space;
++                          seen_space = seen_space2;
++                          prop = LBP_ID;
++                          goto lookup_via_table;
++                        }
++                    }
+                 }
+               else
+                 {
+-                  switch (unilbrk_table [last_prop] [prop])
++                 lookup_via_table:
++                  /* prop must be usable as an index for table 7.3 of UTR #14.  */
++                  if (!(prop >= 0 && prop < sizeof (unilbrk_table) / sizeof (unilbrk_table[0])))
++                    abort ();
++
++                  if (last_prop == LBP_BK)
+                     {
+-                    case D:
+-                      *q = UC_BREAK_POSSIBLE;
+-                      break;
+-                    case I:
+-                      *q = (seen_space != NULL ? UC_BREAK_POSSIBLE : UC_BREAK_PROHIBITED);
+-                      break;
+-                    case P:
++                      /* Don't break at the beginning of a line.  */
+                       *q = UC_BREAK_PROHIBITED;
+-                      break;
+-                    default:
+-                      abort ();
+                     }
++                  else if (last_prop == LBP_ZW)
++                    {
++                      /* Break after zero-width space.  */
++                      *q = UC_BREAK_POSSIBLE;
++                    }
++                  else
++                    {
++                      switch (unilbrk_table [last_prop] [prop])
++                        {
++                        case D:
++                          *q = UC_BREAK_POSSIBLE;
++                          break;
++                        case I:
++                          *q = (seen_space != NULL ? UC_BREAK_POSSIBLE : UC_BREAK_PROHIBITED);
++                          break;
++                        case P:
++                          *q = UC_BREAK_PROHIBITED;
++                          break;
++                        default:
++                          abort ();
++                        }
++                    }
++                  last_prop = prop;
++                  seen_space = NULL;
++                  seen_space2 = NULL;
+                 }
+-              last_prop = prop;
+-              seen_space = NULL;
+-              seen_space2 = NULL;
+             }
+-        }
+ 
+-      s += count;
+-      p += count;
++          s += count;
++          p += count;
++        }
++      while (s < s_end);
+     }
+ }
+ 
+--- lib/unicase/u-ct-totitle.h
++++ lib/unicase/u-ct-totitle.h
+@@ -109,7 +109,7 @@
+         ucs4_t mapped_uc[3];
+         unsigned int mapped_count;
+ 
+-        if (*wp)
++        if (wp && *wp)
+           /* Crossing a word boundary.  */
+           in_word_first_part = true;
+ 
+--- tests/test-float.c
++++ tests/test-float.c
+@@ -315,6 +315,11 @@
+     volatile long double m = LDBL_MAX;
+     int n;
+ 
++    /* The library source code handles the case LDBL_MANT_DIG=106.   */
++    /* It appears the library's tests don't reflect the changes      */
++    /* made to the library proper. What I am not sure about is, are  */
++    /* the changes in the library applicable to Apple PPC platforms. */
++#if !defined(__APPLE__) || !defined(_ARCH_PPC)
+     ASSERT (m + m > m);
+     for (n = 0; n <= 2 * LDBL_MANT_DIG; n++)
+       {
+@@ -325,6 +330,7 @@
+         else
+           ASSERT (!(x + x == x));
+       }
++#endif
+   }
+ 
+   /* Check the value of LDBL_MIN.  */
+--- tests/test-striconveh.c
++++ tests/test-striconveh.c
+@@ -737,13 +737,23 @@
+     }
+ 
+   if (cd_88591_to_88592 != (iconv_t)(-1))
++  {
+     iconv_close (cd_88591_to_88592);
++    cd_88591_to_88592 = (iconv_t)(-1);
++  }
+   if (cd_88592_to_88591 != (iconv_t)(-1))
++  {
+     iconv_close (cd_88592_to_88591);
++    cd_88592_to_88591 = (iconv_t)(-1);
++  }
+   iconv_close (cd_88591_to_utf8);
++  cd_88591_to_utf8 = (iconv_t)(-1);
+   iconv_close (cd_utf8_to_88591);
++  cd_utf8_to_88591 = (iconv_t)(-1);
+   iconv_close (cd_88592_to_utf8);
++  cd_88592_to_utf8 = (iconv_t)(-1);
+   iconv_close (cd_utf8_to_88592);
++  cd_utf8_to_88592 = (iconv_t)(-1);
+ 
+   /* ------------------------- Test mem_iconveh() ------------------------- */
+ 
+@@ -1108,5 +1118,28 @@
+ 
+ #endif
+ 
++#if HAVE_ICONV
++
++  if (cd_ascii_to_88591 != (iconv_t)-1)
++    iconv_close(cd_ascii_to_88591);
++  if (cd_88591_to_88592 != (iconv_t)-1)
++    iconv_close(cd_88591_to_88592);
++  if (cd_88592_to_88591 != (iconv_t)-1)
++    iconv_close(cd_88592_to_88591);
++  if (cd_ascii_to_utf8 != (iconv_t)-1)
++    iconv_close(cd_ascii_to_utf8);
++  if (cd_88591_to_utf8 != (iconv_t)-1)
++    iconv_close(cd_88591_to_utf8);
++  if (cd_utf8_to_88591 != (iconv_t)-1)
++    iconv_close(cd_utf8_to_88591);
++  if (cd_88592_to_utf8 != (iconv_t)-1)
++    iconv_close(cd_88592_to_utf8);
++  if (cd_utf8_to_88592 != (iconv_t)-1)
++    iconv_close(cd_utf8_to_88592);
++  if (cd_utf7_to_utf8 != (iconv_t)-1)
++    iconv_close(cd_utf7_to_utf8);
++
++#endif
++
+   return 0;
+ }
+ 
+--- tests/uniconv/test-u8-conv-to-enc.c
++++ tests/uniconv/test-u8-conv-to-enc.c
+@@ -81,9 +81,11 @@
+                                        i == 40 ? (size_t)(-1) :
+                                        i - 4));
+               ASSERT (offsets[41] == MAGIC);
+-              free (offsets);
+             }
+-          free (result);
++          if (offsets)
++            free (offsets);
++          if (result)
++            free (result);
+         }
+     }
+ 
+@@ -122,9 +124,7 @@
+                                              i == 5 ? (size_t)(-1) :
+                                              i - 1));
+                     ASSERT (offsets[17] == MAGIC);
+-                    free (offsets);
+                   }
+-                free (result);
+               }
+               break;
+             case iconveh_escape_sequence:
+@@ -140,12 +140,14 @@
+                                              i == 5 ? (size_t)(-1) :
+                                              i + 4));
+                     ASSERT (offsets[17] == MAGIC);
+-                    free (offsets);
+                   }
+-                free (result);
+               }
+               break;
+             }
++          if (offsets)
++            free (offsets);
++          if (result)
++            free (result);
+         }
+     }
+ 
+@@ -168,9 +170,11 @@
+             {
+               ASSERT (offsets[0] == 0);
+               ASSERT (offsets[1] == MAGIC);
+-              free (offsets);
+             }
+-          free (result);
++          if (offsets)
++            free (offsets);
++          if (result)
++            free (result);
+         }
+     }
+ 
+--- tests/uniconv/test-u16-conv-to-enc.c
++++ tests/uniconv/test-u16-conv-to-enc.c
+@@ -120,9 +120,7 @@
+                     for (i = 0; i < 16; i++)
+                       ASSERT (offsets[i] == i);
+                     ASSERT (offsets[16] == MAGIC);
+-                    free (offsets);
+                   }
+-                free (result);
+               }
+               break;
+             case iconveh_escape_sequence:
+@@ -136,12 +134,14 @@
+                     for (i = 0; i < 16; i++)
+                       ASSERT (offsets[i] == (i < 5 ? i : i + 5));
+                     ASSERT (offsets[16] == MAGIC);
+-                    free (offsets);
+                   }
+-                free (result);
+               }
+               break;
+             }
++          if (offsets)
++            free (offsets);
++          if (result)
++            free (result);
+         }
+     }
+ 
+--- tests/uniconv/test-u32-conv-to-enc.c
++++ tests/uniconv/test-u32-conv-to-enc.c
+@@ -120,9 +120,7 @@
+                     for (i = 0; i < 16; i++)
+                       ASSERT (offsets[i] == i);
+                     ASSERT (offsets[16] == MAGIC);
+-                    free (offsets);
+                   }
+-                free (result);
+               }
+               break;
+             case iconveh_escape_sequence:
+@@ -136,12 +134,14 @@
+                     for (i = 0; i < 16; i++)
+                       ASSERT (offsets[i] == (i < 5 ? i : i + 5));
+                     ASSERT (offsets[16] == MAGIC);
+-                    free (offsets);
+                   }
+-                free (result);
+               }
+               break;
+             }
++          if (offsets)
++            free (offsets);
++          if (result)
++            free (result);
+         }
+     }
+ 
+--- tests/uninorm/test-u32-normalize-big.c
++++ tests/uninorm/test-u32-normalize-big.c
+@@ -297,6 +297,7 @@
+           input[0] = uc;
+           result = u32_normalize (nf, input, 1, NULL, &length);
+           ASSERT (result != NULL && length == 1 && result[0] == uc);
++          free (result);
+         }
+     }
+ }
+--- tests/unistr/test-strchr.h
++++ tests/unistr/test-strchr.h
+@@ -157,5 +157,7 @@
+   }
+ #endif
+ 
+-  free (input);
++  if ((const uint32_t*)input != input32)
++    free (input);
++  free (input32);
+ }
+--- tests/unistr/test-chr.h
++++ tests/unistr/test-chr.h
+@@ -131,7 +131,9 @@
+       }
+   }
+ 
+-  free (input);
++  if ((const uint32_t*)input != input32)
++    free (input);
++  free (input32);
+ 
+   return 0;
+ }
+--- tests/uninorm/test-u32-normalize-big.h
++++ tests/uninorm/test-u32-normalize-big.h
+@@ -48,7 +48,7 @@
+      sentinel value of 0x110000 at the end.  */
+   ucs4_t *part1_c1_sorted;
+   /* The filename of the NormalizationTest.txt file.  */
+-  const char *filename;
++  char *filename;
+ };
+ 
+ /* Read the NormalizationTest.txt file and return its contents.  */
+@@ -56,6 +56,10 @@
+        read_normalization_test_file (const char *filename,
+                                      struct normalization_test_file *file);
+ 
++/* Free normalization_test_file contents.  */
++extern void
++       free_normalization_test_file (struct normalization_test_file *file);
++
+ /* Perform the first compliance test.  */
+ extern void
+        test_specific (const struct normalization_test_file *file,
+--- tests/uninorm/test-u32-normalize-big.c
++++ tests/uninorm/test-u32-normalize-big.c
+@@ -239,6 +239,39 @@
+ }
+ 
+ void
++free_normalization_test_file (struct normalization_test_file *file)
++{
++  if (file == NULL)
++    return;
++
++  unsigned int i, j, k;
++  for (i=0; i<4; ++i)
++  {
++    for (j=0; j<file->parts[i].lines_length; ++j)
++    {
++      for (k=0; k<5; ++k)
++      {
++        uint32_t *sequence = file->parts[i].lines[j].sequences[k];
++        if (sequence)
++          free (sequence);
++        file->parts[i].lines[j].sequences[k] = NULL;
++      }
++    }
++  
++    free(file->parts[i].lines);
++    file->parts[i].lines = NULL;
++  }
++
++  if (file->part1_c1_sorted)
++    free (file->part1_c1_sorted);
++  file->part1_c1_sorted = NULL;
++
++  if (file->filename)
++    free (file->filename);
++  file->filename = NULL;
++}
++
++void
+ test_specific (const struct normalization_test_file *file,
+                int (*check) (const uint32_t *c1, size_t c1_length,
+                              const uint32_t *c2, size_t c2_length,
+--- tests/uninorm/test-u32-nfc-big.c
++++ tests/uninorm/test-u32-nfc-big.c
+@@ -46,7 +46,10 @@
+     if (!(result != NULL
+           && length == c2_length
+           && u32_cmp (result, c2, c2_length) == 0))
++    {
++      free (result);
+       return 1;
++    }
+     free (result);
+   }
+   {
+@@ -57,7 +60,10 @@
+     if (!(result != NULL
+           && length == c2_length
+           && u32_cmp (result, c2, c2_length) == 0))
++    {
++      free (result);
+       return 2;
++    }
+     free (result);
+   }
+   {
+@@ -68,7 +74,10 @@
+     if (!(result != NULL
+           && length == c2_length
+           && u32_cmp (result, c2, c2_length) == 0))
++    {
++      free (result);
+       return 3;
++    }
+     free (result);
+   }
+   {
+@@ -79,7 +88,10 @@
+     if (!(result != NULL
+           && length == c4_length
+           && u32_cmp (result, c4, c4_length) == 0))
++    {
++      free (result);
+       return 4;
++    }
+     free (result);
+   }
+   {
+@@ -90,7 +102,10 @@
+     if (!(result != NULL
+           && length == c4_length
+           && u32_cmp (result, c4, c4_length) == 0))
++    {
++      free (result);
+       return 5;
++    }
+     free (result);
+   }
+   return 0;
+@@ -106,6 +121,8 @@
+   test_specific (&file, check);
+   test_other (&file, UNINORM_NFC);
+ 
++  free_normalization_test_file(&file);
++
+   return 0;
+ }
+ 
+--- tests/uninorm/test-u32-nfd-big.c
++++ tests/uninorm/test-u32-nfd-big.c
+@@ -46,7 +46,10 @@
+     if (!(result != NULL
+           && length == c3_length
+           && u32_cmp (result, c3, c3_length) == 0))
++    {
++      free (result);
+       return 1;
++    }
+     free (result);
+   }
+   {
+@@ -57,7 +60,10 @@
+     if (!(result != NULL
+           && length == c3_length
+           && u32_cmp (result, c3, c3_length) == 0))
++    {
++      free (result);
+       return 2;
++    }
+     free (result);
+   }
+   {
+@@ -68,7 +74,10 @@
+     if (!(result != NULL
+           && length == c3_length
+           && u32_cmp (result, c3, c3_length) == 0))
++    {
++      free (result);
+       return 3;
++    }
+     free (result);
+   }
+   {
+@@ -79,7 +88,10 @@
+     if (!(result != NULL
+           && length == c5_length
+           && u32_cmp (result, c5, c5_length) == 0))
++    {
++      free (result);
+       return 4;
++    }
+     free (result);
+   }
+   {
+@@ -90,7 +102,10 @@
+     if (!(result != NULL
+           && length == c5_length
+           && u32_cmp (result, c5, c5_length) == 0))
++    {
++      free (result);
+       return 5;
++    }
+     free (result);
+   }
+   return 0;
+@@ -106,6 +121,8 @@
+   test_specific (&file, check);
+   test_other (&file, UNINORM_NFD);
+ 
++  free_normalization_test_file(&file);
++
+   return 0;
+ }
+ 
+--- tests/uninorm/test-u32-nfkc-big.c
++++ tests/uninorm/test-u32-nfkc-big.c
+@@ -43,7 +43,10 @@
+     if (!(result != NULL
+           && length == c4_length
+           && u32_cmp (result, c4, c4_length) == 0))
++    {
++      free (result);
+       return 1;
++    }
+     free (result);
+   }
+   {
+@@ -54,7 +57,10 @@
+     if (!(result != NULL
+           && length == c4_length
+           && u32_cmp (result, c4, c4_length) == 0))
++    {
++      free (result);
+       return 2;
++    }
+     free (result);
+   }
+   {
+@@ -65,7 +71,10 @@
+     if (!(result != NULL
+           && length == c4_length
+           && u32_cmp (result, c4, c4_length) == 0))
++    {
++      free (result);
+       return 3;
++    }
+     free (result);
+   }
+   {
+@@ -76,7 +85,10 @@
+     if (!(result != NULL
+           && length == c4_length
+           && u32_cmp (result, c4, c4_length) == 0))
++    {
++      free (result);
+       return 4;
++    }
+     free (result);
+   }
+   {
+@@ -87,7 +99,10 @@
+     if (!(result != NULL
+           && length == c4_length
+           && u32_cmp (result, c4, c4_length) == 0))
++    {
++      free (result);
+       return 5;
++    }
+     free (result);
+   }
+   return 0;
+@@ -103,6 +118,8 @@
+   test_specific (&file, check);
+   test_other (&file, UNINORM_NFKC);
+ 
++  free_normalization_test_file(&file);
++
+   return 0;
+ }
+ 
+--- tests/uninorm/test-u32-nfkd-big.c
++++ tests/uninorm/test-u32-nfkd-big.c
+@@ -43,7 +43,10 @@
+     if (!(result != NULL
+           && length == c5_length
+           && u32_cmp (result, c5, c5_length) == 0))
++    {
++      free (result);
+       return 1;
++    }
+     free (result);
+   }
+   {
+@@ -54,7 +57,10 @@
+     if (!(result != NULL
+           && length == c5_length
+           && u32_cmp (result, c5, c5_length) == 0))
++    {
++      free (result);
+       return 2;
++    }
+     free (result);
+   }
+   {
+@@ -65,7 +71,10 @@
+     if (!(result != NULL
+           && length == c5_length
+           && u32_cmp (result, c5, c5_length) == 0))
++    {
++      free (result);
+       return 3;
++    }
+     free (result);
+   }
+   {
+@@ -76,7 +85,10 @@
+     if (!(result != NULL
+           && length == c5_length
+           && u32_cmp (result, c5, c5_length) == 0))
++    {
++      free (result);
+       return 4;
++    }
+     free (result);
+   }
+   {
+@@ -87,7 +99,10 @@
+     if (!(result != NULL
+           && length == c5_length
+           && u32_cmp (result, c5, c5_length) == 0))
++    {
++      free (result);
+       return 5;
++    }
+     free (result);
+   }
+   return 0;
+@@ -103,6 +118,8 @@
+   test_specific (&file, check);
+   test_other (&file, UNINORM_NFKD);
+ 
++  free_normalization_test_file(&file);
++
+   return 0;
+ }
+ 
+--- tests/test-intprops.c
++++ tests/test-intprops.c
+@@ -52,6 +52,17 @@
+ 
+ #define DONTCARE __LINE__
+ 
++/* Early versions of GCC don't define these */
++#ifndef LLONG_MIN
++#  define LLONG_MIN    LONG_LONG_MIN
++#endif
++#ifndef LLONG_MAX
++#  define LLONG_MAX    LONG_LONG_MAX
++#endif
++#ifndef ULLONG_MAX
++#  define ULLONG_MAX   ULONG_LONG_MAX
++#endif
++
+ int
+ main (void)
+ {
+--- tests/test-limits-h.c
++++ tests/test-limits-h.c
+@@ -26,6 +26,17 @@
+ # pragma GCC diagnostic ignored "-Woverlength-strings"
+ #endif
+ 
++/* Early versions of GCC don't define these */
++#ifndef LLONG_MIN
++#  define LLONG_MIN    LONG_LONG_MIN
++#endif
++#ifndef LLONG_MAX
++#  define LLONG_MAX    LONG_LONG_MAX
++#endif
++#ifndef ULLONG_MAX
++#  define ULLONG_MAX   ULONG_LONG_MAX
++#endif
++
+ /* Macros specified by ISO/IEC TS 18661-1:2014.  */
+ 
+ #define verify_width(width, min, max) \
+--- tests/test-localename.c
++++ tests/test-localename.c
+@@ -478,7 +478,9 @@
+             {
+               ASSERT (strcmp (unsaved_names[j][i], saved_names[j][i]) == 0);
+               free (saved_names[j][i]);
++              saved_names[j][i] = NULL;
+             }
++          available[j] = 0;
+         }
+   }
+ #else

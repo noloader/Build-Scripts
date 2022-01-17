@@ -1,0 +1,1462 @@
+--- crypt/osconfig.h
++++ crypt/osconfig.h
+@@ -374,6 +374,13 @@
+ 	  #define BN_LLONG
+ 	  #define DES_RISC1
+ 	#endif /* 64- vs. 32-bit ARM */
++  #elif defined( __aarch64__ ) || defined( __arm64 )
++          /* Apple M1 */
++          #define SYSTEM_NAME   "OS X Arm64"
++          #define L_ENDIAN
++          #undef SIXTY_FOUR_BIT
++          #define SIXTY_FOUR_BIT_LONG
++          #define RC4_CHAR
+   #elif defined( __ppc__ )
+ 	#define SYSTEM_NAME		"OS X PowerPC"
+ 	#define B_ENDIAN
+--- random/unix.c
++++ random/unix.c
+@@ -503,7 +503,9 @@
+ 									   amount of output so typically gets
+ 									   truncated at SYSCTL_BUFFER_SIZE */
+ #endif /* KERN_PROC2 */
++#ifdef GPROF_COUNT
+ 	{ 3, { CTL_KERN, KERN_PROF, GPROF_COUNT }, 10 },
++#endif
+ 									/* If kernel is compiled for profiling, 
+ 									   an array of statistical program 
+ 									   counter counts.  This typically isn't
+--- test/certs.c
++++ test/certs.c
+@@ -53,6 +53,12 @@
+   #endif /* CERTTIME_DATETEST <= MIN_TIME_VALUE */
+ #endif /* Safety check of time test value against MIN_TIME_VALUE */
+ 
++/* Per PG in private email */
++#ifdef MIN_TIME_VALUE
++# undef CERTTIME_DATETEST
++# define CERTTIME_DATETEST       MIN_TIME_VALUE + 1
++#endif
++
+ /****************************************************************************
+ *																			*
+ *								Utility Functions							*
+--- makefile
++++ makefile
+@@ -90,7 +90,12 @@
+ # Further cc flags are gathered dynamically at runtime via the ccopts.sh
+ # script.
+ 
+-CFLAGS			= -c -D__UNIX__ -DNDEBUG -I.
++# Cryptlib stomps on our CFLAGS!!!!
++CRYPTLIB_CPPFLAGS		= -D__UNIX__ -DNDEBUG -I.
++CRYPTLIB_CFLAGS			= -c
++CPPFLAGS			:= $(CRYPTLIB_CPPFLAGS) $(CPPFLAGS)
++CFLAGS				:= $(CRYPTLIB_CFLAGS) $(CFLAGS)
++
+ CFLAGS_DEBUG	= -c -D__UNIX__ -I. -g -O1
+ CFLAGS_DEBUGGCC	= -c -D__UNIX__ -I. -ggdb3 -fno-omit-frame-pointer -O1
+ CFLAGS_ANALYSE	= -c -D__UNIX__ -I.
+@@ -367,22 +372,22 @@
+ 
+ default:
+ 	@$(MAKE) common-tasks
+-	@./tools/buildall.sh $(MAKE) $(CC) $(OSNAME) $(CFLAGS)
++	@./tools/buildall.sh $(MAKE) $(CC) $(OSNAME) $(CPPFLAGS) $(CFLAGS)
+ 
+ shared:
+ 	@$(MAKE) common-tasks
+-	@./tools/buildall.sh shared $(MAKE) $(CC) $(OSNAME) $(CFLAGS)
++	@./tools/buildall.sh shared $(MAKE) $(CC) $(OSNAME) $(CPPFLAGS) $(CFLAGS)
+ 
+ debug:
+ 	@$(MAKE) common-tasks
+-	@./tools/buildall.sh $(MAKE) $(CC) $(OSNAME) $(CFLAGS_DEBUG)
++	@./tools/buildall.sh $(MAKE) $(CC) $(OSNAME) $(CPPFLAGS) $(CFLAGS_DEBUG)
+ 
+ # Special-case targets.  The "analyse" target isn't used directly but is 
+ # invoked as part of the clang static analyser build process.
+ 
+ analyse:
+ 	@$(MAKE) common-tasks
+-	@./tools/buildall.sh analyse $(MAKE) $(CC) $(OSNAME) $(CFLAGS_ANALYSE)
++	@./tools/buildall.sh analyse $(MAKE) $(CC) $(OSNAME) $(CPPFLAGS) $(CFLAGS_ANALYSE)
+ 
+ testlib-special:
+ 	@echo $(TESTOBJS) > $(LINKFILE)
+@@ -395,7 +400,7 @@
+ 	@$(MAKE) common-tasks
+ 	@export AFL_HARDEN=1 ; export AFL_USE_ASAN=1 ; \
+ 		./tools/buildall.sh special $(MAKE) ~/afl-2*/afl-clang-fast \
+-		$(OSNAME) $(CFLAGS_FUZZ)
++		$(OSNAME) $(CPPFLAGS) $(CFLAGS_FUZZ)
+ 	@rm -f $(LINKFILE)
+ 	make testlib-special LD=~/afl-2*/afl-clang-fast LDFLAGS="-fsanitize=address" \
+ 		LDEXTRA="~/afl-2*/afl-llvm-rt.o" OSNAME=$(OSNAME)
+@@ -540,985 +545,985 @@
+ # Main directory
+ 
+ $(OBJPATH)cryptapi.o:	$(CRYPT_DEP) cryptapi.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cryptapi.o cryptapi.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cryptapi.o cryptapi.c
+ 
+ $(OBJPATH)cryptcrt.o:	$(CRYPT_DEP) $(CERT_DEP) cryptcrt.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cryptcrt.o cryptcrt.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cryptcrt.o cryptcrt.c
+ 
+ $(OBJPATH)cryptctx.o:	$(CRYPT_DEP) context/context.h cryptctx.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cryptctx.o cryptctx.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cryptctx.o cryptctx.c
+ 
+ $(OBJPATH)cryptdev.o:	$(CRYPT_DEP) device/device.h cryptdev.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cryptdev.o cryptdev.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cryptdev.o cryptdev.c
+ 
+ $(OBJPATH)cryptenv.o:	$(CRYPT_DEP) envelope/envelope.h $(ASN1_DEP) \
+ 						cryptenv.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cryptenv.o cryptenv.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cryptenv.o cryptenv.c
+ 
+ $(OBJPATH)cryptkey.o:	$(CRYPT_DEP) keyset/keyset.h cryptkey.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cryptkey.o cryptkey.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cryptkey.o cryptkey.c
+ 
+ $(OBJPATH)cryptlib.o:	$(CRYPT_DEP) cryptlib.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cryptlib.o cryptlib.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cryptlib.o cryptlib.c
+ 
+ $(OBJPATH)cryptses.o:	$(CRYPT_DEP) session/session.h cryptses.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cryptses.o cryptses.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cryptses.o cryptses.c
+ 
+ $(OBJPATH)cryptusr.o:	$(CRYPT_DEP) misc/user.h cryptusr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cryptusr.o cryptusr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cryptusr.o cryptusr.c
+ 
+ # Additional modules whose use needs to be explicitly enabled by the user.
+ 
+ $(OBJPATH)java_jni.o:	$(CRYPT_DEP) bindings/java_jni.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)java_jni.o bindings/java_jni.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)java_jni.o bindings/java_jni.c
+ 
+ # bn subdirectory
+ 
+ $(OBJPATH)bn_asm.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_asm.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)bn_asm.o bn/bn_asm.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)bn_asm.o bn/bn_asm.c
+ 
+ $(OBJPATH)bn_exp.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_exp.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)bn_exp.o bn/bn_exp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)bn_exp.o bn/bn_exp.c
+ 
+ $(OBJPATH)bn_exp2.o:	crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_exp2.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)bn_exp2.o bn/bn_exp2.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)bn_exp2.o bn/bn_exp2.c
+ 
+ $(OBJPATH)bn_gcd.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_gcd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)bn_gcd.o bn/bn_gcd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)bn_gcd.o bn/bn_gcd.c
+ 
+ $(OBJPATH)bn_mul.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_mul.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)bn_mul.o bn/bn_mul.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)bn_mul.o bn/bn_mul.c
+ 
+ $(OBJPATH)bn_recp.o:	crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/bn_recp.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)bn_recp.o bn/bn_recp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)bn_recp.o bn/bn_recp.c
+ 
+ $(OBJPATH)ec_lib.o:		crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/ec.h bn/ec_lib.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ec_lib.o bn/ec_lib.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ec_lib.o bn/ec_lib.c
+ 
+ $(OBJPATH)ecp_mont.o:	crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/ec.h bn/ecp_mont.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ecp_mont.o bn/ecp_mont.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ecp_mont.o bn/ecp_mont.c
+ 
+ $(OBJPATH)ecp_smpl.o:	crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/ec.h bn/ecp_smpl.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ecp_smpl.o bn/ecp_smpl.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ecp_smpl.o bn/ecp_smpl.c
+ 
+ $(OBJPATH)ec_mult.o:	crypt/osconfig.h bn/bn.h bn/bn_lcl.h bn/ec.h bn/ec_mult.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ec_mult.o bn/ec_mult.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ec_mult.o bn/ec_mult.c
+ 
+ # cert subdirectory
+ 
+ $(OBJPATH)certrev.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/certrev.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)certrev.o cert/certrev.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)certrev.o cert/certrev.c
+ 
+ $(OBJPATH)certschk.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/certschk.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)certschk.o cert/certschk.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)certschk.o cert/certschk.c
+ 
+ $(OBJPATH)certsign.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/certsign.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)certsign.o cert/certsign.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)certsign.o cert/certsign.c
+ 
+ $(OBJPATH)certval.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/certval.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)certval.o cert/certval.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)certval.o cert/certval.c
+ 
+ $(OBJPATH)chain.o:		$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/chain.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)chain.o cert/chain.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)chain.o cert/chain.c
+ 
+ $(OBJPATH)chk_cert.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/chk_cert.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)chk_cert.o cert/chk_cert.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)chk_cert.o cert/chk_cert.c
+ 
+ $(OBJPATH)chk_chn.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/chk_chn.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)chk_chn.o cert/chk_chn.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)chk_chn.o cert/chk_chn.c
+ 
+ $(OBJPATH)chk_san.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/chk_san.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)chk_san.o cert/chk_san.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)chk_san.o cert/chk_san.c
+ 
+ $(OBJPATH)chk_use.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/chk_use.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)chk_use.o cert/chk_use.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)chk_use.o cert/chk_use.c
+ 
+ $(OBJPATH)comp_cert.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/comp_cert.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)comp_cert.o cert/comp_cert.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)comp_cert.o cert/comp_cert.c
+ 
+ $(OBJPATH)comp_curs.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/comp_curs.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)comp_curs.o cert/comp_curs.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)comp_curs.o cert/comp_curs.c
+ 
+ $(OBJPATH)comp_del.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/comp_del.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)comp_del.o cert/comp_del.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)comp_del.o cert/comp_del.c
+ 
+ $(OBJPATH)comp_get.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/comp_get.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)comp_get.o cert/comp_get.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)comp_get.o cert/comp_get.c
+ 
+ $(OBJPATH)comp_gets.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/comp_gets.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)comp_gets.o cert/comp_gets.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)comp_gets.o cert/comp_gets.c
+ 
+ $(OBJPATH)comp_pkiu.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/comp_pkiu.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)comp_pkiu.o cert/comp_pkiu.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)comp_pkiu.o cert/comp_pkiu.c
+ 
+ $(OBJPATH)comp_set.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/comp_set.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)comp_set.o cert/comp_set.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)comp_set.o cert/comp_set.c
+ 
+ $(OBJPATH)dn.o:			$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/dn.h cert/dn.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)dn.o cert/dn.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)dn.o cert/dn.c
+ 
+ $(OBJPATH)dn_rw.o:		$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/dn.h cert/dn_rw.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)dn_rw.o cert/dn_rw.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)dn_rw.o cert/dn_rw.c
+ 
+ $(OBJPATH)dn_rws.o:		$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/dn.h cert/dn_rws.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)dn_rws.o cert/dn_rws.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)dn_rws.o cert/dn_rws.c
+ 
+ $(OBJPATH)dn_string.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/dn.h cert/dn_string.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)dn_string.o cert/dn_string.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)dn_string.o cert/dn_string.c
+ 
+ $(OBJPATH)ext.o:		$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/certattr.h cert/ext.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ext.o cert/ext.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ext.o cert/ext.c
+ 
+ $(OBJPATH)ext_add.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/certattr.h cert/ext_add.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ext_add.o cert/ext_add.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ext_add.o cert/ext_add.c
+ 
+ $(OBJPATH)ext_chk.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/certattr.h cert/ext_chk.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ext_chk.o cert/ext_chk.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ext_chk.o cert/ext_chk.c
+ 
+ $(OBJPATH)ext_copy.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/certattr.h cert/ext_copy.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ext_copy.o cert/ext_copy.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ext_copy.o cert/ext_copy.c
+ 
+ $(OBJPATH)ext_def.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/certattr.h cert/ext_def.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ext_def.o cert/ext_def.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ext_def.o cert/ext_def.c
+ 
+ $(OBJPATH)ext_rd.o:		$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/certattr.h cert/ext_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ext_rd.o cert/ext_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ext_rd.o cert/ext_rd.c
+ 
+ $(OBJPATH)ext_wr.o:		$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/certattr.h cert/ext_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ext_wr.o cert/ext_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ext_wr.o cert/ext_wr.c
+ 
+ $(OBJPATH)imp_chk.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/imp_chk.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)imp_chk.o cert/imp_chk.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)imp_chk.o cert/imp_chk.c
+ 
+ $(OBJPATH)imp_exp.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/imp_exp.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)imp_exp.o cert/imp_exp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)imp_exp.o cert/imp_exp.c
+ 
+ $(OBJPATH)read.o:		$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/read.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)read.o cert/read.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)read.o cert/read.c
+ 
+ $(OBJPATH)trustmgr.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/trustmgr.h cert/trustmgr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)trustmgr.o cert/trustmgr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)trustmgr.o cert/trustmgr.c
+ 
+ $(OBJPATH)write.o:		$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/write.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)write.o cert/write.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)write.o cert/write.c
+ 
+ $(OBJPATH)write_pre.o:	$(CRYPT_DEP) $(ASN1_DEP) $(CERT_DEP) cert/write_pre.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)write_pre.o cert/write_pre.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)write_pre.o cert/write_pre.c
+ 
+ # context subdirectory
+ 
+ $(OBJPATH)ctx_3des.o:	$(CRYPT_DEP) context/context.h crypt/des.h context/ctx_3des.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_3des.o context/ctx_3des.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_3des.o context/ctx_3des.c
+ 
+ $(OBJPATH)ctx_aes.o:	$(CRYPT_DEP) context/context.h crypt/aes.h crypt/aes_ni.h \
+ 						crypt/aes_via_ace.h crypt/aesopt.h context/ctx_aes.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_aes.o context/ctx_aes.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_aes.o context/ctx_aes.c
+ 
+ $(OBJPATH)ctx_attr.o:	$(CRYPT_DEP) context/context.h context/ctx_attr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_attr.o context/ctx_attr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_attr.o context/ctx_attr.c
+ 
+ $(OBJPATH)ctx_bn.o:		$(CRYPT_DEP) context/context.h context/ctx_bn.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_bn.o context/ctx_bn.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_bn.o context/ctx_bn.c
+ 
+ $(OBJPATH)ctx_bnmath.o:	$(CRYPT_DEP) context/context.h context/ctx_bnmath.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_bnmath.o context/ctx_bnmath.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_bnmath.o context/ctx_bnmath.c
+ 
+ $(OBJPATH)ctx_bnpkc.o:	$(CRYPT_DEP) context/context.h context/ctx_bnpkc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_bnpkc.o context/ctx_bnpkc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_bnpkc.o context/ctx_bnpkc.c
+ 
+ $(OBJPATH)ctx_bnprime.o:	$(CRYPT_DEP) context/context.h context/ctx_bnprime.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_bnprime.o context/ctx_bnprime.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_bnprime.o context/ctx_bnprime.c
+ 
+ $(OBJPATH)ctx_bnrw.o:	$(CRYPT_DEP) context/context.h context/ctx_bnrw.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_bnrw.o context/ctx_bnrw.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_bnrw.o context/ctx_bnrw.c
+ 
+ $(OBJPATH)ctx_bnsieve.o:	$(CRYPT_DEP) context/context.h context/ctx_bnsieve.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_bnsieve.o context/ctx_bnsieve.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_bnsieve.o context/ctx_bnsieve.c
+ 
+ $(OBJPATH)ctx_bntest.o:	$(CRYPT_DEP) context/context.h context/ctx_bntest.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_bntest.o context/ctx_bntest.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_bntest.o context/ctx_bntest.c
+ 
+ $(OBJPATH)ctx_cast.o:	$(CRYPT_DEP) context/context.h crypt/cast.h context/ctx_cast.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_cast.o context/ctx_cast.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_cast.o context/ctx_cast.c
+ 
+ $(OBJPATH)ctx_des.o:	$(CRYPT_DEP) context/context.h crypt/testdes.h crypt/des.h \
+ 						context/ctx_des.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_des.o context/ctx_des.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_des.o context/ctx_des.c
+ 
+ $(OBJPATH)ctx_dh.o:		$(CRYPT_DEP) context/context.h bn/bn.h context/ctx_dh.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_dh.o context/ctx_dh.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_dh.o context/ctx_dh.c
+ 
+ $(OBJPATH)ctx_dsa.o:	$(CRYPT_DEP) context/context.h bn/bn.h context/ctx_dsa.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_dsa.o context/ctx_dsa.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_dsa.o context/ctx_dsa.c
+ 
+ $(OBJPATH)ctx_ecdh.o:	$(CRYPT_DEP) context/context.h bn/bn.h context/ctx_ecdh.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_ecdh.o context/ctx_ecdh.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_ecdh.o context/ctx_ecdh.c
+ 
+ $(OBJPATH)ctx_ecdsa.o:	$(CRYPT_DEP) context/context.h bn/bn.h context/ctx_ecdsa.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_ecdsa.o context/ctx_ecdsa.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_ecdsa.o context/ctx_ecdsa.c
+ 
+ $(OBJPATH)ctx_elg.o:	$(CRYPT_DEP) context/context.h bn/bn.h context/ctx_elg.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_elg.o context/ctx_elg.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_elg.o context/ctx_elg.c
+ 
+ $(OBJPATH)ctx_encr.o:	$(CRYPT_DEP) context/context.h context/ctx_encr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_encr.o context/ctx_encr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_encr.o context/ctx_encr.c
+ 
+ $(OBJPATH)ctx_generic.o: $(CRYPT_DEP) context/context.h context/ctx_generic.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_generic.o context/ctx_generic.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_generic.o context/ctx_generic.c
+ 
+ $(OBJPATH)ctx_hsha.o:	$(CRYPT_DEP) context/context.h crypt/sha.h context/ctx_hsha.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_hsha.o context/ctx_hsha.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_hsha.o context/ctx_hsha.c
+ 
+ $(OBJPATH)ctx_hsha2.o:	$(CRYPT_DEP) context/context.h crypt/sha2.h context/ctx_hsha2.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_hsha2.o context/ctx_hsha2.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_hsha2.o context/ctx_hsha2.c
+ 
+ $(OBJPATH)ctx_idea.o:	$(CRYPT_DEP) context/context.h crypt/idea.h context/ctx_idea.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_idea.o context/ctx_idea.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_idea.o context/ctx_idea.c
+ 
+ $(OBJPATH)ctx_md5.o:	$(CRYPT_DEP) context/context.h crypt/md5.h context/ctx_md5.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_md5.o context/ctx_md5.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_md5.o context/ctx_md5.c
+ 
+ $(OBJPATH)ctx_misc.o:	$(CRYPT_DEP) context/context.h context/ctx_misc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_misc.o context/ctx_misc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_misc.o context/ctx_misc.c
+ 
+ $(OBJPATH)ctx_rc2.o:	$(CRYPT_DEP) context/context.h crypt/rc2.h context/ctx_rc2.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_rc2.o context/ctx_rc2.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_rc2.o context/ctx_rc2.c
+ 
+ $(OBJPATH)ctx_rc4.o:	$(CRYPT_DEP) context/context.h crypt/rc4.h context/ctx_rc4.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_rc4.o context/ctx_rc4.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_rc4.o context/ctx_rc4.c
+ 
+ $(OBJPATH)ctx_rsa.o:	$(CRYPT_DEP) context/context.h bn/bn.h context/ctx_rsa.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_rsa.o context/ctx_rsa.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_rsa.o context/ctx_rsa.c
+ 
+ $(OBJPATH)ctx_sha.o:	$(CRYPT_DEP) context/context.h crypt/sha.h context/ctx_sha.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_sha.o context/ctx_sha.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_sha.o context/ctx_sha.c
+ 
+ $(OBJPATH)ctx_sha2.o:	$(CRYPT_DEP) context/context.h crypt/sha2.h context/ctx_sha2.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ctx_sha2.o context/ctx_sha2.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ctx_sha2.o context/ctx_sha2.c
+ 
+ $(OBJPATH)kg_dlp.o:		$(CRYPT_DEP) context/context.h context/kg_dlp.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)kg_dlp.o context/kg_dlp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)kg_dlp.o context/kg_dlp.c
+ 
+ $(OBJPATH)kg_ecc.o:		$(CRYPT_DEP) context/context.h context/kg_ecc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)kg_ecc.o context/kg_ecc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)kg_ecc.o context/kg_ecc.c
+ 
+ $(OBJPATH)kg_prime.o:	$(CRYPT_DEP) context/context.h context/kg_prime.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)kg_prime.o context/kg_prime.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)kg_prime.o context/kg_prime.c
+ 
+ $(OBJPATH)kg_rsa.o:		$(CRYPT_DEP) context/context.h context/kg_rsa.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)kg_rsa.o context/kg_rsa.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)kg_rsa.o context/kg_rsa.c
+ 
+ $(OBJPATH)keyload.o:	$(CRYPT_DEP) context/context.h context/keyload.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)keyload.o context/keyload.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)keyload.o context/keyload.c
+ 
+ $(OBJPATH)key_id.o:		$(CRYPT_DEP) $(ASN1_DEP) context/key_id.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)key_id.o context/key_id.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)key_id.o context/key_id.c
+ 
+ $(OBJPATH)key_rdpri.o:	$(CRYPT_DEP) $(ASN1_DEP) context/key_rdpri.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)key_rdpri.o context/key_rdpri.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)key_rdpri.o context/key_rdpri.c
+ 
+ $(OBJPATH)key_rdpub.o:	$(CRYPT_DEP) $(ASN1_DEP) context/key_rdpub.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)key_rdpub.o context/key_rdpub.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)key_rdpub.o context/key_rdpub.c
+ 
+ $(OBJPATH)key_wr.o:		$(CRYPT_DEP) $(ASN1_DEP) context/key_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)key_wr.o context/key_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)key_wr.o context/key_wr.c
+ 
+ # crypt subdirectory - crypt algos
+ 
+ $(OBJPATH)aes_modes.o:	$(CRYPT_DEP) crypt/aes.h crypt/aes_ni.h crypt/aes_via_ace.h \
+ 						crypt/aesopt.h crypt/aes_modes.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)aes_modes.o crypt/aes_modes.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)aes_modes.o crypt/aes_modes.c
+ 
+ $(OBJPATH)aes_ni.o:		$(CRYPT_DEP) crypt/aes.h crypt/aes_ni.h crypt/aes_via_ace.h \
+ 						crypt/aes_ni.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)aes_ni.o crypt/aes_ni.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)aes_ni.o crypt/aes_ni.c
+ 
+ $(OBJPATH)aescrypt.o:	$(CRYPT_DEP) crypt/aes.h crypt/aes_ni.h crypt/aes_via_ace.h \
+ 						crypt/aescrypt.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)aescrypt.o crypt/aescrypt.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)aescrypt.o crypt/aescrypt.c
+ 
+ $(OBJPATH)aeskey.o:		$(CRYPT_DEP) crypt/aes.h crypt/aes_ni.h crypt/aes_via_ace.h \
+ 						crypt/aeskey.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)aeskey.o crypt/aeskey.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)aeskey.o crypt/aeskey.c
+ 
+ $(OBJPATH)aestab.o:		$(CRYPT_DEP) crypt/aes.h crypt/aes_ni.h crypt/aes_via_ace.h \
+ 						crypt/aestab.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)aestab.o crypt/aestab.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)aestab.o crypt/aestab.c
+ 
+ $(OBJPATH)castecb.o:	crypt/osconfig.h crypt/cast.h crypt/castlcl.h crypt/castecb.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)castecb.o crypt/castecb.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)castecb.o crypt/castecb.c
+ 
+ $(OBJPATH)castenc.o:	crypt/osconfig.h crypt/cast.h crypt/castlcl.h crypt/castenc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)castenc.o crypt/castenc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)castenc.o crypt/castenc.c
+ 
+ $(OBJPATH)castskey.o:	crypt/osconfig.h crypt/cast.h crypt/castlcl.h crypt/castsbox.h \
+ 						crypt/castskey.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)castskey.o crypt/castskey.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)castskey.o crypt/castskey.c
+ 
+ $(OBJPATH)descbc.o:		crypt/osconfig.h crypt/des.h crypt/deslocl.h crypt/descbc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)descbc.o crypt/descbc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)descbc.o crypt/descbc.c
+ 
+ $(OBJPATH)desecb.o:		crypt/osconfig.h crypt/des.h crypt/deslocl.h crypt/desecb.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)desecb.o crypt/desecb.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)desecb.o crypt/desecb.c
+ 
+ $(OBJPATH)desecb3.o:	crypt/osconfig.h crypt/des.h crypt/deslocl.h crypt/desecb3.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)desecb3.o crypt/desecb3.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)desecb3.o crypt/desecb3.c
+ 
+ $(OBJPATH)desenc.o:		crypt/osconfig.h crypt/des.h crypt/deslocl.h crypt/desenc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)desenc.o crypt/desenc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)desenc.o crypt/desenc.c
+ 
+ $(OBJPATH)desskey.o:	crypt/osconfig.h crypt/des.h crypt/deslocl.h crypt/desskey.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)desskey.o crypt/desskey.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)desskey.o crypt/desskey.c
+ 
+ $(OBJPATH)gcm.o:		$(CRYPT_DEP) crypt/gf128mul.h crypt/gcm.h crypt/mode_hdr.h \
+ 						crypt/gcm.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)gcm.o crypt/gcm.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)gcm.o crypt/gcm.c
+ 
+ $(OBJPATH)gf128mul.o:	$(CRYPT_DEP) crypt/gf128mul.h crypt/mode_hdr.h \
+ 						crypt/gf_mul_lo.h crypt/gf128mul.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)gf128mul.o crypt/gf128mul.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)gf128mul.o crypt/gf128mul.c
+ 
+ $(OBJPATH)icbc.o:		$(CRYPT_DEP) crypt/idea.h crypt/idealocl.h crypt/icbc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)icbc.o crypt/icbc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)icbc.o crypt/icbc.c
+ 
+ $(OBJPATH)iecb.o:		$(CRYPT_DEP) crypt/idea.h crypt/idealocl.h crypt/iecb.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)iecb.o crypt/iecb.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)iecb.o crypt/iecb.c
+ 
+ $(OBJPATH)iskey.o:		$(CRYPT_DEP) crypt/idea.h crypt/idealocl.h crypt/iskey.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)iskey.o crypt/iskey.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)iskey.o crypt/iskey.c
+ 
+ $(OBJPATH)rc2cbc.o:		crypt/osconfig.h crypt/rc2.h crypt/rc2locl.h crypt/rc2cbc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)rc2cbc.o crypt/rc2cbc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)rc2cbc.o crypt/rc2cbc.c
+ 
+ $(OBJPATH)rc2ecb.o:		crypt/osconfig.h crypt/rc2.h crypt/rc2locl.h crypt/rc2ecb.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)rc2ecb.o crypt/rc2ecb.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)rc2ecb.o crypt/rc2ecb.c
+ 
+ $(OBJPATH)rc2skey.o:	crypt/osconfig.h crypt/rc2.h crypt/rc2locl.h crypt/rc2skey.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)rc2skey.o crypt/rc2skey.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)rc2skey.o crypt/rc2skey.c
+ 
+ $(OBJPATH)rc4enc.o:		crypt/osconfig.h crypt/rc4.h crypt/rc4locl.h crypt/rc4enc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)rc4enc.o crypt/rc4enc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)rc4enc.o crypt/rc4enc.c
+ 
+ $(OBJPATH)rc4skey.o:	crypt/osconfig.h crypt/rc4.h crypt/rc4locl.h crypt/rc4skey.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)rc4skey.o crypt/rc4skey.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)rc4skey.o crypt/rc4skey.c
+ 
+ # crypt subdirectory - hash algos
+ 
+ $(OBJPATH)md5dgst.o:	crypt/osconfig.h crypt/md5.h crypt/md5locl.h \
+ 						crypt/md32com.h crypt/md5dgst.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)md5dgst.o crypt/md5dgst.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)md5dgst.o crypt/md5dgst.c
+ 
+ $(OBJPATH)sha1dgst.o:	crypt/osconfig.h crypt/sha.h crypt/sha1locl.h \
+ 						crypt/md32com.h crypt/sha1dgst.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sha1dgst.o crypt/sha1dgst.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sha1dgst.o crypt/sha1dgst.c
+ 
+ $(OBJPATH)sha2.o:		crypt/osconfig.h crypt/sha.h crypt/sha1locl.h crypt/sha2.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sha2.o crypt/sha2.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sha2.o crypt/sha2.c
+ 
+ # device subdirectory
+ 
+ $(OBJPATH)dev_attr.o:	$(CRYPT_DEP) device/device.h device/dev_attr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)dev_attr.o device/dev_attr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)dev_attr.o device/dev_attr.c
+ 
+ $(OBJPATH)hardware.o:	$(CRYPT_DEP) device/device.h device/hardware.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)hardware.o device/hardware.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)hardware.o device/hardware.c
+ 
+ $(OBJPATH)hw_dummy.o:	$(CRYPT_DEP) device/device.h device/hw_dummy.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)hw_dummy.o device/hw_dummy.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)hw_dummy.o device/hw_dummy.c
+ 
+ $(OBJPATH)pkcs11.o:		$(CRYPT_DEP) device/device.h device/pkcs11_api.h device/pkcs11.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs11.o device/pkcs11.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs11.o device/pkcs11.c
+ 
+ $(OBJPATH)pkcs11_init.o: $(CRYPT_DEP) device/device.h device/pkcs11_api.h \
+ 						device/pkcs11_init.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs11_init.o device/pkcs11_init.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs11_init.o device/pkcs11_init.c
+ 
+ $(OBJPATH)pkcs11_pkc.o:	$(CRYPT_DEP) device/device.h device/pkcs11_api.h \
+ 						device/pkcs11_pkc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs11_pkc.o device/pkcs11_pkc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs11_pkc.o device/pkcs11_pkc.c
+ 
+ $(OBJPATH)pkcs11_rd.o:	$(CRYPT_DEP) device/device.h device/pkcs11_api.h \
+ 						device/pkcs11_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs11_rd.o device/pkcs11_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs11_rd.o device/pkcs11_rd.c
+ 
+ $(OBJPATH)pkcs11_wr.o:	$(CRYPT_DEP) device/device.h device/pkcs11_api.h \
+ 						device/pkcs11_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs11_wr.o device/pkcs11_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs11_wr.o device/pkcs11_wr.c
+ 
+ $(OBJPATH)system.o:		$(CRYPT_DEP) device/device.h device/capabil.h device/system.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)system.o device/system.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)system.o device/system.c
+ 
+ # enc_dec subdirectory
+ 
+ $(OBJPATH)asn1_algid.o:	$(CRYPT_DEP) $(ASN1_DEP) enc_dec/asn1_algid.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)asn1_algid.o enc_dec/asn1_algid.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)asn1_algid.o enc_dec/asn1_algid.c
+ 
+ $(OBJPATH)asn1_chk.o:	$(CRYPT_DEP) $(ASN1_DEP) enc_dec/asn1_chk.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)asn1_chk.o enc_dec/asn1_chk.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)asn1_chk.o enc_dec/asn1_chk.c
+ 
+ $(OBJPATH)asn1_ext.o:	$(CRYPT_DEP) $(ASN1_DEP) enc_dec/asn1_oids.h enc_dec/asn1_ext.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)asn1_ext.o enc_dec/asn1_ext.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)asn1_ext.o enc_dec/asn1_ext.c
+ 
+ $(OBJPATH)asn1_rd.o:	$(CRYPT_DEP) $(ASN1_DEP) enc_dec/asn1_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)asn1_rd.o enc_dec/asn1_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)asn1_rd.o enc_dec/asn1_rd.c
+ 
+ $(OBJPATH)asn1_wr.o:	$(CRYPT_DEP) $(ASN1_DEP) enc_dec/asn1_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)asn1_wr.o enc_dec/asn1_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)asn1_wr.o enc_dec/asn1_wr.c
+ 
+ $(OBJPATH)base64.o:		$(CRYPT_DEP) enc_dec/base64.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)base64.o enc_dec/base64.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)base64.o enc_dec/base64.c
+ 
+ $(OBJPATH)base64_id.o:	$(CRYPT_DEP) enc_dec/base64_id.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)base64_id.o enc_dec/base64_id.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)base64_id.o enc_dec/base64_id.c
+ 
+ $(OBJPATH)misc_rw.o:	$(CRYPT_DEP) $(IO_DEP) enc_dec/misc_rw.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)misc_rw.o enc_dec/misc_rw.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)misc_rw.o enc_dec/misc_rw.c
+ 
+ $(OBJPATH)pgp_rw.o:		$(CRYPT_DEP) $(IO_DEP) enc_dec/pgp_rw.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pgp_rw.o enc_dec/pgp_rw.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pgp_rw.o enc_dec/pgp_rw.c
+ 
+ # envelope subdirectory
+ 
+ $(OBJPATH)cms_denv.o:	$(CRYPT_DEP) envelope/envelope.h $(ASN1_DEP) \
+ 						envelope/cms_denv.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cms_denv.o envelope/cms_denv.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cms_denv.o envelope/cms_denv.c
+ 
+ $(OBJPATH)cms_env.o:	$(CRYPT_DEP) envelope/envelope.h $(ASN1_DEP) \
+ 						envelope/cms_env.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cms_env.o envelope/cms_env.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cms_env.o envelope/cms_env.c
+ 
+ $(OBJPATH)cms_envpre.o:	$(CRYPT_DEP) envelope/envelope.h $(ASN1_DEP) \
+ 						envelope/cms_envpre.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cms_envpre.o envelope/cms_envpre.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cms_envpre.o envelope/cms_envpre.c
+ 
+ $(OBJPATH)decode.o:		$(CRYPT_DEP) envelope/envelope.h $(ASN1_DEP) \
+ 						envelope/decode.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)decode.o envelope/decode.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)decode.o envelope/decode.c
+ 
+ $(OBJPATH)encode.o:		$(CRYPT_DEP) envelope/envelope.h $(ASN1_DEP) \
+ 						envelope/encode.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)encode.o envelope/encode.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)encode.o envelope/encode.c
+ 
+ $(OBJPATH)env_attr.o:	$(CRYPT_DEP) envelope/envelope.h envelope/env_attr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)env_attr.o envelope/env_attr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)env_attr.o envelope/env_attr.c
+ 
+ $(OBJPATH)pgp_denv.o:	$(CRYPT_DEP) $(IO_DEP) misc/pgp.h envelope/pgp_denv.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pgp_denv.o envelope/pgp_denv.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pgp_denv.o envelope/pgp_denv.c
+ 
+ $(OBJPATH)pgp_env.o:	$(CRYPT_DEP) $(IO_DEP) misc/pgp.h envelope/pgp_env.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pgp_env.o envelope/pgp_env.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pgp_env.o envelope/pgp_env.c
+ 
+ $(OBJPATH)res_actn.o:	$(CRYPT_DEP) envelope/envelope.h envelope/res_actn.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)res_actn.o envelope/res_actn.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)res_actn.o envelope/res_actn.c
+ 
+ $(OBJPATH)res_denv.o:	$(CRYPT_DEP) envelope/envelope.h envelope/res_denv.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)res_denv.o envelope/res_denv.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)res_denv.o envelope/res_denv.c
+ 
+ $(OBJPATH)res_env.o:	$(CRYPT_DEP) envelope/envelope.h envelope/res_env.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)res_env.o envelope/res_env.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)res_env.o envelope/res_env.c
+ 
+ # io subdirectory
+ 
+ $(OBJPATH)dns.o:		$(CRYPT_DEP) $(IO_DEP_INT) io/dns.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)dns.o io/dns.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)dns.o io/dns.c
+ 
+ $(OBJPATH)dns_srv.o:	$(CRYPT_DEP) $(IO_DEP_INT) io/dns_srv.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)dns_srv.o io/dns_srv.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)dns_srv.o io/dns_srv.c
+ 
+ $(OBJPATH)file.o:		$(CRYPT_DEP) $(IO_DEP_INT) io/file.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)file.o io/file.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)file.o io/file.c
+ 
+ $(OBJPATH)http.o:		$(CRYPT_DEP) $(IO_DEP_INT) io/http.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)http.o io/http.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)http.o io/http.c
+ 
+ $(OBJPATH)http_rd.o:	$(CRYPT_DEP) $(IO_DEP_INT) io/http_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)http_rd.o io/http_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)http_rd.o io/http_rd.c
+ 
+ $(OBJPATH)http_parse.o:	$(CRYPT_DEP) $(IO_DEP_INT) io/http_parse.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)http_parse.o io/http_parse.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)http_parse.o io/http_parse.c
+ 
+ $(OBJPATH)http_wr.o:	$(CRYPT_DEP) $(IO_DEP_INT) io/http_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)http_wr.o io/http_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)http_wr.o io/http_wr.c
+ 
+ $(OBJPATH)memory.o:		$(CRYPT_DEP) $(IO_DEP_INT) io/memory.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)memory.o io/memory.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)memory.o io/memory.c
+ 
+ $(OBJPATH)net.o:		$(CRYPT_DEP) $(IO_DEP_INT) io/net.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)net.o io/net.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)net.o io/net.c
+ 
+ $(OBJPATH)net_proxy.o:	$(CRYPT_DEP) $(IO_DEP_INT) io/net_proxy.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)net_proxy.o io/net_proxy.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)net_proxy.o io/net_proxy.c
+ 
+ $(OBJPATH)net_trans.o:	$(CRYPT_DEP) $(IO_DEP_INT) io/net_trans.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)net_trans.o io/net_trans.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)net_trans.o io/net_trans.c
+ 
+ $(OBJPATH)net_url.o:	$(CRYPT_DEP) $(IO_DEP_INT) io/net_url.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)net_url.o io/net_url.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)net_url.o io/net_url.c
+ 
+ $(OBJPATH)stream.o:		$(CRYPT_DEP) $(IO_DEP_INT) io/stream.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)stream.o io/stream.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)stream.o io/stream.c
+ 
+ $(OBJPATH)tcp.o:		$(CRYPT_DEP) $(IO_DEP_INT) io/tcp.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)tcp.o io/tcp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)tcp.o io/tcp.c
+ 
+ $(OBJPATH)tcp_conn.o:	$(CRYPT_DEP) $(IO_DEP_INT) io/tcp_conn.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)tcp_conn.o io/tcp_conn.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)tcp_conn.o io/tcp_conn.c
+ 
+ $(OBJPATH)tcp_err.o:	$(CRYPT_DEP) $(IO_DEP_INT) io/tcp_err.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)tcp_err.o io/tcp_err.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)tcp_err.o io/tcp_err.c
+ 
+ $(OBJPATH)tcp_rw.o:		$(CRYPT_DEP) $(IO_DEP_INT) io/tcp_rw.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)tcp_rw.o io/tcp_rw.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)tcp_rw.o io/tcp_rw.c
+ 
+ # kernel subdirectory
+ 
+ $(OBJPATH)attr_acl.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/attr_acl.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)attr_acl.o kernel/attr_acl.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)attr_acl.o kernel/attr_acl.c
+ 
+ $(OBJPATH)certm_acl.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/certm_acl.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)certm_acl.o kernel/certm_acl.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)certm_acl.o kernel/certm_acl.c
+ 
+ $(OBJPATH)init.o:		$(CRYPT_DEP) $(KERNEL_DEP) kernel/init.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)init.o kernel/init.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)init.o kernel/init.c
+ 
+ $(OBJPATH)int_msg.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/int_msg.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)int_msg.o kernel/int_msg.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)int_msg.o kernel/int_msg.c
+ 
+ $(OBJPATH)key_acl.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/key_acl.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)key_acl.o kernel/key_acl.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)key_acl.o kernel/key_acl.c
+ 
+ $(OBJPATH)mech_acl.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/mech_acl.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)mech_acl.o kernel/mech_acl.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)mech_acl.o kernel/mech_acl.c
+ 
+ $(OBJPATH)msg_acl.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/msg_acl.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)msg_acl.o kernel/msg_acl.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)msg_acl.o kernel/msg_acl.c
+ 
+ $(OBJPATH)obj_acc.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/obj_acc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)obj_acc.o kernel/obj_acc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)obj_acc.o kernel/obj_acc.c
+ 
+ $(OBJPATH)objects.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/objects.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)objects.o kernel/objects.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)objects.o kernel/objects.c
+ 
+ $(OBJPATH)sec_mem.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/sec_mem.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sec_mem.o kernel/sec_mem.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sec_mem.o kernel/sec_mem.c
+ 
+ $(OBJPATH)selftest.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/selftest.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)selftest.o kernel/selftest.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)selftest.o kernel/selftest.c
+ 
+ $(OBJPATH)semaphore.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/semaphore.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)semaphore.o kernel/semaphore.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)semaphore.o kernel/semaphore.c
+ 
+ $(OBJPATH)sendmsg.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/sendmsg.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sendmsg.o kernel/sendmsg.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sendmsg.o kernel/sendmsg.c
+ 
+ $(OBJPATH)storage.o:	$(CRYPT_DEP) $(KERNEL_DEP) kernel/storage.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)storage.o kernel/storage.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)storage.o kernel/storage.c
+ 
+ # keyset subdirectory
+ 
+ $(OBJPATH)dbms.o:		$(CRYPT_DEP) keyset/keyset.h keyset/dbms.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)dbms.o keyset/dbms.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)dbms.o keyset/dbms.c
+ 
+ $(OBJPATH)ca_add.o:		$(CRYPT_DEP) keyset/keyset.h keyset/ca_add.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ca_add.o keyset/ca_add.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ca_add.o keyset/ca_add.c
+ 
+ $(OBJPATH)ca_clean.o:	$(CRYPT_DEP) keyset/keyset.h keyset/ca_clean.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ca_clean.o keyset/ca_clean.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ca_clean.o keyset/ca_clean.c
+ 
+ $(OBJPATH)ca_issue.o:	$(CRYPT_DEP) keyset/keyset.h keyset/ca_issue.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ca_issue.o keyset/ca_issue.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ca_issue.o keyset/ca_issue.c
+ 
+ $(OBJPATH)ca_misc.o:	$(CRYPT_DEP) keyset/keyset.h keyset/ca_misc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ca_misc.o keyset/ca_misc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ca_misc.o keyset/ca_misc.c
+ 
+ $(OBJPATH)ca_rev.o:		$(CRYPT_DEP) keyset/keyset.h keyset/ca_rev.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ca_rev.o keyset/ca_rev.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ca_rev.o keyset/ca_rev.c
+ 
+ $(OBJPATH)dbx_misc.o:	$(CRYPT_DEP) keyset/keyset.h keyset/dbx_misc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)dbx_misc.o keyset/dbx_misc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)dbx_misc.o keyset/dbx_misc.c
+ 
+ $(OBJPATH)dbx_rd.o:		$(CRYPT_DEP) keyset/keyset.h keyset/dbx_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)dbx_rd.o keyset/dbx_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)dbx_rd.o keyset/dbx_rd.c
+ 
+ $(OBJPATH)dbx_wr.o:		$(CRYPT_DEP) keyset/keyset.h keyset/dbx_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)dbx_wr.o keyset/dbx_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)dbx_wr.o keyset/dbx_wr.c
+ 
+ $(OBJPATH)http_keys.o:	$(CRYPT_DEP) keyset/keyset.h keyset/http_keys.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)http_keys.o keyset/http_keys.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)http_keys.o keyset/http_keys.c
+ 
+ $(OBJPATH)key_attr.o:	$(CRYPT_DEP) keyset/keyset.h keyset/key_attr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)key_attr.o keyset/key_attr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)key_attr.o keyset/key_attr.c
+ 
+ $(OBJPATH)ldap.o:		$(CRYPT_DEP) keyset/keyset.h keyset/ldap.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ldap.o keyset/ldap.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ldap.o keyset/ldap.c
+ 
+ $(OBJPATH)odbc.o:		$(CRYPT_DEP) keyset/keyset.h keyset/odbc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)odbc.o keyset/odbc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)odbc.o keyset/odbc.c
+ 
+ $(OBJPATH)pgp.o:		$(CRYPT_DEP) misc/pgp.h keyset/pgp.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pgp.o keyset/pgp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pgp.o keyset/pgp.c
+ 
+ $(OBJPATH)pgp_rd.o:		$(CRYPT_DEP) misc/pgp.h keyset/pgp_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pgp_rd.o keyset/pgp_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pgp_rd.o keyset/pgp_rd.c
+ 
+ $(OBJPATH)pgp_wr.o:		$(CRYPT_DEP) misc/pgp.h keyset/pgp_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pgp_wr.o keyset/pgp_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pgp_wr.o keyset/pgp_wr.c
+ 
+ $(OBJPATH)pkcs12.o:		$(CRYPT_DEP) keyset/keyset.h keyset/pkcs12.h keyset/pkcs12.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs12.o keyset/pkcs12.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs12.o keyset/pkcs12.c
+ 
+ $(OBJPATH)pkcs12_rd.o:	$(CRYPT_DEP) keyset/keyset.h keyset/pkcs12.h keyset/pkcs12_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs12_rd.o keyset/pkcs12_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs12_rd.o keyset/pkcs12_rd.c
+ 
+ $(OBJPATH)pkcs12_rdo.o:	$(CRYPT_DEP) keyset/keyset.h keyset/pkcs12.h keyset/pkcs12_rdo.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs12_rdo.o keyset/pkcs12_rdo.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs12_rdo.o keyset/pkcs12_rdo.c
+ 
+ $(OBJPATH)pkcs12_wr.o:	$(CRYPT_DEP) keyset/keyset.h keyset/pkcs12.h keyset/pkcs12_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs12_wr.o keyset/pkcs12_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs12_wr.o keyset/pkcs12_wr.c
+ 
+ $(OBJPATH)pkcs15.o:		$(CRYPT_DEP) keyset/keyset.h keyset/pkcs15.h keyset/pkcs15.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs15.o keyset/pkcs15.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs15.o keyset/pkcs15.c
+ 
+ $(OBJPATH)pkcs15_add.o:	$(CRYPT_DEP) keyset/keyset.h keyset/pkcs15.h keyset/pkcs15_add.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs15_add.o keyset/pkcs15_add.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs15_add.o keyset/pkcs15_add.c
+ 
+ $(OBJPATH)pkcs15_adpb.o: $(CRYPT_DEP) keyset/keyset.h keyset/pkcs15.h keyset/pkcs15_adpb.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs15_adpb.o keyset/pkcs15_adpb.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs15_adpb.o keyset/pkcs15_adpb.c
+ 
+ $(OBJPATH)pkcs15_adpr.o: $(CRYPT_DEP) keyset/keyset.h keyset/pkcs15.h keyset/pkcs15_adpr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs15_adpr.o keyset/pkcs15_adpr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs15_adpr.o keyset/pkcs15_adpr.c
+ 
+ $(OBJPATH)pkcs15_atrd.o: $(CRYPT_DEP) keyset/keyset.h keyset/pkcs15.h keyset/pkcs15_atrd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs15_atrd.o keyset/pkcs15_atrd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs15_atrd.o keyset/pkcs15_atrd.c
+ 
+ $(OBJPATH)pkcs15_atwr.o: $(CRYPT_DEP) keyset/keyset.h keyset/pkcs15.h keyset/pkcs15_atwr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs15_atwr.o keyset/pkcs15_atwr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs15_atwr.o keyset/pkcs15_atwr.c
+ 
+ $(OBJPATH)pkcs15_get.o:	$(CRYPT_DEP) keyset/keyset.h keyset/pkcs15.h keyset/pkcs15_get.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs15_get.o keyset/pkcs15_get.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs15_get.o keyset/pkcs15_get.c
+ 
+ $(OBJPATH)pkcs15_getp.o: $(CRYPT_DEP) keyset/keyset.h keyset/pkcs15.h keyset/pkcs15_getp.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs15_getp.o keyset/pkcs15_getp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs15_getp.o keyset/pkcs15_getp.c
+ 
+ $(OBJPATH)pkcs15_rd.o:	$(CRYPT_DEP) keyset/keyset.h keyset/pkcs15.h keyset/pkcs15_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs15_rd.o keyset/pkcs15_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs15_rd.o keyset/pkcs15_rd.c
+ 
+ $(OBJPATH)pkcs15_set.o:	$(CRYPT_DEP) keyset/keyset.h keyset/pkcs15.h keyset/pkcs15_set.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs15_set.o keyset/pkcs15_set.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs15_set.o keyset/pkcs15_set.c
+ 
+ $(OBJPATH)pkcs15_wr.o:	$(CRYPT_DEP) keyset/keyset.h keyset/pkcs15.h keyset/pkcs15_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pkcs15_wr.o keyset/pkcs15_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pkcs15_wr.o keyset/pkcs15_wr.c
+ 
+ # mechanism subdirectory
+ 
+ $(OBJPATH)keyex.o:		$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/keyex.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)keyex.o mechs/keyex.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)keyex.o mechs/keyex.c
+ 
+ $(OBJPATH)keyex_int.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/keyex_int.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)keyex_int.o mechs/keyex_int.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)keyex_int.o mechs/keyex_int.c
+ 
+ $(OBJPATH)keyex_rw.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/keyex_rw.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)keyex_rw.o mechs/keyex_rw.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)keyex_rw.o mechs/keyex_rw.c
+ 
+ $(OBJPATH)mech_cwrap.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/mech_cwrap.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)mech_cwrap.o mechs/mech_cwrap.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)mech_cwrap.o mechs/mech_cwrap.c
+ 
+ $(OBJPATH)mech_drv.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/mech_drv.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)mech_drv.o mechs/mech_drv.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)mech_drv.o mechs/mech_drv.c
+ 
+ $(OBJPATH)mech_int.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/mech_int.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)mech_int.o mechs/mech_int.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)mech_int.o mechs/mech_int.c
+ 
+ $(OBJPATH)mech_pkwrap.o: $(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/mech_pkwrap.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)mech_pkwrap.o mechs/mech_pkwrap.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)mech_pkwrap.o mechs/mech_pkwrap.c
+ 
+ $(OBJPATH)mech_privk.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/mech_privk.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)mech_privk.o mechs/mech_privk.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)mech_privk.o mechs/mech_privk.c
+ 
+ $(OBJPATH)mech_sig.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/mech_sig.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)mech_sig.o mechs/mech_sig.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)mech_sig.o mechs/mech_sig.c
+ 
+ $(OBJPATH)obj_qry.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/obj_qry.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)obj_qry.o mechs/obj_qry.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)obj_qry.o mechs/obj_qry.c
+ 
+ $(OBJPATH)sign.o:		$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/sign.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sign.o mechs/sign.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sign.o mechs/sign.c
+ 
+ $(OBJPATH)sign_cms.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/sign_cms.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sign_cms.o mechs/sign_cms.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sign_cms.o mechs/sign_cms.c
+ 
+ $(OBJPATH)sign_int.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/sign_int.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sign_int.o mechs/sign_int.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sign_int.o mechs/sign_int.c
+ 
+ $(OBJPATH)sign_pgp.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/sign_pgp.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sign_pgp.o mechs/sign_pgp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sign_pgp.o mechs/sign_pgp.c
+ 
+ $(OBJPATH)sign_rw.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/sign_rw.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sign_rw.o mechs/sign_rw.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sign_rw.o mechs/sign_rw.c
+ 
+ $(OBJPATH)sign_x509.o:	$(CRYPT_DEP) $(ASN1_DEP) mechs/mech.h mechs/sign_x509.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sign_x509.o mechs/sign_x509.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sign_x509.o mechs/sign_x509.c
+ 
+ # misc subdirectory
+ 
+ $(OBJPATH)int_api.o:	$(CRYPT_DEP) misc/int_api.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)int_api.o misc/int_api.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)int_api.o misc/int_api.c
+ 
+ $(OBJPATH)int_attr.o:	$(CRYPT_DEP) misc/int_attr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)int_attr.o misc/int_attr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)int_attr.o misc/int_attr.c
+ 
+ $(OBJPATH)int_debug.o:	$(CRYPT_DEP) misc/int_debug.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)int_debug.o misc/int_debug.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)int_debug.o misc/int_debug.c
+ 
+ $(OBJPATH)int_env.o:	$(CRYPT_DEP) misc/int_env.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)int_env.o misc/int_env.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)int_env.o misc/int_env.c
+ 
+ $(OBJPATH)int_err.o:	$(CRYPT_DEP) misc/int_err.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)int_err.o misc/int_err.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)int_err.o misc/int_err.c
+ 
+ $(OBJPATH)int_mem.o:	$(CRYPT_DEP) misc/int_mem.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)int_mem.o misc/int_mem.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)int_mem.o misc/int_mem.c
+ 
+ $(OBJPATH)int_string.o:	$(CRYPT_DEP) misc/int_string.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)int_string.o misc/int_string.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)int_string.o misc/int_string.c
+ 
+ $(OBJPATH)int_time.o:	$(CRYPT_DEP) misc/int_time.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)int_time.o misc/int_time.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)int_time.o misc/int_time.c
+ 
+ $(OBJPATH)os_spec.o: 	$(CRYPT_DEP) misc/os_spec.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)os_spec.o misc/os_spec.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)os_spec.o misc/os_spec.c
+ 
+ $(OBJPATH)pgp_misc.o:	$(CRYPT_DEP) $(IO_DEP) misc/pgp.h misc/pgp_misc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pgp_misc.o misc/pgp_misc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pgp_misc.o misc/pgp_misc.c
+ 
+ $(OBJPATH)random.o:		$(CRYPT_DEP) random/random.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)random.o random/random.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)random.o random/random.c
+ 
+ $(OBJPATH)rand_x917.o:	$(CRYPT_DEP) random/rand_x917.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)rand_x917.o random/rand_x917.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)rand_x917.o random/rand_x917.c
+ 
+ $(OBJPATH)unix.o:		$(CRYPT_DEP) random/unix.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)unix.o random/unix.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)unix.o random/unix.c
+ 
+ $(OBJPATH)user.o:		$(CRYPT_DEP) misc/user.h misc/user.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)user.o misc/user.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)user.o misc/user.c
+ 
+ $(OBJPATH)user_attr.o:	$(CRYPT_DEP) misc/user.h misc/user_int.h misc/user_attr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)user_attr.o misc/user_attr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)user_attr.o misc/user_attr.c
+ 
+ $(OBJPATH)user_cfg.o:	$(CRYPT_DEP) misc/user.h misc/user_int.h misc/user_cfg.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)user_cfg.o misc/user_cfg.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)user_cfg.o misc/user_cfg.c
+ 
+ $(OBJPATH)user_rw.o:	$(CRYPT_DEP) misc/user.h misc/user_int.h misc/user_rw.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)user_rw.o misc/user_rw.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)user_rw.o misc/user_rw.c
+ 
+ # session subdirectory
+ 
+ $(OBJPATH)certstore.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/certstore.h \
+ 						session/certstore.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)certstore.o session/certstore.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)certstore.o session/certstore.c
+ 
+ $(OBJPATH)cmp.o:		$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/cmp.h \
+ 						session/cmp.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cmp.o session/cmp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cmp.o session/cmp.c
+ 
+ $(OBJPATH)cmp_cli.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/cmp.h \
+ 						session/cmp_cli.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cmp_cli.o session/cmp_cli.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cmp_cli.o session/cmp_cli.c
+ 
+ $(OBJPATH)cmp_crypt.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/cmp.h \
+ 						session/cmp_crypt.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cmp_crypt.o session/cmp_crypt.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cmp_crypt.o session/cmp_crypt.c
+ 
+ $(OBJPATH)cmp_err.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/cmp.h \
+ 						session/cmp_err.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cmp_err.o session/cmp_err.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cmp_err.o session/cmp_err.c
+ 
+ $(OBJPATH)cmp_rd.o:		$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/cmp.h \
+ 						session/cmp_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cmp_rd.o session/cmp_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cmp_rd.o session/cmp_rd.c
+ 
+ $(OBJPATH)cmp_rdmsg.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/cmp.h \
+ 						session/cmp_rdmsg.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cmp_rdmsg.o session/cmp_rdmsg.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cmp_rdmsg.o session/cmp_rdmsg.c
+ 
+ $(OBJPATH)cmp_svr.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/cmp.h \
+ 						session/cmp_svr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cmp_svr.o session/cmp_svr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cmp_svr.o session/cmp_svr.c
+ 
+ $(OBJPATH)cmp_wr.o:		$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/cmp.h \
+ 						session/cmp_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cmp_wr.o session/cmp_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cmp_wr.o session/cmp_wr.c
+ 
+ $(OBJPATH)cmp_wrmsg.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/cmp.h \
+ 						session/cmp_wrmsg.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)cmp_wrmsg.o session/cmp_wrmsg.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)cmp_wrmsg.o session/cmp_wrmsg.c
+ 
+ $(OBJPATH)ocsp.o:		$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/ocsp.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ocsp.o session/ocsp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ocsp.o session/ocsp.c
+ 
+ $(OBJPATH)pnppki.o:		$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/cmp.h \
+ 						session/pnppki.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)pnppki.o session/pnppki.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)pnppki.o session/pnppki.c
+ 
+ $(OBJPATH)rtcs.o:		$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/rtcs.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)rtcs.o session/rtcs.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)rtcs.o session/rtcs.c
+ 
+ $(OBJPATH)scep.o:		$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/scep.h \
+ 						session/scep.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)scep.o session/scep.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)scep.o session/scep.c
+ 
+ $(OBJPATH)scep_cli.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/scep.h \
+ 						session/scep_cli.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)scep_cli.o session/scep_cli.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)scep_cli.o session/scep_cli.c
+ 
+ $(OBJPATH)scep_svr.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/certstore.h \
+ 						session/scep.h session/scep_svr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)scep_svr.o session/scep_svr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)scep_svr.o session/scep_svr.c
+ 
+ $(OBJPATH)scorebrd.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/scorebrd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)scorebrd.o session/scorebrd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)scorebrd.o session/scorebrd.c
+ 
+ $(OBJPATH)sess_attr.o:	$(CRYPT_DEP) session/session.h session/sess_attr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sess_attr.o session/sess_attr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sess_attr.o session/sess_attr.c
+ 
+ $(OBJPATH)sess_iattr.o:	$(CRYPT_DEP) session/session.h session/sess_iattr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sess_iattr.o session/sess_iattr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sess_iattr.o session/sess_iattr.c
+ 
+ $(OBJPATH)sess_rd.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/sess_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sess_rd.o session/sess_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sess_rd.o session/sess_rd.c
+ 
+ $(OBJPATH)sess_wr.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/sess_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sess_wr.o session/sess_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sess_wr.o session/sess_wr.c
+ 
+ $(OBJPATH)sess_ws.o:	$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/sess_ws.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)sess_ws.o session/sess_ws.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)sess_ws.o session/sess_ws.c
+ 
+ $(OBJPATH)session.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/session.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)session.o session/session.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)session.o session/session.c
+ 
+ $(OBJPATH)ssh.o:		$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh.o session/ssh.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh.o session/ssh.c
+ 
+ $(OBJPATH)ssh2.o:		$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2.o session/ssh2.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2.o session/ssh2.c
+ 
+ $(OBJPATH)ssh2_authc.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2_authc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_authc.o session/ssh2_authc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2_authc.o session/ssh2_authc.c
+ 
+ $(OBJPATH)ssh2_auths.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2_auths.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_auths.o session/ssh2_auths.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2_auths.o session/ssh2_auths.c
+ 
+ $(OBJPATH)ssh2_chn.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2_chn.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_chn.o session/ssh2_chn.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2_chn.o session/ssh2_chn.c
+ 
+ $(OBJPATH)ssh2_cli.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2_cli.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_cli.o session/ssh2_cli.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2_cli.o session/ssh2_cli.c
+ 
+ $(OBJPATH)ssh2_crypt.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2_crypt.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_crypt.o session/ssh2_crypt.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2_crypt.o session/ssh2_crypt.c
+ 
+ $(OBJPATH)ssh2_msg.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2_msg.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_msg.o session/ssh2_msg.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2_msg.o session/ssh2_msg.c
+ 
+ $(OBJPATH)ssh2_msgc.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2_msgc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_msgc.o session/ssh2_msgc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2_msgc.o session/ssh2_msgc.c
+ 
+ $(OBJPATH)ssh2_msgs.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2_msgs.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_msgs.o session/ssh2_msgs.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2_msgs.o session/ssh2_msgs.c
+ 
+ $(OBJPATH)ssh2_rd.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_rd.o session/ssh2_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2_rd.o session/ssh2_rd.c
+ 
+ $(OBJPATH)ssh2_svr.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2_svr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_svr.o session/ssh2_svr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2_svr.o session/ssh2_svr.c
+ 
+ $(OBJPATH)ssh2_wr.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssh.h \
+ 						session/ssh2_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssh2_wr.o session/ssh2_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssh2_wr.o session/ssh2_wr.c
+ 
+ $(OBJPATH)ssl.o:		$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
+ 						session/ssl.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssl.o session/ssl.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssl.o session/ssl.c
+ 
+ $(OBJPATH)ssl_cli.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
+ 						session/ssl_cli.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssl_cli.o session/ssl_cli.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssl_cli.o session/ssl_cli.c
+ 
+ $(OBJPATH)ssl_crypt.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
+ 						session/ssl_crypt.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssl_crypt.o session/ssl_crypt.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssl_crypt.o session/ssl_crypt.c
+ 
+ $(OBJPATH)ssl_ext.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
+ 						session/ssl_ext.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssl_ext.o session/ssl_ext.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssl_ext.o session/ssl_ext.c
+ 
+ $(OBJPATH)ssl_hs.o:		$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
+ 						session/ssl_hs.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssl_hs.o session/ssl_hs.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssl_hs.o session/ssl_hs.c
+ 
+ $(OBJPATH)ssl_hsc.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
+ 						session/ssl_hsc.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssl_hsc.o session/ssl_hsc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssl_hsc.o session/ssl_hsc.c
+ 
+ $(OBJPATH)ssl_kmgmt.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
+ 						session/ssl_kmgmt.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssl_kmgmt.o session/ssl_kmgmt.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssl_kmgmt.o session/ssl_kmgmt.c
+ 
+ $(OBJPATH)ssl_rd.o:		$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
+ 						session/ssl_rd.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssl_rd.o session/ssl_rd.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssl_rd.o session/ssl_rd.c
+ 
+ $(OBJPATH)ssl_suites.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
+ 						session/ssl_suites.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssl_suites.o session/ssl_suites.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssl_suites.o session/ssl_suites.c
+ 
+ $(OBJPATH)ssl_svr.o:	$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
+ 						session/ssl_svr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssl_svr.o session/ssl_svr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssl_svr.o session/ssl_svr.c
+ 
+ $(OBJPATH)ssl_wr.o:		$(CRYPT_DEP) $(IO_DEP) session/session.h session/ssl.h \
+ 						session/ssl_wr.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)ssl_wr.o session/ssl_wr.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)ssl_wr.o session/ssl_wr.c
+ 
+ $(OBJPATH)tsp.o:		$(CRYPT_DEP) $(ASN1_DEP) session/session.h session/tsp.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)tsp.o session/tsp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)tsp.o session/tsp.c
+ 
+ # zlib subdirectory
+ 
+ $(OBJPATH)adler32.o:	$(ZLIB_DEP) zlib/adler32.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)adler32.o zlib/adler32.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)adler32.o zlib/adler32.c
+ 
+ $(OBJPATH)deflate.o:	$(ZLIB_DEP) zlib/deflate.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)deflate.o zlib/deflate.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)deflate.o zlib/deflate.c
+ 
+ $(OBJPATH)inffast.o:	$(ZLIB_DEP) zlib/inffast.h zlib/inffixed.h \
+ 						zlib/inftrees.h zlib/inffast.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)inffast.o zlib/inffast.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)inffast.o zlib/inffast.c
+ 
+ $(OBJPATH)inflate.o:	$(ZLIB_DEP) zlib/inflate.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)inflate.o zlib/inflate.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)inflate.o zlib/inflate.c
+ 
+ $(OBJPATH)inftrees.o:	$(ZLIB_DEP) zlib/inftrees.h zlib/inftrees.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)inftrees.o zlib/inftrees.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)inftrees.o zlib/inftrees.c
+ 
+ $(OBJPATH)trees.o:		$(ZLIB_DEP) zlib/trees.h zlib/trees.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)trees.o zlib/trees.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)trees.o zlib/trees.c
+ 
+ $(OBJPATH)zutil.o:		$(ZLIB_DEP) zlib/zutil.c
+-						$(CC) $(CFLAGS) -o $(OBJPATH)zutil.o zlib/zutil.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) -o $(OBJPATH)zutil.o zlib/zutil.c
+ 
+ #****************************************************************************
+ #*																			*
+@@ -1529,64 +1534,64 @@
+ # The test code
+ 
+ utils.o:				cryptlib.h crypt.h test/test.h test/utils.c
+-						$(CC) $(CFLAGS) test/utils.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/utils.c
+ 
+ certimp.o:				cryptlib.h crypt.h test/test.h test/certimp.c
+-						$(CC) $(CFLAGS) test/certimp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/certimp.c
+ 
+ certproc.o:				cryptlib.h crypt.h test/test.h test/certproc.c
+-						$(CC) $(CFLAGS) test/certproc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/certproc.c
+ 
+ certs.o:				cryptlib.h crypt.h test/test.h test/certs.c
+-						$(CC) $(CFLAGS) test/certs.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/certs.c
+ 
+ devices.o:				cryptlib.h crypt.h test/test.h test/devices.c
+-						$(CC) $(CFLAGS) test/devices.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/devices.c
+ 
+ envelope.o:				cryptlib.h crypt.h test/test.h test/envelope.c
+-						$(CC) $(CFLAGS) test/envelope.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/envelope.c
+ 
+ highlvl.o:				cryptlib.h crypt.h test/test.h test/highlvl.c
+-						$(CC) $(CFLAGS) test/highlvl.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/highlvl.c
+ 
+ keydbx.o:				cryptlib.h crypt.h test/test.h test/keydbx.c
+-						$(CC) $(CFLAGS) test/keydbx.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/keydbx.c
+ 
+ keyfile.o:				cryptlib.h crypt.h test/test.h test/keyfile.c
+-						$(CC) $(CFLAGS) test/keyfile.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/keyfile.c
+ 
+ loadkey.o:				cryptlib.h crypt.h test/test.h test/loadkey.c
+-						$(CC) $(CFLAGS) test/loadkey.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/loadkey.c
+ 
+ lowlvl.o:				cryptlib.h crypt.h test/test.h test/lowlvl.c
+-						$(CC) $(CFLAGS) test/lowlvl.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/lowlvl.c
+ 
+ s_cmp.o:				cryptlib.h crypt.h test/test.h test/s_cmp.c
+-						$(CC) $(CFLAGS) test/s_cmp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/s_cmp.c
+ 
+ s_scep.o:				cryptlib.h crypt.h test/test.h test/s_scep.c
+-						$(CC) $(CFLAGS) test/s_scep.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/s_scep.c
+ 
+ sreqresp.o:				cryptlib.h crypt.h test/test.h test/sreqresp.c
+-						$(CC) $(CFLAGS) test/sreqresp.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/sreqresp.c
+ 
+ ssh.o:					cryptlib.h crypt.h test/test.h test/ssh.c
+-						$(CC) $(CFLAGS) test/ssh.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/ssh.c
+ 
+ ssl.o:					cryptlib.h crypt.h test/test.h test/ssl.c
+-						$(CC) $(CFLAGS) test/ssl.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/ssl.c
+ 
+ stress.o:				cryptlib.h crypt.h test/test.h test/stress.c
+-						$(CC) $(CFLAGS) test/stress.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/stress.c
+ 
+ suiteb.o:				cryptlib.h crypt.h test/test.h test/suiteb.c
+-						$(CC) $(CFLAGS) test/suiteb.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/suiteb.c
+ 
+ testfunc.o:				cryptlib.h crypt.h test/test.h test/testfunc.c
+-						$(CC) $(CFLAGS) test/testfunc.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/testfunc.c
+ 
+ testlib.o:				cryptlib.h crypt.h test/test.h test/testlib.c
+-						$(CC) $(CFLAGS) test/testlib.c
++						$(CC) $(CPPFLAGS) $(CFLAGS) test/testlib.c
+ 
+ #****************************************************************************
+ #*																			*

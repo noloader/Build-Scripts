@@ -1,0 +1,49 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with libffi.
+--- src/x86/ffi64.c
++++ src/x86/ffi64.c
+@@ -537,6 +537,8 @@
+ 		      void *codeloc)
+ {
+   volatile unsigned short *tramp;
++  unsigned short *tramp_nv;
++  unsigned long t1, t2;
+ 
+   /* Sanity check on the cif ABI.  */
+   {
+@@ -546,13 +548,24 @@
+   }
+ 
+   tramp = (volatile unsigned short *) &closure->tramp[0];
++  tramp_nv = (unsigned short *) &closure->tramp[0];
+ 
++#if 0
+   tramp[0] = 0xbb49;		/* mov <code>, %r11	*/
+   *((unsigned long long * volatile) &tramp[1])
+     = (unsigned long) ffi_closure_unix64;
+   tramp[5] = 0xba49;		/* mov <data>, %r10	*/
+   *((unsigned long long * volatile) &tramp[6])
+     = (unsigned long) codeloc;
++#endif
++
++  tramp[0] = 0xbb49;
++  t1 = (unsigned long) ffi_closure_unix64;
++  memcpy(&tramp_nv[1], &t1, sizeof(t1));
++
++  tramp[5] = 0xba49;
++  t2 = (unsigned long) codeloc;
++  memcpy(&tramp_nv[6], &t2, sizeof(t2));
+ 
+   /* Set the carry bit iff the function uses any sse registers.
+      This is clc or stc, together with the first byte of the jmp.  */
+@@ -564,6 +577,10 @@
+   closure->fun = fun;
+   closure->user_data = user_data;
+ 
++#ifdef __GNUC__
++  asm volatile ("" : : : "memory");
++#endif
++
+   return FFI_OK;
+ }
+ 

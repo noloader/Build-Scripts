@@ -1,0 +1,101 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with GnuPG.
+#
+# The mpi/mpiutil.c changes avoid memory leaks on exit so tools like
+# Asan don't produce findings. The change also avoids the memory manager
+# on startup and turns _gcry_mpi_init() into a nop. Also see
+# https://dev.gnupg.org/T4499.
+#
+# The random change was shamelessly ripped from MacPorts at
+# https://github.com/macports/macports-ports/tree/master/devel/libgcrypt
+#
+# The Makefile.in changes allow the self tests to run on Apple SIP
+# machines. Also see https://dev.gnupg.org/T5159.
+--- mpi/mpiutil.c
++++ mpi/mpiutil.c
+@@ -43,10 +43,21 @@
+ #endif
+ 
+ 
+-/* Constants allocated right away at startup.  */
+-static gcry_mpi_t constants[MPI_NUMBER_OF_CONSTANTS];
+-
++/* Fixed constants allocated statically.  */
++static mpi_limb_t constant_limbs[MPI_NUMBER_OF_CONSTANTS] =
++{
++  0, 1, 2, 3, 4, 8
++};
+ 
++static struct gcry_mpi constants[MPI_NUMBER_OF_CONSTANTS] =
++{
++  /* [MPI_C_ZERO]  = */ { 1, 0, 0, (16 | 32), &constant_limbs[0] },
++  /* [MPI_C_ONE]   = */ { 1, 1, 0, (16 | 32), &constant_limbs[1] },
++  /* [MPI_C_TWO]   = */ { 1, 1, 0, (16 | 32), &constant_limbs[2] },
++  /* [MPI_C_THREE] = */ { 1, 1, 0, (16 | 32), &constant_limbs[3] },
++  /* [MPI_C_FOUR]  = */ { 1, 1, 0, (16 | 32), &constant_limbs[4] },
++  /* [MPI_C_EIGHT] = */ { 1, 1, 0, (16 | 32), &constant_limbs[5] },
++};
+ 
+ const char *
+ _gcry_mpi_get_hw_config (void)
+@@ -60,25 +72,6 @@
+ gcry_err_code_t
+ _gcry_mpi_init (void)
+ {
+-  int idx;
+-  unsigned long value;
+-
+-  for (idx=0; idx < MPI_NUMBER_OF_CONSTANTS; idx++)
+-    {
+-      switch (idx)
+-        {
+-        case MPI_C_ZERO:  value = 0; break;
+-        case MPI_C_ONE:   value = 1; break;
+-        case MPI_C_TWO:   value = 2; break;
+-        case MPI_C_THREE: value = 3; break;
+-        case MPI_C_FOUR:  value = 4; break;
+-        case MPI_C_EIGHT: value = 8; break;
+-        default: log_bug ("invalid mpi_const selector %d\n", idx);
+-        }
+-      constants[idx] = mpi_alloc_set_ui (value);
+-      constants[idx]->flags = (16|32);
+-    }
+-
+   return 0;
+ }
+ 
+@@ -774,7 +767,5 @@
+ {
+   if ((int)no < 0 || no > MPI_NUMBER_OF_CONSTANTS)
+     log_bug("invalid mpi_const selector %d\n", no);
+-  if (!constants[no])
+-    log_bug("MPI subsystem not initialized\n");
+-  return constants[no];
++  return &constants[no];
+ }
+--- random/rndlinux.c
++++ random/rndlinux.c
+@@ -48,6 +48,10 @@
+ #endif
+ #endif
+ 
++#ifdef __APPLE__
++# include <sys/random.h>
++#endif
++
+ #include "types.h"
+ #include "g10lib.h"
+ #include "rand-internal.h"
+--- tests/Makefile.in
++++ tests/Makefile.in
+@@ -942,6 +942,10 @@
+ check-TESTS: $(TESTS)
+ 	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
+ 	srcdir=$(srcdir); export srcdir; \
++	gcrypt_libdir=`dirname $$PWD`/src/.libs; \
++	LD_LIBRARY_PATH=`echo "$$gcrypt_libdir:$$LD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
++	DYLD_LIBRARY_PATH=`echo "$$gcrypt_libdir:$$DYLD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
++	export LD_LIBRARY_PATH; export DYLD_LIBRARY_PATH; \
+ 	list=' $(TESTS) '; \
+ 	$(am__tty_colors); \
+ 	if test -n "$$list"; then \

@@ -1,0 +1,111 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with Bzip2.
+--- bzip2recover.c
++++ bzip2recover.c
+@@ -36,8 +36,13 @@
+    the 512MB limitation.
+ */
+ #ifdef __GNUC__
++# if defined(_LP64) || defined(__LP64__)
++   typedef  unsigned long long int  MaybeUInt64;
++#  define MaybeUInt64_FMT "%llu"
++# else
+    typedef  unsigned long long int  MaybeUInt64;
+ #  define MaybeUInt64_FMT "%Lu"
++# endif
+ #else
+ #ifdef _MSC_VER
+    typedef  unsigned __int64  MaybeUInt64;
+--- bzip2.c
++++ bzip2.c
+@@ -44,6 +44,15 @@
+ 
+ /*---------------------------------------------*/
+ /*--
++  Portable way to silence some warnings
++--*/
++#ifndef BZIP_UNUSED
++#define BZIP_UNUSED(x) ((void)(x))
++#endif
++
++
++/*---------------------------------------------*/
++/*--
+   Some stuff for all platforms.
+ --*/
+ 
+@@ -815,10 +824,10 @@
+ static 
+ void mySIGSEGVorSIGBUScatcher ( IntNative n )
+ {
++   const char *msg;
++   ssize_t rc;
+    if (opMode == OM_Z)
+-      fprintf ( 
+-      stderr,
+-      "\n%s: Caught a SIGSEGV or SIGBUS whilst compressing.\n"
++      msg = ": Caught a SIGSEGV or SIGBUS whilst compressing.\n"
+       "\n"
+       "   Possible causes are (most likely first):\n"
+       "   (1) This computer has unreliable memory or cache hardware\n"
+@@ -834,12 +843,9 @@
+       "   bug report should have.  If the manual is available on your\n"
+       "   system, please try and read it before mailing me.  If you don't\n"
+       "   have the manual or can't be bothered to read it, mail me anyway.\n"
+-      "\n",
+-      progName );
+-      else
+-      fprintf ( 
+-      stderr,
+-      "\n%s: Caught a SIGSEGV or SIGBUS whilst decompressing.\n"
++      "\n";
++   else
++      msg = ": Caught a SIGSEGV or SIGBUS whilst decompressing.\n"
+       "\n"
+       "   Possible causes are (most likely first):\n"
+       "   (1) The compressed data is corrupted, and bzip2's usual checks\n"
+@@ -857,13 +863,27 @@
+       "   bug report should have.  If the manual is available on your\n"
+       "   system, please try and read it before mailing me.  If you don't\n"
+       "   have the manual or can't be bothered to read it, mail me anyway.\n"
+-      "\n",
+-      progName );
++      "\n";
+ 
+-   showFileNames();
+-   if (opMode == OM_Z)
+-      cleanUpAndFail( 3 ); else
+-      { cadvise(); cleanUpAndFail( 2 ); }
++   rc = write ( STDERR_FILENO, "\n", 1 );
++   rc = write ( STDERR_FILENO, progName, strlen ( progName ) );
++   rc = write ( STDERR_FILENO, msg, strlen ( msg ) );
++
++   msg = "\tInput file = ";
++   rc = write ( STDERR_FILENO, msg, strlen (msg) );
++   rc = write ( STDERR_FILENO, inName, strlen (inName) );
++   rc = write ( STDERR_FILENO, "\n", 1 );
++   msg = "\tOutput file = ";
++   rc = write ( STDERR_FILENO, msg, strlen (msg) );
++   rc = write ( STDERR_FILENO, outName, strlen (outName) );
++   rc = write ( STDERR_FILENO, "\n", 1 );
++   BZIP_UNUSED( rc );
++
++   /* Don't call cleanupAndFail. If we ended up here something went
++      terribly wrong. Trying to clean up might fail spectacularly. */
++
++   if (opMode == OM_Z) setExit(3); else setExit(2);
++   _exit(exitValue);
+ }
+ 
+ 
+@@ -1070,7 +1090,9 @@
+    retVal = fchmod ( fd, fileMetaInfo.st_mode );
+    ERROR_IF_NOT_ZERO ( retVal );
+ 
+-   (void) fchown ( fd, fileMetaInfo.st_uid, fileMetaInfo.st_gid );
++   retVal = fchown ( fd, fileMetaInfo.st_uid, fileMetaInfo.st_gid );
++   BZIP_UNUSED( retVal );
++
+    /* chown() will in many cases return with EPERM, which can
+       be safely ignored.
+    */

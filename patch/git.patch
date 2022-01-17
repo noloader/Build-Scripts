@@ -1,0 +1,134 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with Git.
+--- configure.ac
++++ configure.ac
+@@ -677,39 +677,57 @@
+ GIT_CONF_SUBST([NO_DEFLATE_BOUND])
+ 
+ #
++# The next few tests will define NEEDS_RESOLV, NEEDS_SOCKET or
++# NEEDS_NSL if linking with libresolv, libsocket and libnsl
++# provides some of the functions we would normally get from libc.
++NEEDS_RESOLV=
++NEEDS_SOCKET=
++NEEDS_NSL=
++
++#
+ # Define NEEDS_SOCKET if linking with libc is not enough (SunOS,
+ # Patrick Mauritz).
+-AC_CHECK_LIB([c], [socket],
+-[NEEDS_SOCKET=],
+-[NEEDS_SOCKET=YesPlease])
+-GIT_CONF_SUBST([NEEDS_SOCKET])
+-test -n "$NEEDS_SOCKET" && LIBS="$LIBS -lsocket"
++AC_CHECK_FUNC([socket],
++    [],
++    [AC_SEARCH_LIBS([socket], [c],
++       [NEEDS_SOCKET=],
++       [NEEDS_SOCKET=YesPlease])
++])
+ 
+ #
+-# The next few tests will define NEEDS_RESOLV if linking with
+-# libresolv provides some of the functions we would normally get
+-# from libc.
+-NEEDS_RESOLV=
+-#
+-# Define NO_INET_NTOP if linking with -lresolv is not enough.
+-# Solaris 2.7 in particular hos inet_ntop in -lresolv.
++# Define NO_INET_NTOP if linking with -lresolv, -lsocket and -lnsl
++# is not enough. Solaris 11 provides inet_ntop in -lsocket -lnsl.
++# Solaris 2.7 provides inet_ntop in -lresolv.
+ NO_INET_NTOP=
+ AC_CHECK_FUNC([inet_ntop],
+     [],
+-    [AC_CHECK_LIB([resolv], [inet_ntop],
+-	[NEEDS_RESOLV=YesPlease],
+-	[NO_INET_NTOP=YesPlease])
++    [AC_SEARCH_LIBS([inet_ntop], [socket nsl],
++       [NEEDS_SOCKET=YesPlease; NEEDS_NSL=YesPlease],
++       [AC_CHECK_FUNC([inet_ntop],
++          [],
++          [AC_SEARCH_LIBS([inet_ntop], [resolv],
++          [NEEDS_RESOLV=YesPlease],
++          [NO_INET_PTON=YesPlease])
++       ])
++    ])
+ ])
+ GIT_CONF_SUBST([NO_INET_NTOP])
+ #
+-# Define NO_INET_PTON if linking with -lresolv is not enough.
+-# Solaris 2.7 in particular hos inet_pton in -lresolv.
++# Define NO_INET_PTON if linking with -lresolv, -lsocket and -lnsl
++# is not enough. Solaris 11 provides inet_pton in -lsocket -lnsl.
++# Solaris 2.7 provides inet_pton in -lresolv.
+ NO_INET_PTON=
+ AC_CHECK_FUNC([inet_pton],
+     [],
+-    [AC_CHECK_LIB([resolv], [inet_pton],
+-	[NEEDS_RESOLV=YesPlease],
+-	[NO_INET_PTON=YesPlease])
++    [AC_SEARCH_LIBS([inet_pton], [socket nsl],
++       [NEEDS_SOCKET=YesPlease; NEEDS_NSL=YesPlease],
++       [AC_CHECK_FUNC([inet_pton],
++          [],
++          [AC_SEARCH_LIBS([inet_pton], [resolv],
++          [NEEDS_RESOLV=YesPlease],
++          [NO_INET_PTON=YesPlease])
++       ])
++    ])
+ ])
+ GIT_CONF_SUBST([NO_INET_PTON])
+ #
+@@ -718,19 +736,25 @@
+ NO_HSTRERROR=
+ AC_CHECK_FUNC([hstrerror],
+     [],
+-    [AC_CHECK_LIB([resolv], [hstrerror],
+-	[NEEDS_RESOLV=YesPlease],
+-	[NO_HSTRERROR=YesPlease])
++    [AC_SEARCH_LIBS([hstrerror], [resolv],
++       [NEEDS_RESOLV=YesPlease],
++       [NO_HSTRERROR=YesPlease])
+ ])
+ GIT_CONF_SUBST([NO_HSTRERROR])
+ 
+ dnl This must go after all the possible places for its initialization,
+ dnl in the AC_CHECK_FUNC invocations above.
+ GIT_CONF_SUBST([NEEDS_RESOLV])
++GIT_CONF_SUBST([NEEDS_SOCKET])
++GIT_CONF_SUBST([NEEDS_NSL])
++
+ #
+-# If any of the above tests determined that -lresolv is needed at
+-# build-time, also set it here for remaining configure-time checks.
++# If any of the above tests determined that -lresolv, -lsocket or -lnsl
++# are needed at build-time, also set it here for remaining configure-time
++# checks. The Sun man pages list library order as -lresolv -lsocket -lnsl.
+ test -n "$NEEDS_RESOLV" && LIBS="$LIBS -lresolv"
++test -n "$NEEDS_SOCKET" && LIBS="$LIBS -lsocket"
++test -n "$NEEDS_NSL" && LIBS="$LIBS -lnsl"
+ 
+ AC_CHECK_LIB([c], [basename],
+ [NEEDS_LIBGEN=],
+--- Makefile
++++ Makefile
+@@ -1504,15 +1504,15 @@
+ 	EXTLIBS += -lintl
+ endif
+ endif
++ifdef NEEDS_RESOLV
++	EXTLIBS += -lresolv
++endif
+ ifdef NEEDS_SOCKET
+ 	EXTLIBS += -lsocket
+ endif
+ ifdef NEEDS_NSL
+ 	EXTLIBS += -lnsl
+ endif
+-ifdef NEEDS_RESOLV
+-	EXTLIBS += -lresolv
+-endif
+ ifdef NO_D_TYPE_IN_DIRENT
+ 	BASIC_CFLAGS += -DNO_D_TYPE_IN_DIRENT
+ endif

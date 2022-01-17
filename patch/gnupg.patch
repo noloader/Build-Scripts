@@ -1,0 +1,82 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with GnuPG.
+# Also see https://dev.gnupg.org/T5369, https://dev.gnupg.org/T5370
+--- g10/keylist.c
++++ g10/keylist.c
+@@ -1681,8 +1681,8 @@
+           char *issuer_fpr = NULL;
+           char *reason_text = NULL;
+           char *reason_comment = NULL;
+-          size_t reason_commentlen;
+-          int reason_code;
++          size_t reason_commentlen = 0;
++          int reason_code = 0;
+ 
+ 	  if (sig->sig_class == 0x20 || sig->sig_class == 0x28
+ 	      || sig->sig_class == 0x30)
+# Squash some printf format specifier warnings.
+--- g10/decrypt-data.c
++++ g10/decrypt-data.c
+@@ -658,8 +658,8 @@
+   /* Decrypt the buffer.  This first requires a loop to handle the
+    * case when a chunk ends within the buffer.  */
+   if (DBG_FILTER)
+-    log_debug ("decrypt: chunklen=%ju total=%ju size=%zu len=%zu%s\n",
+-               dfx->chunklen, dfx->total, size, len,
++    log_debug ("decrypt: chunklen=%u total=%zu size=%zu len=%zu%s\n",
++               (unsigned int)dfx->chunklen, dfx->total, size, len,
+                dfx->eof_seen? " eof":"");
+ 
+   while (len && dfx->chunklen + len >= dfx->chunksize)
+@@ -695,8 +695,8 @@
+       len -= n;
+ 
+       if (DBG_FILTER)
+-        log_debug ("ndecrypted: %zu (nchunk=%ju) bytes left: %zu at off=%zu\n",
+-                   totallen, dfx->chunklen, len, off);
++        log_debug ("ndecrypted: %zu (nchunk=%u) bytes left: %zu at off=%zu\n",
++                   totallen, (unsigned int)dfx->chunklen, len, off);
+ 
+       /* Check the tag.  */
+       if (len < 16)
+@@ -777,7 +777,8 @@
+       dfx->chunklen += len;
+       dfx->total += len;
+       if (DBG_FILTER)
+-        log_debug ("ndecrypted: %zu (nchunk=%ju)\n", totallen, dfx->chunklen);
++        log_debug ("ndecrypted: %zu (nchunk=%u)\n", totallen,
++                   (unsigned int)dfx->chunklen);
+     }
+ 
+   if (dfx->eof_seen)
+# Fix a missing return code on-path
+--- tests/gpgscm/scheme.c
++++ tests/gpgscm/scheme.c
+@@ -172,6 +172,7 @@
+      case T_FRAME: return "frame";
+      }
+      assert (! "not reached");
++     return "unknown";
+ }
+ 
+ /* ADJ is enough slack to align cells in a TYPE_BITS-bit boundary */
+# Fix undefined behavior sanitizer finding
+--- sm/certdump.c
++++ sm/certdump.c
+@@ -774,9 +774,13 @@
+       gpg_err_set_errno (c->error);
+       return -1;
+     }
+-  memcpy (p + c->len, buffer, size);
+-  c->len += size;
+-  p[c->len] = 0; /* Terminate string. */
++
++  if (p && buffer)
++    {
++      memcpy (p + c->len, buffer, size);
++      c->len += size;
++    }
++  p[c->len] = 0; /* Terminate string. */
+ 
+   return (gpgrt_ssize_t)size;
+ }

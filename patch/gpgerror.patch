@@ -1,0 +1,219 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with GnuPG.
+--- src/argparse.c
++++ src/argparse.c
+@@ -1941,7 +1941,7 @@
+   int argc;
+   char **argv;
+   char *s, *s2;
+-  int i;
++  int i = 0;
+ 
+   if (no_init)
+     ;
+--- tests/Makefile.in
++++ tests/Makefile.in
+@@ -647,6 +647,10 @@
+ check-TESTS: $(TESTS)
+ 	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
+ 	srcdir=$(srcdir); export srcdir; \
++	gpgerror_libdir=`dirname $$PWD`/src/.libs; \
++	LD_LIBRARY_PATH=`echo "$$gpgerror_libdir:$$LD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
++	DYLD_LIBRARY_PATH=`echo "$$gpgerror_libdir:$$DYLD_LIBRARY_PATH" | $(SED) 's/:*$$//g'`; \
++	export LD_LIBRARY_PATH; export DYLD_LIBRARY_PATH; \
+ 	list=' $(TESTS) '; \
+ 	$(am__tty_colors); \
+ 	if test -n "$$list"; then \
+--- tests/t-logging.c
++++ tests/t-logging.c
+@@ -76,15 +76,21 @@
+ 
+       nread = gpgrt_fread (buffer + buflen, 1, NCHUNK, stream);
+       if (nread < NCHUNK && gpgrt_ferror (stream))
+-        die ("fread failed at line %d: %s\n", __LINE__,
++        {
++          free (buffer); buffer = NULL;
++          die ("fread failed at line %d: %s\n", __LINE__,
+              gpg_strerror (gpg_err_code_from_syserror ()));
++        }
+       buflen += nread;
+     }
+   while (nread == NCHUNK);
+   buffer[nread] = 0;
+ 
+   if (strlen (buffer) != buflen)
+-    fail ("stream_to_string detected an embedded nul");
++    {
++      free (buffer); buffer = NULL;
++      fail ("stream_to_string detected an embedded nul");
++    }
+ 
+   gpgrt_ftruncate (stream, 0);
+   return buffer;
+@@ -95,12 +101,15 @@
+ static void
+ check_log_info (void)
+ {
+-  char *logbuf;
++  char *logbuf = NULL;
+ 
+   log_info ("first log\n");
+   logbuf = log_to_string ();
+   if (strcmp (logbuf, "t-logging: first log\n"))
+-    fail ("log_info test failed at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_info test failed at line %d\n", __LINE__);
++    }
+   free (logbuf);
+ 
+   /* The second line should not have a LF.  */
+@@ -109,7 +118,10 @@
+   logbuf = log_to_string ();
+   if (strcmp (logbuf, ("t-logging: second log line\n"
+                        "t-logging: third log line")))
+-    fail ("log_info test failed at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_info test failed at line %d\n", __LINE__);
++    }
+   free (logbuf);
+ 
+   /* Now a multi line log.  */
+@@ -118,14 +130,20 @@
+   if (strcmp (logbuf, ("t-logging: This is log line 1\n"
+                        "and 2\n"
+                        "and 3\n")))
+-    fail ("log_info test failed at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_info test failed at line %d\n", __LINE__);
++    }
+   free (logbuf);
+ 
+   /* With arguments.  */
+   log_info ("file '%s' line %d: %s\n", "/foo/bar.txt", 20, "not found");
+   logbuf = log_to_string ();
+   if (strcmp (logbuf, "t-logging: file '/foo/bar.txt' line 20: not found\n"))
+-    fail ("log_info test failed at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_info test failed at line %d\n", __LINE__);
++    }
+   free (logbuf);
+ 
+   /* With arguments and a control char in the string arg.  */
+@@ -133,7 +151,10 @@
+   logbuf = log_to_string ();
+   if (strcmp (logbuf,
+               "t-logging: file '/foo/bar.txt\\b' line 20: not found\n"))
+-    fail ("log_info test failed at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_info test failed at line %d\n", __LINE__);
++    }
+   free (logbuf);
+ 
+   /* With arguments and the prefix in a string arg.  */
+@@ -141,7 +162,10 @@
+   logbuf = log_to_string ();
+   if (strcmp (logbuf,
+               "t-logging: file '/foo/bar.txt\\nt-logging': not \\x01 found\n"))
+-    fail ("log_info test failed at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_info test failed at line %d\n", __LINE__);
++    }
+   free (logbuf);
+ 
+   /* With arguments and byte with bit 7 set in a string arg.  */
+@@ -149,9 +173,11 @@
+   logbuf = log_to_string ();
+   if (strcmp (logbuf,
+               "t-logging: file '/foo/bar.txt\\n': not \x81 found\n"))
+-    fail ("log_info test failed at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_info test failed at line %d\n", __LINE__);
++    }
+   /* show ("===>%s<===\n", logbuf); */
+-
+   free (logbuf);
+ }
+ 
+@@ -160,7 +186,7 @@
+ check_with_pid (void)
+ {
+   char testbuf[100];
+-  char *logbuf;
++  char *logbuf = NULL;
+ 
+   snprintf (testbuf, sizeof testbuf, "t-logging[%u]: ",
+             (unsigned int)getpid ());
+@@ -169,7 +195,10 @@
+   logbuf = log_to_string ();
+   if (strncmp (logbuf, testbuf, strlen (testbuf))
+       || strcmp (logbuf+strlen (testbuf), "first log\n"))
+-    fail ("log_with_pid test failed at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_with_pid test failed at line %d\n", __LINE__);
++    }
+   free (logbuf);
+ 
+   log_info ("This is log line 1\nand 2\nand 3\n");
+@@ -178,7 +207,10 @@
+       || strcmp (logbuf+strlen (testbuf), ("This is log line 1\n"
+                                            "and 2\n"
+                                            "and 3\n")))
+-    fail ("log_with_pid test failed at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_with_pid test failed at line %d\n", __LINE__);
++    }
+   free (logbuf);
+ }
+ 
+@@ -186,18 +218,29 @@
+ static void
+ check_log_error (void)
+ {
+-  char *logbuf;
++  char *logbuf = NULL;
+ 
+   if (log_get_errorcount (0))
+-    fail ("log_get_errorcount() != 0 at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_get_errorcount() != 0 at line %d\n", __LINE__);
++    }
+ 
+   log_error ("Hola, something went wrong\n");
+   if (log_get_errorcount (0) != 1)
+-    fail ("log_get_errorcount() != 1 at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_get_errorcount() != 1 at line %d\n", __LINE__);
++    }
++
+   logbuf = log_to_string ();
+   if (strcmp (logbuf, "t-logging: Hola, something went wrong\n"))
+-    fail ("log_info test failed at line %d\n", __LINE__);
++    {
++      free (logbuf); logbuf = NULL;
++      fail ("log_info test failed at line %d\n", __LINE__);
++    }
+   free (logbuf);
++
+   if (log_get_errorcount (0) != 1)
+     fail ("log_get_errorcount() != 1 at line %d\n", __LINE__);
+   if (log_get_errorcount (1) != 1)  /* note: clear returns old value.  */
+@@ -227,7 +270,7 @@
+         case 'v': verbose++; break;
+         case 'd': debug++; break;
+         default : pargs.err = ARGPARSE_PRINT_ERROR; break;
+-	}
++        }
+     }
+   gpgrt_argparse (NULL, &pargs, NULL);
+ 

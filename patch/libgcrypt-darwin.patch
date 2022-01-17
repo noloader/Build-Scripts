@@ -1,0 +1,101 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with GnuPG on Apple M1.
+#
+# This patch is a hack. The module should have exported symbols with
+# double underscore names, like __gcry_mpih_add_n. However, the symbols
+# were not wrapped in C_SYMBOL_NAME macro so they only got the single
+# underscore name. Later, GnuPG could not locate the symbols because GnuPG
+# was trying to link to the double underscore names. To fix it and retain
+# compatibility, both the single and double underscore names are exported.
+#
+# According to nm, both symbols are exported (as expected):
+#     % nm /usr/local/lib/libgcrypt.20.dylib | grep gcry_mpih_add_n
+#     000000000007bd9c T __gcry_mpih_add_n
+#     00000000000761e8 T __gcry_mpih_add_n_cond
+#     000000000007bd9c T _gcry_mpih_add_n
+#
+# The patch also copies the ELF macro from the original code. The ELF
+# macro is not needed on Darwin since Darwin does not use ELF. It
+# can be deleted and everything will work just fine.
+#
+# Also see https://dev.gnupg.org/T5157 and https://dev.gnupg.org/T5370
+--- mpi/aarch64/mpih-add1.S
++++ mpi/aarch64/mpih-add1.S
+@@ -36,7 +36,13 @@
+ 
+ .globl _gcry_mpih_add_n
+ ELF(.type  _gcry_mpih_add_n,%function)
++.globl __gcry_mpih_add_n
++ELF(.type  __gcry_mpih_add_n,%function)
++
++.align 2
++
+ _gcry_mpih_add_n:
++__gcry_mpih_add_n:
+ 	CFI_STARTPROC()
+ 	and	w5, w3, #3;
+ 	adds	xzr, xzr, xzr; /* clear carry flag */
+--- mpi/aarch64/mpih-sub1.S
++++ mpi/aarch64/mpih-sub1.S
+@@ -36,7 +36,13 @@
+ 
+ .globl _gcry_mpih_sub_n
+ ELF(.type  _gcry_mpih_sub_n,%function)
++.globl __gcry_mpih_sub_n
++ELF(.type  __gcry_mpih_sub_n,%function)
++
++.align 2
++
+ _gcry_mpih_sub_n:
++__gcry_mpih_sub_n:
+ 	CFI_STARTPROC()
+ 	and	w5, w3, #3;
+ 	subs	xzr, xzr, xzr; /* prepare carry flag for sub */
+--- mpi/aarch64/mpih-mul1.S
++++ mpi/aarch64/mpih-mul1.S
+@@ -36,7 +36,13 @@
+ 
+ .globl _gcry_mpih_mul_1
+ ELF(.type  _gcry_mpih_mul_1,%function)
++.globl __gcry_mpih_mul_1
++ELF(.type  __gcry_mpih_mul_1,%function)
++
++.align 2
++
+ _gcry_mpih_mul_1:
++__gcry_mpih_mul_1:
+ 	CFI_STARTPROC()
+ 	and	w5, w2, #3;
+ 	mov	x4, xzr;
+--- mpi/aarch64/mpih-mul2.S
++++ mpi/aarch64/mpih-mul2.S
+@@ -36,7 +36,13 @@
+ 
+ .globl _gcry_mpih_addmul_1
+ ELF(.type  _gcry_mpih_addmul_1,%function)
++.globl __gcry_mpih_addmul_1
++ELF(.type  __gcry_mpih_addmul_1,%function)
++
++.align 2
++
+ _gcry_mpih_addmul_1:
++__gcry_mpih_addmul_1:
+ 	CFI_STARTPROC()
+ 	and	w5, w2, #3;
+ 	mov	x6, xzr;
+--- mpi/aarch64/mpih-mul3.S
++++ mpi/aarch64/mpih-mul3.S
+@@ -36,7 +36,13 @@
+ 
+ .globl _gcry_mpih_submul_1
+ ELF(.type  _gcry_mpih_submul_1,%function)
++.globl __gcry_mpih_submul_1
++ELF(.type  __gcry_mpih_submul_1,%function)
++
++.align 2
++
+ _gcry_mpih_submul_1:
++__gcry_mpih_submul_1:
+ 	CFI_STARTPROC()
+ 	and	w5, w2, #3;
+ 	mov	x7, xzr;

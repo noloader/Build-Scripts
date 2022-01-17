@@ -1,0 +1,37 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with PARI/GP.
+--- config/Makefile.SH
++++ config/Makefile.SH
+@@ -186,7 +186,7 @@
+ LDFLAGS    = $LDFLAGS
+ DLLD_FLAVOR  = \$(LD_FLAVOR)
+ DLLD       = $DLLD \$(DLLD_FLAVOR)
+-DLLDFLAGS  = $DLLDFLAGS
++DLLDFLAGS  = $DLLDFLAGS $LDFLAGS
+ EXTRADLLDFLAGS = $EXTRADLLDFLAGS
+ RUNTEST    = $RUNTEST
+ 
+@@ -236,8 +236,10 @@
+ MT_LIBS      = $MT_LIBS
+ RT_LIBS      = $RT_LIBS
+ DL_LIBS      = $DL_LIBS
+-DYN_LIBS     = \$(GMPLIBS) \$(DL_LIBS) \$(RT_LIBS) \$(MT_LIBS) \$(LIBS)
+-STA_LIBS     = \$(GMPLIBS) \$(DL_LIBS) \$(RT_LIBS) \$(MT_LIBS) \$(LIBS)
++EXTRALIBS    = $EXTRALIBS
++XXX_LIBS     = $XXX_LIBS
++DYN_LIBS     = \$(GMPLIBS) \$(DL_LIBS) \$(RT_LIBS) \$(MT_LIBS) \$(LIBS) \$(XXX_LIBS) \$(LIBS)
++STA_LIBS     = \$(GMPLIBS) \$(DL_LIBS) \$(RT_LIBS) \$(MT_LIBS) \$(LIBS) \$(XXX_LIBS) \$(LIBS)
+ 
+ RM = rm -f
+ MV = mv -f
+--- config/get_readline
++++ config/get_readline
+@@ -36,7 +36,7 @@
+ fi
+ 
+ # try linking without locatelib (without -L except --with-xxx-lib)
+-for tlib in "" tinfo ncurses termcap; do
++for tlib in "" tinfow tinfo ncursesw ncurses termcap; do
+   t=$rl
+   if test -n "$tlib"; then # need a termcap compatible library?
+     eval with="\$with_${tlib}_lib"

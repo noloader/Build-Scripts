@@ -1,0 +1,14 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with Expat.
+--- tests/runtests.c
++++ tests/runtests.c
+@@ -6505,7 +6505,8 @@
+   XML_Char **elemstr = (XML_Char **)userData;
+   if (xcstrcmp(elemstr[0], name) != 0) {
+     char buffer[1024];
+-    sprintf(buffer, "unexpected end string: '%" XML_FMT_STR "'", name);
++    snprintf(buffer, sizeof(buffer), "unexpected end string: '%" XML_FMT_STR "'", name);
++    buffer[sizeof(buffer)-1] = '\0';  /* ensure NULL termination */
+     fail(buffer);
+   }
+   triplet_end_flag = XML_TRUE;

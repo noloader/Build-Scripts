@@ -1,0 +1,190 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with ICU.
+--- source/tools/gensprep/store.c
++++ source/tools/gensprep/store.c
+@@ -412,7 +412,7 @@
+         int16_t delta = (int16_t)((int32_t)codepoint - (int16_t) mapping[0]);
+         if(delta >= SPREP_DELTA_RANGE_NEGATIVE_LIMIT && delta <= SPREP_DELTA_RANGE_POSITIVE_LIMIT){
+ 
+-            trieWord = delta << 2;
++            trieWord = (int16_t)((uint16_t)delta << 2);
+ 
+ 
+             /* make sure that the second bit is OFF */
+--- source/test/intltest/alphaindextst.cpp
++++ source/test/intltest/alphaindextst.cpp
+@@ -697,7 +697,7 @@
+     static const UChar32 kanji[] = { 0x4E9C, 0x95C7, 0x4E00, 0x58F1 };
+     int32_t overflowIndex = immIndex->getBucketCount() - 1;
+     for(int32_t i = 0; i < UPRV_LENGTHOF(kanji); ++i) {
+-        char msg[40];
++        char msg[56+1];
+         sprintf(msg, "kanji[%d]=U+%04lX in overflow bucket", (int)i, (long)kanji[i]);
+         assertEquals(msg, overflowIndex, immIndex->getBucketIndex(UnicodeString(kanji[i]), status));
+         TEST_CHECK_STATUS;
+--- source/i18n/numparse_symbols.h
++++ source/i18n/numparse_symbols.h
+@@ -79,7 +79,7 @@
+ // Exported as U_I18N_API for tests
+ class U_I18N_API MinusSignMatcher : public SymbolMatcher {
+   public:
+-    MinusSignMatcher() = default;  // WARNING: Leaves the object in an unusable state
++    MinusSignMatcher() : fAllowTrailing(false) { }
+ 
+     MinusSignMatcher(const DecimalFormatSymbols& dfs, bool allowTrailing);
+ 
+@@ -151,7 +151,7 @@
+ // Exported as U_I18N_API for tests
+ class U_I18N_API PlusSignMatcher : public SymbolMatcher {
+   public:
+-    PlusSignMatcher() = default;  // WARNING: Leaves the object in an unusable state
++    PlusSignMatcher() : fAllowTrailing(false) { }
+ 
+     PlusSignMatcher(const DecimalFormatSymbols& dfs, bool allowTrailing);
+ 
+--- source/i18n/numparse_currency.h
++++ source/i18n/numparse_currency.h
+@@ -32,7 +32,7 @@
+ // Exported as U_I18N_API for tests
+ class U_I18N_API CombinedCurrencyMatcher : public NumberParseMatcher, public UMemory {
+   public:
+-    CombinedCurrencyMatcher() = default;  // WARNING: Leaves the object in an unusable state
++    CombinedCurrencyMatcher() : fUseFullCurrencyData(false) { }
+ 
+     CombinedCurrencyMatcher(const CurrencySymbols& currencySymbols, const DecimalFormatSymbols& dfs,
+                             parse_flags_t parseFlags, UErrorCode& status);
+--- source/i18n/calendar.cpp
++++ source/i18n/calendar.cpp
+@@ -2350,7 +2350,7 @@
+                 break;
+             } else {
+                 min = max;
+-                max <<= 1;
++                max = (int32_t)((uint32_t)max << 1);
+                 if (max == 0) {
+                     // Field difference too large to fit into int32_t
+ #if defined (U_DEBUG_CAL)
+--- source/i18n/udat.cpp
++++ source/i18n/udat.cpp
+@@ -20,6 +20,7 @@
+ #include "unicode/fieldpos.h"
+ #include "unicode/parsepos.h"
+ #include "unicode/calendar.h"
++#include "unicode/gregocal.h"
+ #include "unicode/numfmt.h"
+ #include "unicode/dtfmtsym.h"
+ #include "unicode/ustring.h"
+@@ -193,7 +194,12 @@
+ U_CAPI void U_EXPORT2
+ udat_close(UDateFormat* format)
+ {
+-    delete (DateFormat*)format;
++    // UDateFormat is a void* typedef, so format is void**.
++    DateFormat* pFormat = static_cast<DateFormat*>(*format);
++    if(dynamic_cast<GregorianCalendar*>(pFormat))
++        delete dynamic_cast<GregorianCalendar*>(pFormat);
++    else
++        delete pFormat;
+ }
+ 
+ U_CAPI UDateFormat* U_EXPORT2
+--- source/common/ucnvscsu.cpp
++++ source/common/ucnvscsu.cpp
+@@ -1923,7 +1923,7 @@
+         cnv->charErrorBufferLength=(int8_t)length;
+ 
+         /* now output what fits into the regular target */
+-        c>>=8*length; /* length was reduced by targetCapacity */
++        c = (int32_t)((uint64_t)c>>8*length); /* length was reduced by targetCapacity */
+         switch(targetCapacity) {
+             /* each branch falls through to the next one */
+         case 3:
+--- source/common/ucnvbocu.cpp
++++ source/common/ucnvbocu.cpp
+@@ -916,7 +916,7 @@
+     }
+ 
+     /* return the state for decoding the trail byte(s) */
+-    return (diff<<2)|count;
++    return (int32_t)(((uint32_t)diff<<2)|count);
+ }
+ 
+ /**
+@@ -1356,7 +1356,7 @@
+     } else {
+         /* set the converter state back into UConverter */
+         cnv->toUnicodeStatus=(uint32_t)prev;
+-        cnv->mode=(diff<<2)|count;
++        cnv->mode=(int32_t)(((uint32_t)diff<<2)|count);
+     }
+     cnv->toULength=byteIndex;
+ 
+--- source/common/ucurr.cpp
++++ source/common/ucurr.cpp
+@@ -2087,7 +2087,7 @@
+                     if (U_SUCCESS(localStatus)) {
+                         int32_t fromLength = 0;
+                         const int32_t *fromArray = ures_getIntVector(fromRes, &fromLength, &localStatus);
+-                        int64_t currDate64 = (int64_t)fromArray[0] << 32;
++                        int64_t currDate64 = (int64_t)((uint64_t)fromArray[0] << 32);
+                         currDate64 |= ((int64_t)fromArray[1] & (int64_t)INT64_C(0x00000000FFFFFFFF));
+                         fromDate = (UDate)currDate64;
+                     }
+@@ -2101,7 +2101,7 @@
+                     if (U_SUCCESS(localStatus)) {
+                         int32_t toLength = 0;
+                         const int32_t *toArray = ures_getIntVector(toRes, &toLength, &localStatus);
+-                        int64_t currDate64 = (int64_t)toArray[0] << 32;
++                        int64_t currDate64 = (int64_t)((uint64_t)toArray[0] << 32);
+                         currDate64 |= ((int64_t)toArray[1] & (int64_t)INT64_C(0x00000000FFFFFFFF));
+                         toDate = (UDate)currDate64;
+                     }
+@@ -2296,7 +2296,7 @@
+                 UResourceBundle *fromRes = ures_getByKey(currencyRes, "from", NULL, &localStatus);
+                 const int32_t *fromArray = ures_getIntVector(fromRes, &fromLength, &localStatus);
+ 
+-                int64_t currDate64 = (int64_t)fromArray[0] << 32;
++                int64_t currDate64 = (int64_t)((uint64_t)fromArray[0] << 32);
+                 currDate64 |= ((int64_t)fromArray[1] & (int64_t)INT64_C(0x00000000FFFFFFFF));
+                 UDate fromDate = (UDate)currDate64;
+ 
+@@ -2306,7 +2306,7 @@
+                     UResourceBundle *toRes = ures_getByKey(currencyRes, "to", NULL, &localStatus);
+                     const int32_t *toArray = ures_getIntVector(toRes, &toLength, &localStatus);
+ 
+-                    currDate64 = (int64_t)toArray[0] << 32;
++                    currDate64 = (int64_t)((uint64_t)toArray[0] << 32);
+                     currDate64 |= ((int64_t)toArray[1] & (int64_t)INT64_C(0x00000000FFFFFFFF));
+                     UDate toDate = (UDate)currDate64;
+ 
+@@ -2420,7 +2420,7 @@
+                     UResourceBundle *fromRes = ures_getByKey(currencyRes, "from", NULL, &localStatus);
+                     const int32_t *fromArray = ures_getIntVector(fromRes, &fromLength, &localStatus);
+ 
+-                    int64_t currDate64 = (int64_t)fromArray[0] << 32;
++                    int64_t currDate64 = (int64_t)((uint64_t)fromArray[0] << 32);
+                     currDate64 |= ((int64_t)fromArray[1] & (int64_t)INT64_C(0x00000000FFFFFFFF));
+                     UDate fromDate = (UDate)currDate64;
+ 
+@@ -2430,7 +2430,7 @@
+                         UResourceBundle *toRes = ures_getByKey(currencyRes, "to", NULL, &localStatus);
+                         const int32_t *toArray = ures_getIntVector(toRes, &toLength, &localStatus);
+ 
+-                        currDate64 = (int64_t)toArray[0] << 32;
++                        currDate64 = (int64_t)((uint64_t)toArray[0] << 32);
+                         currDate64 |= ((int64_t)toArray[1] & (int64_t)INT64_C(0x00000000FFFFFFFF));
+                         UDate toDate = (UDate)currDate64;
+ 
+--- source/common/uloc_tag.cpp
++++ source/common/uloc_tag.cpp
+@@ -2042,7 +2042,9 @@
+         *status = U_MEMORY_ALLOCATION_ERROR;
+         return NULL;
+     }
+-    uprv_memcpy(tagBuf, tag, tagLen);
++    // src and dest cannot be NULL
++    if (tagBuf && tag)
++      uprv_memcpy(tagBuf, tag, tagLen);
+     *(tagBuf + tagLen) = 0;
+ 
+     /* create a ULanguageTag */

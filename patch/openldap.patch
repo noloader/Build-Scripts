@@ -1,0 +1,111 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with OpenLDAP.
+--- libraries/libldap/cyrus.c
++++ libraries/libldap/cyrus.c
+@@ -41,6 +41,10 @@
+ #define HOST_NAME_MAX _POSIX_HOST_NAME_MAX
+ #endif
+ 
++#if !defined(HOST_NAME_MAX) && defined(__linux__)
++#define HOST_NAME_MAX 64
++#endif
++
+ #ifdef HAVE_SASL_SASL_H
+ #include <sasl/sasl.h>
+ #else
+--- libraries/liblmdb/mdb.c
++++ libraries/liblmdb/mdb.c
+@@ -187,10 +187,6 @@
+ #define BIG_ENDIAN	__BIG_ENDIAN
+ #endif
+ 
+-#if defined(__i386) || defined(__x86_64) || defined(_M_IX86)
+-#define MISALIGNED_OK	1
+-#endif
+-
+ #include "lmdb.h"
+ #include "midl.h"
+ 
+@@ -770,7 +766,7 @@
+ #endif
+ 		char pad[(MNAME_LEN+CACHELINE-1) & ~(CACHELINE-1)];
+ 	} mt2;
+-	MDB_reader	mti_readers[1];
++	MDB_reader	mti_readers[];
+ } MDB_txninfo;
+ 
+ 	/** Lockfile format signature: version, features and field layout */
+@@ -833,7 +829,7 @@
+ 		} pb;
+ 		uint32_t	pb_pages;	/**< number of overflow pages */
+ 	} mp_pb;
+-	indx_t		mp_ptrs[1];		/**< dynamic size */
++	indx_t		mp_ptrs[];		/**< dynamic size */
+ } MDB_page;
+ 
+ 	/** Size of the page header, excluding dynamic data at the end */
+@@ -916,7 +912,7 @@
+ /** @} */
+ 	unsigned short	mn_flags;		/**< @ref mdb_node */
+ 	unsigned short	mn_ksize;		/**< key size */
+-	char		mn_data[1];			/**< key and data are appended here */
++	char		mn_data[];			/**< key and data are appended here */
+ } MDB_node;
+ 
+ 	/** Size of the node header, excluding dynamic data at the end */
+@@ -967,9 +963,13 @@
+ #else
+ #if SIZE_MAX > 4294967295UL
+ #define COPY_PGNO(dst,src)	do { \
+-	unsigned short *s, *d;	\
+-	s = (unsigned short *)&(src);	\
+-	d = (unsigned short *)&(dst);	\
++	unsigned char *s, *d;	\
++	s = (unsigned char *)&(src);	\
++	d = (unsigned char *)&(dst);	\
++	*d++ = *s++;	\
++	*d++ = *s++;	\
++	*d++ = *s++;	\
++	*d++ = *s++;	\
+ 	*d++ = *s++;	\
+ 	*d++ = *s++;	\
+ 	*d++ = *s++;	\
+@@ -977,9 +977,11 @@
+ } while (0)
+ #else
+ #define COPY_PGNO(dst,src)	do { \
+-	unsigned short *s, *d;	\
+-	s = (unsigned short *)&(src);	\
+-	d = (unsigned short *)&(dst);	\
++	unsigned char *s, *d;	\
++	s = (unsigned char *)&(src);	\
++	d = (unsigned char *)&(dst);	\
++	*d++ = *s++;	\
++	*d++ = *s++;	\
+ 	*d++ = *s++;	\
+ 	*d = *s;	\
+ } while (0)
+--- libraries/libldap/tls2.c
++++ libraries/libldap/tls2.c
+@@ -37,6 +37,7 @@
+ 
+ #include "ldap-tls.h"
+ 
++int ldap_pvt_tls_check_hostname(LDAP *ld, void *s, const char *name_in);
+ static tls_impl *tls_imp = &ldap_int_tls_impl;
+ #define HAS_TLS( sb )	ber_sockbuf_ctrl( sb, LBER_SB_OPT_HAS_IO, \
+ 				(void *)tls_imp->ti_sbio )
+--- servers/slapd/back-mdb/back-mdb.h
++++ servers/slapd/back-mdb/back-mdb.h
+@@ -173,11 +173,7 @@
+ #define CACHELINE	64
+ #endif
+ 
+-#if defined(__i386) || defined(__x86_64)
+-#define MISALIGNED_OK	1
+-#else
+ #define	ALIGNER	(sizeof(size_t)-1)
+-#endif
+ 
+ typedef struct IndexRbody {
+ 	AttrInfo *ai;

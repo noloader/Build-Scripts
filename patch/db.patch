@@ -1,0 +1,14 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with libdb.
+--- src/log/log_put.c
++++ src/log/log_put.c
+@@ -1915,7 +1915,8 @@
+ 			} else {
+ 				LOGCOPY_32(env, bp, &dbt->size);
+ 				bp += sizeof(dbt->size);
+-				memcpy(bp, dbt->data, dbt->size);
++				if (bp && dbt->data)
++				    memcpy(bp, dbt->data, dbt->size);
+ 			}
+ 			/* Process fields that need to be byte swapped. */
+ 			if (dbp != NULL && F_ISSET(dbp, DB_AM_SWAP)) {

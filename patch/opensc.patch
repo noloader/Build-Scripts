@@ -1,0 +1,36 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with OpenSC.
+--- src/libopensc/pkcs15-openpgp.c
++++ src/libopensc/pkcs15-openpgp.c
+@@ -412,14 +412,14 @@
+ 	for (i = 1; i <= PGP_NUM_PRIVDO; i++) {
+ 		sc_pkcs15_data_info_t dat_info;
+ 		sc_pkcs15_object_t dat_obj;
+-		char name[8];
+-		char path[9];
++		char name[8+10+1];
++		char path[9+10+1];
+ 		u8 content[254];
+ 		memset(&dat_info, 0, sizeof(dat_info));
+ 		memset(&dat_obj, 0, sizeof(dat_obj));
+ 
+-		snprintf(name, 8, "PrivDO%d", i);
+-		snprintf(path, 9, "3F00010%d", i);
++		snprintf(name, sizeof(name), "PrivDO%d", i);
++		snprintf(path, sizeof(path), "3F00010%d", i);
+ 
+ 		/* Check if the DO can be read and is not empty. Otherwise we
+ 		 * won't expose a PKCS#15 DATA object.
+--- src/common/simclist.c
++++ src/common/simclist.c
+@@ -71,8 +71,10 @@
+ 
+ /* disable asserts */
+ #ifndef SIMCLIST_DEBUG
++#ifndef NDEBUG
+ #define NDEBUG
+ #endif
++#endif
+ 
+ #include <assert.h>
+ 
