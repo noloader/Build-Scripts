@@ -3,8 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Expat from sources.
 
-EXPAT_VER=2.4.2
-EXPAT_GIT_VER=R_2_4_2
+EXPAT_VER=2.4.3
+EXPAT_GIT_VER=R_2_4_3
 EXPAT_TAR=expat-${EXPAT_VER}.tar.bz2
 EXPAT_DIR=expat-${EXPAT_VER}
 PKG_NAME=expat
