@@ -56,6 +56,9 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
+echo ""
+echo "Lzip ${LZIP_VER}..."
+
 # Savannah uses a Let's Encrypt certificate. Savannah uses mirrors.sarata.com as a
 # storage backend. Sometimes mirrors.sarata.com uses a Let's Encrypt certificate,
 # other times the mirror use a Go Daddy certificate. Throw the CA Zoo at it...
@@ -72,13 +75,18 @@ cd "$LZIP_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/lzip.patch ]]; then
-    patch -u -p0 < ../patch/lzip.patch
     echo ""
+    echo "***************************"
+    echo "Patching package"
+    echo "***************************"
+
+    patch -u -p0 < ../patch/lzip.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "**********************"
 echo "Configuring package"
 echo "**********************"
@@ -93,8 +101,14 @@ echo "**********************"
 ./configure \
     --prefix="${INSTX_PREFIX}"
 
-if [[ "$?" -ne 0 ]]; then
+if [[ "$?" -ne 0 ]]
+then
+    echo ""
+    echo "************************"
     echo "Failed to configure Lzip"
+    echo "************************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
@@ -102,6 +116,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "**********************"
 echo "Building package"
 echo "**********************"
@@ -109,13 +124,19 @@ echo "**********************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "********************"
     echo "Failed to build Lzip"
+    echo "********************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+echo ""
 echo "**********************"
 echo "Testing package"
 echo "**********************"
@@ -123,12 +144,16 @@ echo "**********************"
 MAKE_FLAGS=("check")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "*******************"
     echo "Failed to test Lzip"
-    echo "**********************"
+    echo "*******************"
+
+    bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
 
+echo ""
 echo "**********************"
 echo "Installing package"
 echo "**********************"
@@ -141,6 +166,13 @@ else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
 fi
+
+###############################################################################
+
+echo ""
+echo "*****************************************************************************"
+echo "Please run Bash's 'hash -r' to update program cache in the current shell"
+echo "*****************************************************************************"
 
 ###############################################################################
 
