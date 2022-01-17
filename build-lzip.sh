@@ -73,9 +73,6 @@ rm -rf "$LZIP_DIR" &>/dev/null
 gzip -d < "$LZIP_TAR" | tar xf -
 cd "$LZIP_DIR" || exit 1
 
-cp -p configure configure.orig
-cp -p Makefile.in Makefile.in.orig
-
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/lzip.patch ]]; then
     echo ""
@@ -85,12 +82,6 @@ if [[ -e ../patch/lzip.patch ]]; then
 
     patch -u -p0 < ../patch/lzip.patch
 fi
-
-echo "" > ../patch/lzip.patch
-diff -u configure.orig configure >> ../patch/lzip.patch
-diff -u Makefile.in.orig Makefile.in >> ../patch/lzip.patch
-
-exit 1
 
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
