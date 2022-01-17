@@ -1,0 +1,29 @@
+
+--- configure
++++ configure
+@@ -21,13 +21,11 @@
+ infodir='$(datarootdir)/info'
+ mandir='$(datarootdir)/man'
+ sysconfdir='$(prefix)/etc'
+-CXX=g++
+-CPPFLAGS=
+-CXXFLAGS='-Wall -W -O2'
+-LDFLAGS=
+ 
+-# checking whether we are using GNU C++.
+-/bin/sh -c "${CXX} --version" > /dev/null 2>&1 || { CXX=c++ ; CXXFLAGS=-O2 ; }
++if [ -z "${CXX}" ]; then CXX=g++; fi
++if [ -z "${CPPFLAGS}" ]; then CPPFLAGS=''; fi
++if [ -z "${CXXFLAGS}" ]; then CXXFLAGS='-Wall -W -O2'; fi
++if [ -z "${LDFLAGS}" ]; then LDFLAGS=''; fi
+ 
+ # Loop over all args
+ args=
+--- Makefile.in
++++ Makefile.in
+@@ -1,4 +1,4 @@
+-
++SHELL = /bin/sh
+ DISTNAME = $(pkgname)-$(pkgversion)
+ INSTALL = install
+ INSTALL_PROGRAM = $(INSTALL) -m 755
