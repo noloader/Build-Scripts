@@ -1,4 +1,5 @@
-
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with Moe.
 --- configure
 +++ configure
 @@ -21,13 +21,11 @@
