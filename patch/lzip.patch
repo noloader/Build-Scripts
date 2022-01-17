@@ -2,54 +2,25 @@
 # This patch fixes some issues with lzip.
 --- configure
 +++ configure
-@@ -20,10 +20,22 @@
- datarootdir='$(prefix)/share'
- infodir='$(datarootdir)/info'
- mandir='$(datarootdir)/man'
+@@ -23,10 +23,11 @@
+ build=no
+ check=no
+ installdir=
 -CXX=g++
 -CPPFLAGS=
 -CXXFLAGS='-Wall -W -O2'
 -LDFLAGS=
 +
-+if [ -z "${CXX}" ]; then
-+	CXX=g++
-+fi
-+
-+if [ -z "${CPPFLAGS}" ]; then
-+	CPPFLAGS=
-+fi
-+
-+if [ -z "${CXXFLAGS}" ]; then
-+	CXXFLAGS='-Wall -W -O2'
-+fi
-+
-+if [ -z "${LDFLAGS}" ]; then
-+	LDFLAGS=
-+fi
++if [ -z "${CXX}" ]; then CXX=g++; fi
++if [ -z "${CPPFLAGS}" ]; then CPPFLAGS=''; fi
++if [ -z "${CXXFLAGS}" ]; then CXXFLAGS='-Wall -W -O2'; fi
++if [ -z "${LDFLAGS}" ]; then LDFLAGS=''; fi
  
  # checking whether we are using GNU C++.
- /bin/sh -c "${CXX} --version" > /dev/null 2>&1 ||
-@@ -46,7 +58,7 @@
- 
- 	# Split out the argument for options that take them
- 	case ${option} in
--	*=*) optarg=`echo ${option} | sed -e 's,^[^=]*=,,;s,/$,,'` ;;
-+	*=*) optarg=`echo "${option}" | sed -e 's,^[^=]*=,,;s,/$,,'` ;;
- 	esac
- 
- 	# Process the options
-@@ -125,7 +137,7 @@
- 	if [ ! -r "${srcdir}/${srctrigger}" ] ; then srcdir=.. ; fi
- 	if [ ! -r "${srcdir}/${srctrigger}" ] ; then
- 		## the sed command below emulates the dirname command
--		srcdir=`echo $0 | sed -e 's,[^/]*$,,;s,/$,,;s,^$,.,'`
-+		srcdir=`echo "$0" | sed -e 's,[^/]*$,,;s,/$,,;s,^$,.,'`
- 	fi
- fi
- 
+ /bin/sh -c "${CXX} --version" > /dev/null 2>&1 || { CXX=c++ ; CXXFLAGS=-O2 ; }
 --- Makefile.in
 +++ Makefile.in
-@@ -1,12 +1,11 @@
+@@ -1,10 +1,9 @@
 -
 +SHELL = /bin/sh
  DISTNAME = $(pkgname)-$(pkgversion)
@@ -61,5 +32,12 @@
  CAN_RUN_INSTALLINFO = $(SHELL) -c "install-info --version" > /dev/null 2>&1
  
  objs = arg_parser.o lzip_index.o list.o encoder_base.o encoder.o \
-        fast_encoder.o decoder.o main.o
+@@ -20,7 +19,7 @@
+ all : $(progname)
  
+ $(progname) : $(objs)
+-	$(CXX) $(LDFLAGS) $(CXXFLAGS) -o $@ $(objs)
++	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(objs) $(LIBS) $(LDLIBS)
+ 
+ main.o : main.cc
+ 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -DPROGVERSION=\"$(pkgversion)\" -c -o $@ $<
