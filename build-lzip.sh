@@ -91,7 +91,6 @@ echo "**********************"
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
-    --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}"
 
 if [[ "$?" -ne 0 ]]; then
