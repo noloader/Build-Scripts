@@ -12,3 +12,16 @@
      fail(buffer);
    }
    triplet_end_flag = XML_TRUE;
+--- tests/runtests.c
++++ tests/runtests.c
+@@ -60,6 +60,10 @@
+ #  include <stdbool.h>
+ #endif
+ 
++#if defined(__sun__)
++# include <sunmath.h>
++#endif
++
+ #include "expat.h"
+ #include "chardata.h"
+ #include "structdata.h"
