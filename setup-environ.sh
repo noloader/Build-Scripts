@@ -743,7 +743,7 @@ if [[ -z "${opt_now}" ]]; then
 fi
 
 # NX stacks
-if [[ -z "${opt_pthread}" ]]; then
+if [[ -z "${opt_as_nxstack}" ]]; then
     cc_result=$(${TEST_CC} -o "${outfile}" "${infile}" -Wa,--noexecstack 2>&1 | wc -w)
     if [[ "$cc_result" -eq 0 ]]; then
         opt_as_nxstack="-Wa,--noexecstack"
