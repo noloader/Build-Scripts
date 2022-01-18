@@ -3,7 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Zstd from sources.
 
-ZSTD_VER=v1.5.1
+ZSTD_VER=1.5.1
+ZSTD_GH_VER=v1.5.1
 ZSTD_TAR="zstd-${ZSTD_VER}.tar.gz"
 ZSTD_DIR="zstd-${ZSTD_VER}"
 PKG_NAME=zstd
@@ -60,7 +61,7 @@ echo ""
 echo "Zstd ${ZSTD_VER}..."
 
 if ! "$WGET" -q -O "$ZSTD_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
-     "https://github.com/facebook/zstd/releases/download/$ZSTD_VER/$ZSTD_TAR"
+     "https://github.com/facebook/zstd/releases/download/$ZSTD_GH_VER/$ZSTD_TAR"
 then
     echo "Failed to download Zstd"
     exit 1
@@ -96,7 +97,7 @@ export LIBS="${INSTX_LDLIBS}"
 export PREFIX="${INSTX_PREFIX}"
 export LIBDIR="${INSTX_LIBDIR}"
 
-MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
+MAKE_FLAGS=("-j" "${INSTX_JOBS}" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
     echo ""
