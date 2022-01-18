@@ -803,6 +803,7 @@ if [[ -n "${CFLAGS64}" ]]
 then
     opt_cflags[${#opt_cflags[@]}]="${CFLAGS64}"
     opt_cxxflags[${#opt_cxxflags[@]}]="${CFLAGS64}"
+    opt_asflags[${#opt_asflags[@]}]="${CFLAGS64}"
     opt_ldflags[${#opt_ldflags[@]}]="${CFLAGS64}"
 fi
 
