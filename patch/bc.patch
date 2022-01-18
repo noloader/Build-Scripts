@@ -1,5 +1,5 @@
 # Written and placed in public domain by Jeffrey Walton.
-# This patch fixes some issues with bc calculator.
+# This patch fixes some issues with BC calculator.
 --- Makefile.in
 +++ Makefile.in
 @@ -288,7 +288,7 @@

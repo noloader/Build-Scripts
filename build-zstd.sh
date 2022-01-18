@@ -77,6 +77,13 @@ rm -rf "$ZSTD_DIR" &>/dev/null
 gzip -d < "$ZSTD_TAR" | tar xf -
 cd "$ZSTD_DIR" || exit 1
 
+# cp -p programs/Makefile programs/Makefile.orig
+# cp -p tests/Makefile tests/Makefile.orig
+# cp -p tests/fuzz/Makefile tests/fuzz/Makefile.orig
+# cp -p lib/Makefile lib/Makefile.orig
+# cp -p lib/libzstd.mk lib/libzstd.mk.orig
+# cp -p contrib/linux-kernel/test/Makefile contrib/linux-kernel/test/Makefile.orig
+
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/zstd.patch ]]; then
     echo ""
@@ -86,6 +93,14 @@ if [[ -e ../patch/zstd.patch ]]; then
 
     patch -u -p0 < ../patch/zstd.patch
 fi
+
+# echo "" > ../patch/zstd.patch
+# diff -u programs/Makefile.orig programs/Makefile >> ../patch/zstd.patch
+# diff -u tests/Makefile.orig tests/Makefile >> ../patch/zstd.patch
+# diff -u tests/fuzz/Makefile.orig tests/fuzz/Makefile >> ../patch/zstd.patch
+# diff -u lib/Makefile.orig lib/Makefile >> ../patch/zstd.patch
+# diff -u lib/libzstd.mk.orig lib/libzstd.mk >> ../patch/zstd.patch
+# diff -u contrib/linux-kernel/test/Makefile.orig contrib/linux-kernel/test/Makefile >> ../patch/zstd.patch
 
 echo ""
 echo "**********************"

@@ -1,0 +1,96 @@
+# Written and placed in public domain by Jeffrey Walton.
+# This patch fixes some issues with Zstd library.
+--- programs/Makefile
++++ programs/Makefile
+@@ -322,7 +322,7 @@
+ 
+ $(BUILD_DIR)/%.o : %.S | $(BUILD_DIR)
+ 	@echo AS $@
+-	$(COMPILE.c) $(OUTPUT_OPTION) $<
++	$(COMPILE.S) $(OUTPUT_OPTION) $<
+ 
+ MKDIR ?= mkdir
+ $(BUILD_DIR): ; $(MKDIR) -p $@
+--- tests/Makefile
++++ tests/Makefile
+@@ -118,7 +118,7 @@
+ 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+ 
+ zstdd_%.o : $(ZSTDDIR)/decompress/%.S
+-	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
++	$(CC) -c $(CPPFLAGS) $(ASFLAGS) $(CFLAGS) $< -o $@
+ 
+ zstdmt%.o : CPPFLAGS += $(MULTITHREAD_CPP)
+ 
+@@ -132,7 +132,7 @@
+ 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+ 
+ zstdmt_d_%.o : $(ZSTDDIR)/decompress/%.S
+-	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
++	$(CC) -c $(CPPFLAGS) $(ASFLAGS) $(CFLAGS) $< -o $@
+ 
+ fullbench32: CPPFLAGS += -m32
+ fullbench fullbench32 : CPPFLAGS += $(MULTITHREAD_CPP) -Wno-deprecated-declarations
+--- tests/fuzz/Makefile
++++ tests/fuzz/Makefile
+@@ -12,6 +12,7 @@
+ CFLAGS ?= -O3
+ CXXFLAGS ?= -O3
+ CPPFLAGS ?=
++ASFLAGS ?= -Wa,--noexecstack
+ LDFLAGS ?=
+ ARFLAGS ?=
+ LIB_FUZZING_ENGINE ?= libregression.a
+@@ -44,6 +45,7 @@
+ 	-g -fno-omit-frame-pointer
+ FUZZ_CFLAGS := $(FUZZ_EXTRA_FLAGS) $(CFLAGS)
+ FUZZ_CXXFLAGS := $(FUZZ_EXTRA_FLAGS) -std=c++11 $(CXXFLAGS)
++FUZZ_ASFLAGS := $(ASFLAGS)
+ FUZZ_LDFLAGS := -pthread $(LDFLAGS)
+ FUZZ_ARFLAGS := $(ARFLAGS)
+ FUZZ_TARGET_FLAGS = $(FUZZ_CPPFLAGS) $(FUZZ_CXXFLAGS) $(FUZZ_LDFLAGS)
+@@ -127,7 +129,7 @@
+ 	$(CC) $(FUZZ_CPPFLAGS) $(FUZZ_CFLAGS) $(FUZZ_ROUND_TRIP_FLAGS) $< -c -o $@
+ 
+ rt_lib_decompress_%.o: $(ZSTDDIR)/decompress/%.S
+-	$(CC) $(FUZZ_CPPFLAGS) $(FUZZ_CFLAGS) $(FUZZ_ROUND_TRIP_FLAGS) $< -c -o $@
++	$(CC) $(FUZZ_CPPFLAGS) $(FUZZ_ASFLAGS) $(FUZZ_CFLAGS) $(FUZZ_ROUND_TRIP_FLAGS) $< -c -o $@
+ 
+ rt_lib_dictBuilder_%.o: $(ZSTDDIR)/dictBuilder/%.c
+ 	$(CC) $(FUZZ_CPPFLAGS) $(FUZZ_CFLAGS) $(FUZZ_ROUND_TRIP_FLAGS) $< -c -o $@
+@@ -151,7 +153,7 @@
+ 	$(CC) $(FUZZ_CPPFLAGS) $(FUZZ_CFLAGS) $< -c -o $@
+ 
+ d_lib_decompress_%.o: $(ZSTDDIR)/decompress/%.S
+-	$(CC) $(FUZZ_CPPFLAGS) $(FUZZ_CFLAGS) $< -c -o $@
++	$(CC) $(FUZZ_CPPFLAGS) $(FUZZ_ASFLAGS) $(FUZZ_CFLAGS) $< -c -o $@
+ 
+ d_lib_dictBuilder_%.o: $(ZSTDDIR)/dictBuilder/%.c
+ 	$(CC) $(FUZZ_CPPFLAGS) $(FUZZ_CFLAGS) $< -c -o $@
+--- lib/Makefile
++++ lib/Makefile
+@@ -212,11 +212,11 @@
+ 
+ $(ZSTD_DYNLIB_DIR)/%.o : %.S | $(ZSTD_DYNLIB_DIR)
+ 	@echo AS $@
+-	$(COMPILE.c) $(OUTPUT_OPTION) $<
++	$(COMPILE.S) $(OUTPUT_OPTION) $<
+ 
+ $(ZSTD_STATLIB_DIR)/%.o : %.S | $(ZSTD_STATLIB_DIR)
+ 	@echo AS $@
+-	$(COMPILE.c) $(OUTPUT_OPTION) $<
++	$(COMPILE.S) $(OUTPUT_OPTION) $<
+ 
+ MKDIR ?= mkdir
+ $(BUILD_DIR) $(ZSTD_DYNLIB_DIR) $(ZSTD_STATLIB_DIR):
+--- contrib/linux-kernel/test/Makefile
++++ contrib/linux-kernel/test/Makefile
+@@ -24,7 +24,7 @@
+ LINUX_ZSTD_OBJECTS    := $(LINUX_ZSTD_OBJECTS0:.S=.o)
+ 
+ %.o: %.S
+-	$(CC) -c $(CPPFLAGS) $(CFLAGS) $^ -o $@
++	$(CC) -c $(CPPFLAGS) $(ASFLAGS) $(CFLAGS) $^ -o $@
+ 
+ liblinuxzstd.a: $(LINUX_ZSTD_OBJECTS)
+ 	$(AR) $(ARFLAGS) $@ $^
