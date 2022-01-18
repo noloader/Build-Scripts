@@ -699,15 +699,31 @@ fi
 
 # -fno-sanitize-recover causes an abort(). Useful for test
 # programs that swallow UBsan output and pretty print "OK"
-if [[ -z "${opt_san_norecover}" ]]; then
+if [[ -z "${opt_san_no_recover}" ]]; then
     cc_result=$(${TEST_CC} -o "${outfile}" "${infile}" -fsanitize=undefined -fno-sanitize-recover=all 2>&1 | wc -w)
     if [[ "$cc_result" -eq 0 ]]; then
-        opt_san_norecover="-fno-sanitize-recover=all"
+        opt_san_no_recover="-fno-sanitize-recover=all"
     else
         cc_result=$(${TEST_CC} -o "${outfile}" "${infile}" -fsanitize=undefined -fno-sanitize-recover 2>&1 | wc -w)
         if [[ "$cc_result" -eq 0 ]]; then
-            opt_san_norecover="-fno-sanitize-recover"
+            opt_san_no_recover="-fno-sanitize-recover"
         fi
+    fi
+fi
+
+# IEEE-754 allows divide by 0
+if [[ -z "${opt_san_no_int_div_0}" ]]; then
+    cc_result=$(${TEST_CC} -o "${outfile}" "${infile}" -fno-sanitize=integer-divide-by-zero 2>&1 | wc -w)
+    if [[ "$cc_result" -eq 0 ]]; then
+        opt_san_no_int_div_0="-fno-sanitize=integer-divide-by-zero"
+    fi
+fi
+
+# IEEE-754 allows divide by 0
+if [[ -z "${opt_san_no_flt_div_0}" ]]; then
+    cc_result=$(${TEST_CC} -o "${outfile}" "${infile}" -fno-sanitize=float-divide-by-zero 2>&1 | wc -w)
+    if [[ "$cc_result" -eq 0 ]]; then
+        opt_san_no_flt_div_0="-fno-sanitize=float-divide-by-zero"
     fi
 fi
 
@@ -814,10 +830,22 @@ elif [[ -n "${INSTX_UBSAN}" ]]; then
     opt_cxxflags[${#opt_cxxflags[@]}]="-fsanitize=undefined"
     opt_ldflags[${#opt_ldflags[@]}]="-fsanitize=undefined"
 
-    if [[ -n "${opt_san_norecover}" ]]; then
-        opt_cflags[${#opt_cflags[@]}]="${opt_san_norecover}"
-        opt_cxxflags[${#opt_cxxflags[@]}]="${opt_san_norecover}"
-        opt_ldflags[${#opt_ldflags[@]}]="${opt_san_norecover}"
+    if [[ -n "${opt_san_no_int_div_0}" ]]; then
+        opt_cflags[${#opt_cflags[@]}]="${opt_san_no_int_div_0}"
+        opt_cxxflags[${#opt_cxxflags[@]}]="${opt_san_no_int_div_0}"
+        opt_ldflags[${#opt_ldflags[@]}]="${opt_san_no_int_div_0}"
+    fi
+
+    if [[ -n "${opt_san_no_flt_div_0}" ]]; then
+        opt_cflags[${#opt_cflags[@]}]="${opt_san_no_flt_div_0}"
+        opt_cxxflags[${#opt_cxxflags[@]}]="${opt_san_no_flt_div_0}"
+        opt_ldflags[${#opt_ldflags[@]}]="${opt_san_no_flt_div_0}"
+    fi
+
+    if [[ -n "${opt_san_no_recover}" ]]; then
+        opt_cflags[${#opt_cflags[@]}]="${opt_san_no_recover}"
+        opt_cxxflags[${#opt_cxxflags[@]}]="${opt_san_no_recover}"
+        opt_ldflags[${#opt_ldflags[@]}]="${opt_san_no_recover}"
     fi
 
 elif [[ -n "${INSTX_ASAN}" ]]; then
