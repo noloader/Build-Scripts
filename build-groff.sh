@@ -81,8 +81,8 @@ echo "Configuring package"
 echo "**********************"
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
-    groff_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GREP_DIR}"
-    groff_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GREP_DIR}"
+    groff_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GROFF_DIR}"
+    groff_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${GROFF_DIR}"
 else
     groff_cflags="${INSTX_CFLAGS}"
     groff_cxxflags="${INSTX_CXXFLAGS}"
@@ -161,11 +161,11 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GREP_DIR}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GROFF_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
-    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GREP_DIR}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${GROFF_DIR}"
 fi
 
 ###############################################################################
