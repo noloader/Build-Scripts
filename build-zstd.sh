@@ -3,6 +3,12 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Zstd from sources.
 
+# v1.5.1 suffers from loss of NX-stacks due to huf_decompress_amd64.S
+# $ find . -name '*.S'
+# lib/decompress/huf_decompress_amd64.S
+# $ grep -IR huf_decompress_amd64.S
+# build/meson/lib/meson.build:  join_paths(zstd_rootdir, 'lib/decompress/huf_decompress_amd64.S'),
+
 ZSTD_VER=1.5.1
 ZSTD_GH_VER=v1.5.1
 ZSTD_TAR="zstd-${ZSTD_VER}.tar.gz"
