@@ -107,11 +107,19 @@ echo "**********************"
 echo "Building package"
 echo "**********************"
 
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
+    zstd_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${ZSTD_DIR}"
+    zstd_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${ZSTD_DIR}"
+else
+    zstd_cflags="${INSTX_CFLAGS}"
+    zstd_cxxflags="${INSTX_CXXFLAGS}"
+fi
+
 # Since we call the makefile directly, we need to escape dollar signs.
 export CPPFLAGS=$(echo "${INSTX_CPPFLAGS}" | sed 's/\$/\$\$/g')
 export ASFLAGS=$(echo "${INSTX_ASFLAGS}" | sed 's/\$/\$\$/g')
-export CFLAGS=$(echo "${INSTX_CFLAGS}" | sed 's/\$/\$\$/g')
-export CXXFLAGS=$(echo "${INSTX_CXXFLAGS}" | sed 's/\$/\$\$/g')
+export CFLAGS=$(echo "${zstd_cflags}" | sed 's/\$/\$\$/g')
+export CXXFLAGS=$(echo "${zstd_cxxflags}" | sed 's/\$/\$\$/g')
 export LDFLAGS=$(echo "${INSTX_LDFLAGS}" | sed 's/\$/\$\$/g')
 export LIBS="${INSTX_LDLIBS}"
 
@@ -159,9 +167,11 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${ZSTD_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${ZSTD_DIR}"
 fi
 
 ###############################################################################
