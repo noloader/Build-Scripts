@@ -61,6 +61,15 @@ fi
 
 ###############################################################################
 
+# Needed for OS X 10.4 and 10.5. Use OSX_10p5_OR_BELOW?
+if ! ./build-makedepend.sh
+then
+    echo "Failed to build makedepend"
+    exit 1
+fi
+
+###############################################################################
+
 echo ""
 echo "***************************"
 echo "Downloading package"
@@ -140,6 +149,7 @@ fi
     CC="${CC##*/}" \
     CXX="${CXX##*/}" \
     KERNEL_BITS="$INSTX_BITNESS" \
+    MAKEDEPEND="${INSTX_PREFIX}/bin/makedepend" \
     CPPFLAGS="${INSTX_CPPFLAGS} -DPEDANTIC" \
     ASFLAGS="${INSTX_ASFLAGS}" \
     CFLAGS="${INSTX_CFLAGS}" \
