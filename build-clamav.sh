@@ -4,7 +4,7 @@
 # This script builds ClamAV and its dependencies from sources.
 # Also see https://bugzilla.clamav.net/show_bug.cgi?id=11929
 
-CLAMAV_VER=0.103.0
+CLAMAV_VER=0.104.2
 CLAMAV_TAR=clamav-${CLAMAV_VER}.tar.gz
 CLAMAV_DIR=clamav-${CLAMAV_VER}
 PKG_NAME=clamav
