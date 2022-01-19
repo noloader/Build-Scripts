@@ -5,7 +5,7 @@
 
 # https://botan.randombit.net/releases/Botan-2.17.3.tar.xz
 
-BOTAN_VER=2.17.3
+BOTAN_VER=2.19.0
 BOTAN_XZ=Botan-${BOTAN_VER}.tar.xz
 BOTAN_TAR=Botan-${BOTAN_VER}.tar
 BOTAN_DIR=Botan-${BOTAN_VER}
