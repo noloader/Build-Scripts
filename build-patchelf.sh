@@ -32,6 +32,8 @@ if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     fi
 fi
 
+###############################################################################
+
 # Verify system uses ELF
 #magic=$(cut -b 2-4 /bin/ls | head -n 1)
 #if [[ "$magic" != "ELF" ]]; then
@@ -66,6 +68,14 @@ fi
 if ! ./build-cacert.sh
 then
     echo "Failed to install CA Certs"
+    exit 1
+fi
+
+###############################################################################
+
+if ! ./setup-directories.sh
+then
+    echo "Failed to setup directories"
     exit 1
 fi
 

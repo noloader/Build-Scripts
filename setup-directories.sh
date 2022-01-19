@@ -15,7 +15,9 @@ if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
 fi
 
 # Early exit if directories already exist
-if [[ -d "${INSTX_PREFIX}/bin" && -d "${INSTX_PREFIX}/share" && \
+if [[ -d "${INSTX_PREFIX}/bin" && -d "${INSTX_PREFIX}/sbin" && \
+      -d "${INSTX_PREFIX}/etc" && -d "${INSTX_PREFIX}/share" && \
+      -d "${INSTX_PREFIX}/include" && -d "${INSTX_PREFIX}/src" && \
       -d "${INSTX_LIBDIR}" && -d "${INSTX_PKGCONFIG}" ]];
 then
     exit 0
