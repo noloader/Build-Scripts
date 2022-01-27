@@ -82,12 +82,12 @@ fi
 # when using options like -executable.
 IFS= find "./" -type f -name '*' -print | while read -r file
 do
-    # Quick smoke test. Object files have ELF signature.
-    if [[ $(echo "$file" | $GREP -E '\.o$') ]]; then continue; fi
-
     # Check for ELF signature
     magic=$(cut -b 2-4 "$file" | head -n 1)
     if [[ "$magic" != "ELF" ]]; then continue; fi
+
+    # Smoke test. Object files have ELF signature.
+    if [[ $(echo "$file" | $GREP -E '\.o$') ]]; then continue; fi
 
     # Display filename, strip leading "./"
     this_file=$(echo "$file" | tr -s '/' | cut -c 3-)
