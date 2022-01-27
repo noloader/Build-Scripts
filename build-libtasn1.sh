@@ -65,8 +65,8 @@ rm -rf "$TASN1_DIR" &>/dev/null
 gzip -d < "$TASN1_TAR" | tar xf -
 cd "$TASN1_DIR" || exit 1
 
-cp lib/decoding.c lib/decoding.c.orig
-cp src/Makefile.am src/Makefile.am.orig
+# cp lib/decoding.c lib/decoding.c.orig
+# cp src/Makefile.am src/Makefile.am.orig
 
 if [[ -e ../patch/libtasn1.patch ]]; then
     patch -u -p0 < ../patch/libtasn1.patch
@@ -114,6 +114,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "****************************"
 echo "Building package"
 echo "****************************"
@@ -121,6 +122,7 @@ echo "****************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "****************************"
     echo "Failed to build libtasn1"
     echo "****************************"
@@ -131,6 +133,10 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+# Fix runpaths
+bash ../fix-runpath.sh
+
+echo ""
 echo "****************************"
 echo "Testing package"
 echo "****************************"
@@ -143,6 +149,7 @@ export LD_LIBRARY_PATH
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "****************************"
     echo "Failed to build libtasn1"
     echo "****************************"
@@ -150,6 +157,10 @@ then
     exit 1
 fi
 
+# Fix runpaths again
+bash ../fix-runpath.sh
+
+echo ""
 echo "****************************"
 echo "Installing package"
 echo "****************************"

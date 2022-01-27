@@ -114,6 +114,9 @@ then
     exit 1
 fi
 
+# Fix runpaths
+bash ../fix-runpath.sh
+
 #echo ""
 #echo "**********************"
 #echo "Testing package"
@@ -126,6 +129,9 @@ fi
 #    echo "Failed to test Cpuid"
 #    exit 1
 #fi
+
+# Fix runpaths again
+bash ../fix-runpath.sh
 
 echo ""
 echo "**********************"

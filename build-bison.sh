@@ -111,6 +111,7 @@ fi
 # Fix sys_lib_dlsearch_path_spec
 bash ../fix-configure.sh
 
+echo ""
 echo "*************************"
 echo "Configuring package"
 echo "*************************"
@@ -142,6 +143,7 @@ fi
     --disable-assert
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
     echo "*************************"
     echo "Failed to configure Bison"
     echo "*************************"
@@ -154,6 +156,7 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash ../fix-makefiles.sh
 
+echo ""
 echo "*************************"
 echo "Building package"
 echo "*************************"
@@ -161,6 +164,7 @@ echo "*************************"
 MAKE_FLAGS=("MAKEINFO=true" "HELP2MAN=true" "-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*************************"
     echo "Failed to build Bison"
     echo "*************************"
@@ -172,6 +176,10 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+# Fix runpaths
+bash ../fix-runpath.sh
+
+echo ""
 echo "*************************"
 echo "Testing package"
 echo "*************************"
@@ -179,6 +187,7 @@ echo "*************************"
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
     echo "*************************"
     echo "Failed to test Bison"
     echo "*************************"
@@ -187,6 +196,10 @@ then
     exit 1
 fi
 
+# Fix runpaths again
+bash ../fix-runpath.sh
+
+echo ""
 echo "*************************"
 echo "Installing package"
 echo "*************************"

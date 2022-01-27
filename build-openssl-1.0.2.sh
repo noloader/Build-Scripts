@@ -207,6 +207,9 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+# Fix runpaths
+bash ../fix-runpath.sh
+
 echo ""
 echo "***************************"
 echo "Testing package"
@@ -269,6 +272,9 @@ then
     install_name_tool -change "${INSTX_PREFIX}//libssl.1.0.dylib" \
         "${INSTX_LIBDIR}/libssl.1.0.dylib" ./apps/openssl
 fi
+
+# Fix runpaths again
+bash ../fix-runpath.sh
 
 echo ""
 echo "***************************"

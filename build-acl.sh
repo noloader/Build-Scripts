@@ -150,15 +150,13 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+# Fix runpaths
+bash ../fix-runpath.sh
+
 echo ""
 echo "**************************"
 echo "Testing package"
 echo "**************************"
-
-# Musl workaround. Musl does not load warez with a
-# non-working rpath or runpath. Of course the runpath
-# is not correct before install! Derp...
-mkdir -p "$(echo ${INSTX_OPATH} | sed 's/\$ORIGIN\///g')"
 
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
@@ -171,6 +169,9 @@ then
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
+
+# Fix runpaths again
+bash ../fix-runpath.sh
 
 echo ""
 echo "**************************"

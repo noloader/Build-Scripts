@@ -68,8 +68,8 @@ echo "*************************"
 if ! "$WGET" -q -O "$PYTHON_TAR" --ca-certificate="$DIGICERT_ROOT"
  "https://www.python.org/ftp/python/$PYTHON_VER/$PYTHON_TAR"
 then
- echo "Failed to download Python 2.7"
- exit 1
+    echo "Failed to download Python 2.7"
+    exit 1
 fi
 
 rm -rf "$PYTHON_DIR" &>/dev/null
@@ -78,8 +78,8 @@ cd "$PYTHON_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/python2.patch ]]; then
- patch -u -p0 < ../patch/python2.patch
- echo ""
+    patch -u -p0 < ../patch/python2.patch
+    echo ""
 fi
 
 # Fix sys_lib_dlsearch_path_spec
@@ -89,23 +89,23 @@ echo "*************************"
 echo "Configuring package"
 echo "*************************"
 
- PKG_CONFIG_PATH="${INSTX_PKGCONFIG}"
- CPPFLAGS="${INSTX_CPPFLAGS}"
- ASFLAGS="${INSTX_ASFLAGS}"
- CFLAGS="${INSTX_CFLAGS}"
- CXXFLAGS="${INSTX_CXXFLAGS}"
- LDFLAGS="${INSTX_LDFLAGS}"
- LIBS="${INSTX_LDLIBS}"
+    PKG_CONFIG_PATH="${INSTX_PKGCONFIG}"
+    CPPFLAGS="${INSTX_CPPFLAGS}"
+    ASFLAGS="${INSTX_ASFLAGS}"
+    CFLAGS="${INSTX_CFLAGS}"
+    CXXFLAGS="${INSTX_CXXFLAGS}"
+    LDFLAGS="${INSTX_LDFLAGS}"
+    LIBS="${INSTX_LDLIBS}"
 ./configure
- --build="${AUTOCONF_BUILD}"
- --prefix="${INSTX_PREFIX}"
- --libdir="${INSTX_LIBDIR}"
- --enable-shared
- --with-ensurepip=yes
+    --build="${AUTOCONF_BUILD}"
+    --prefix="${INSTX_PREFIX}"
+    --libdir="${INSTX_LIBDIR}"
+    --enable-shared
+    --with-ensurepip=yes
 
 if [[ "$?" -ne 0 ]]; then
- echo "Failed to configure Python 2.7"
- exit 1
+    echo "Failed to configure Python 2.7"
+    exit 1
 fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
@@ -119,12 +119,15 @@ echo "*************************"
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
- echo "Failed to build Python 2.7"
- exit 1
+    echo "Failed to build Python 2.7"
+    exit 1
 fi
 
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
+
+# Fix runpaths
+bash ../fix-runpath.sh
 
 echo "*************************"
 echo "Testing package"
@@ -133,11 +136,14 @@ echo "*************************"
 MAKE_FLAGS=("test" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
- echo "*************************"
- echo "Failed to test Python 2.7"
- echo "*************************"
- exit 1
+    echo "*************************"
+    echo "Failed to test Python 2.7"
+    echo "*************************"
+    exit 1
 fi
+
+# Fix runpaths again
+bash ../fix-runpath.sh
 
 echo "*************************"
 echo "Installing package"
@@ -145,11 +151,11 @@ echo "*************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
- printf "%s n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
- printf "%s n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+    printf "%s n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
 else
- "${MAKE}" "${MAKE_FLAGS[@]}"
- bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    "${MAKE}" "${MAKE_FLAGS[@]}"
+    bash ../fix-permissions.sh "${INSTX_PREFIX}"
 fi
 
 ###############################################################################
@@ -170,10 +176,10 @@ cd "${CURR_DIR}" || exit 1
 # Set to false to retain artifacts
 if true;
 then
- ARTIFACTS=("$PYTHON_TAR" "$PYTHON_DIR")
- for artifact in "${ARTIFACTS[@]}"; do
- rm -rf "$artifact"
- done
+    ARTIFACTS=("$PYTHON_TAR" "$PYTHON_DIR")
+    for artifact in "${ARTIFACTS[@]}"; do
+        rm -rf "$artifact"
+    done
 fi
 
 exit 0

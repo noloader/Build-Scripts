@@ -149,6 +149,9 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+# Fix runpaths
+bash ../fix-runpath.sh
+
 echo ""
 echo "**************************"
 echo "Testing package"
@@ -165,6 +168,9 @@ then
     bash ../collect-logs.sh "${PKG_NAME}"
     exit 1
 fi
+
+# Fix runpaths again
+bash ../fix-runpath.sh
 
 echo ""
 echo "**************************"

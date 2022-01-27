@@ -90,6 +90,12 @@ then
     exit 1
 fi
 
+# Fix flags in *.pc files
+bash ../fix-pkgconfig.sh
+
+# Fix runpaths
+bash ../fix-runpath.sh
+
 #echo ""
 #echo "**********************"
 #echo "Testing package"
@@ -102,6 +108,9 @@ fi
 #    echo "Failed to test HFS+ Tools"
 #    exit 1
 # fi
+
+# Fix runpaths again
+bash ../fix-runpath.sh
 
 echo ""
 echo "**********************"

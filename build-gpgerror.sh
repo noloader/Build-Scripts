@@ -157,7 +157,7 @@ then
     exit 1
 fi
 
-# Fix runpaths
+# Fix runpaths again
 bash ../fix-runpath.sh
 
 echo ""

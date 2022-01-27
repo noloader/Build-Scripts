@@ -195,6 +195,9 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+# Fix runpaths
+bash ../fix-runpath.sh
+
 echo ""
 echo "**********************"
 echo "Testing package"
@@ -219,6 +222,9 @@ fi
 
 # Its a RC. Just bail.
 exit 0
+
+# Fix runpaths again
+bash ../fix-runpath.sh
 
 echo ""
 echo "**********************"

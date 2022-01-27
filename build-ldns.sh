@@ -169,6 +169,9 @@ echo
 #    exit 1
 #fi
 
+# Fix runpaths again
+bash ../fix-runpath.sh
+
 echo "**********************"
 echo "Installing package"
 echo "**********************"

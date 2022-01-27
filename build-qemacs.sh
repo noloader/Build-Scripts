@@ -21,13 +21,13 @@ if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
     fi
 fi
 
-if [[ -z "$(command -v cvs)" ; then
+if [[ -z "$(command -v cvs)" ]]; then
     echo "QEmacs requires CVS access to Savannah. Please install cvs."
     exit 1
 fi
 
 # The password should die when this subshell goes out of scope
-if [[ "${SUDO_PASSWORD_DONE}" != "yes" ; then
+if [[ "${SUDO_PASSWORD_DONE}" != "yes" ]]; then
     if ! source ./setup-password.sh
     then
         echo "Failed to process password"
@@ -76,7 +76,7 @@ fi
 cd "$QEMACS_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
-if [[ -e ../patch/qemacs.patch ; then
+if [[ -e ../patch/qemacs.patch ]]; then
     patch -u -p0 < ../patch/qemacs.patch
     echo ""
 fi
@@ -102,7 +102,7 @@ echo "**********************"
     --disable-x11 \
     --disable-ffmpeg
 
-if [[ "$?" -ne 0 ; then
+if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure QEmacs"
     exit 1
 fi
@@ -125,6 +125,9 @@ fi
 # Fix flags in .pc files
 bash ../fix-pkgconfig.sh
 
+# Fix runpaths
+bash ../fix-runpath.sh
+
 #echo "**********************"
 #echo "Testing package"
 #echo "**********************"
@@ -137,6 +140,9 @@ bash ../fix-pkgconfig.sh
 #    echo ""
 #    exit 1
 #fi
+
+# Fix runpaths again
+bash ../fix-runpath.sh
 
 echo "**********************"
 echo "Installing package"

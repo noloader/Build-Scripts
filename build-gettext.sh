@@ -228,10 +228,10 @@ then
         echo "Installing anyways..."
         echo "***************************"
     fi
-
-    # Fix runpaths again
-    bash ../fix-runpath.sh
 fi
+
+# Fix runpaths again
+bash ../fix-runpath.sh
 
 echo ""
 echo "***************************"

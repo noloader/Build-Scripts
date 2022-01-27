@@ -148,6 +148,9 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+# Fix runpaths
+bash ../fix-runpath.sh
+
 echo ""
 echo "******************************"
 echo "Installing package"

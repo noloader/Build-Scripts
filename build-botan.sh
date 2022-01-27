@@ -5,7 +5,7 @@
 
 # https://botan.randombit.net/releases/Botan-2.17.3.tar.xz
 
-BOTAN_VER=2.19.0
+BOTAN_VER=2.19.1
 BOTAN_XZ=Botan-${BOTAN_VER}.tar.xz
 BOTAN_TAR=Botan-${BOTAN_VER}.tar
 BOTAN_DIR=Botan-${BOTAN_VER}
@@ -151,6 +151,9 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
+# Fix runpaths
+bash ../fix-runpath.sh
+
 echo ""
 echo "*************************"
 echo "Testing package"
@@ -165,6 +168,9 @@ then
     echo "*************************"
     exit 1
 fi
+
+# Fix runpaths again
+bash ../fix-runpath.sh
 
 echo ""
 echo "*************************"

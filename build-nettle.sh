@@ -235,7 +235,7 @@ fi
 # Fix flags in *.pc files
 bash ../fix-pkgconfig.sh
 
-# Fix runpaths again
+# Fix runpaths
 bash ../fix-runpath.sh
 
 echo ""
