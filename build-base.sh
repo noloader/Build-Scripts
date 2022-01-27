@@ -71,14 +71,6 @@ fi
 
 ###############################################################################
 
-if ! ./build-patchelf.sh
-then
-    echo "Failed to build patchelf"
-    exit 1
-fi
-
-###############################################################################
-
 if ! ./build-ncurses-readline.sh
 then
     echo "Failed to build Ncurses and Readline"

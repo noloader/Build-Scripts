@@ -44,14 +44,6 @@ fi
 
 ###############################################################################
 
-if ! ./build-patchelf.sh
-then
-    echo "Failed to build patchelf"
-    exit 1
-fi
-
-###############################################################################
-
 if ! ./build-libxml2.sh
 then
     echo "Failed to build libxml2"

@@ -65,14 +65,6 @@ fi
 
 ###############################################################################
 
-if ! ./build-patchelf.sh
-then
-    echo "Failed to build patchelf"
-    exit 1
-fi
-
-###############################################################################
-
 if ! ./build-zlib.sh
 then
     echo "Failed to build zLib"

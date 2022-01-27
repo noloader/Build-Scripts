@@ -6,9 +6,12 @@
 # sign or they expand the rpath token. Also see
 # https://github.com/Perl/perl5/issues/17534.
 # Many GNU libraries need the runpaths fixed because the order gets
-# randomized during configuration. This script should be run after
-# 'make' and before 'make check'. Finally, the latest patchelf is
-# needed due to mishandling something in patchelf.
+# randomized during configuration.
+#
+# This script should be run after 'make' and before 'make check'.
+# Finally, the latest patchelf is needed due to mishandling something
+# in patchelf.
+#
 # Also see https://bugzilla.redhat.com/show_bug.cgi?id=1497012 and
 # https://bugs.launchpad.net/ubuntu/+source/patchelf/+bug/1888175
 # Related issues are https://github.com/NixOS/patchelf/issues/44
@@ -21,38 +24,43 @@ echo "**********************"
 
 ###############################################################################
 
-# Verify the system uses ELF format
-magic=$(cut -b 2-4 /bin/ls | head -n 1)
+# Verify the system uses ELF format. /usr/bin/env is Posix, and it is always
+# available at /usr/bin. Programs like ls may be in different locations.
+magic=$(cut -b 2-4 /usr/bin/env | head -n 1)
 if [[ "$magic" != "ELF" ]]; then
-    echo "Nothing to do; ELF is not used"
+    echo "ELF is not used, nothing to do"
     exit 0
 fi
 
 ###############################################################################
 
-# Build a program to easily read magic bytes
-if [[ -n "$1" ]]; then
-    PROG_PATH="$1"
-elif [[ -d "./programs" ]]; then
-    PROG_PATH="./programs"
-elif [[ -d "../programs" ]]; then
-    PROG_PATH="../programs"
-elif [[ -d "../../programs" ]]; then
-    PROG_PATH="../../programs"
-elif [[ -d "../../../programs" ]]; then
-    PROG_PATH="../../../programs"
+# Get the environment as needed.
+if [[ "${SETUP_ENVIRON_DONE}" != "yes" ]]; then
+    if ! source ./setup-environ.sh
+    then
+        echo "Failed to set environment"
+        exit 1
+    fi
 fi
 
-CC="${CC:-cc}"
-if ! "${CC}" "$PROG_PATH/file-magic.c" -o file-magic.exe 2>/dev/null;
-then
-    if ! gcc "$PROG_PATH/file-magic.c" -o file-magic.exe 2>/dev/null;
+# The password should die when this subshell goes out of scope
+if [[ "${SUDO_PASSWORD_DONE}" != "yes" ]]; then
+    if ! source ./setup-password.sh
     then
-        if ! clang "$PROG_PATH/file-magic.c" -o file-magic.exe 2>/dev/null;
-        then
-            echo "Failed to build file-magic"
-            exit 1
-        fi
+        echo "Failed to process password"
+        exit 1
+    fi
+fi
+
+###############################################################################
+
+# Patchelf only builds on Linux and HURD. Solaris is trouble.
+if [[ "$IS_LINUX" -ne 0 || "$IS_HURD" -ne 0 ]]
+then
+    if ! ./build-patchelf.sh
+    then
+        echo "Failed to build patchelf"
+        exit 1
     fi
 fi
 
@@ -69,8 +77,6 @@ if [[ -d /usr/gnu/bin ]]; then
     GREP=/usr/gnu/bin/grep
 fi
 
-IS_SOLARIS=$(uname -s | $GREP -i -c 'sunos')
-
 # Find programs and libraries using the shell wildcard. Some programs
 # and libraries are _not_ executable and get missed in the do loop
 # when using options like -executable.
@@ -80,8 +86,8 @@ do
     if [[ $(echo "$file" | $GREP -E '\.o$') ]]; then continue; fi
 
     # Check for ELF signature
-    magic=$(./file-magic.exe "$file")
-    if [[ "$magic" != "7F454C46" ]]; then continue; fi
+    magic=$(cut -b 2-4 "$file" | head -n 1)
+    if [[ "$magic" != "ELF" ]]; then continue; fi
 
     # Display filename, strip leading "./"
     this_file=$(echo "$file" | tr -s '/' | cut -c 3-)
