@@ -25,7 +25,7 @@ echo "**********************"
 ###############################################################################
 
 # Verify the system uses ELF format. /usr/bin/env is Posix, and it is always
-# available at /usr/bin. Programs like ls may be in different locations.
+# available at /usr/bin. Programs like ls may be in a different location.
 magic=$(cut -b 2-4 /usr/bin/env | head -n 1)
 if [[ "$magic" != "ELF" ]]; then
     echo "ELF is not used, nothing to do"
@@ -61,6 +61,8 @@ then
         BUILD_PATCHELF=./build-patchelf.sh
     elif [[ -e ../build-patchelf.sh ]]; then
         BUILD_PATCHELF=../build-patchelf.sh
+    elif [[ -e ../../build-patchelf.sh ]]; then
+        BUILD_PATCHELF=../../build-patchelf.sh
     fi
 
     if ! ${BUILD_PATCHELF}
