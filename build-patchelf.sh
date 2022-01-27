@@ -69,6 +69,8 @@ if [[ -e ./build-cacerts.sh ]]; then
     BUILD_CACERTS=./build-cacerts.sh
 elif [[ -e ../build-cacerts.sh ]]; then
     BUILD_CACERTS=../build-cacerts.sh
+elif [[ -e ../../build-cacerts.sh ]]; then
+    BUILD_CACERTS=../../build-cacerts.sh
 fi
 
 if ! ${BUILD_CACERTS}
