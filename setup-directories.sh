@@ -34,13 +34,11 @@ fi
 
 # Try to locate fix-permissions.sh script
 if [[ -f ../../fix-permissions.sh ]]; then
-    FIX_PERMISSIONS="../../fix-permissions.sh"
-elif [[ -f ../../fix-permissions.sh ]]; then
-    FIX_PERMISSIONS="../fix-permissions.sh"
-elif [[ -f ../../fix-permissions.sh ]]; then
-    FIX_PERMISSIONS="./fix-permissions.sh"
-else
-    FIX_PERMISSIONS="fix-permissions.sh"
+    FIX_PERMISSIONS="$PWD/../../fix-permissions.sh"
+elif [[ -f ../fix-permissions.sh ]]; then
+    FIX_PERMISSIONS="$PWD/../fix-permissions.sh"
+elif [[ -f ./fix-permissions.sh ]]; then
+    FIX_PERMISSIONS="$PWD/./fix-permissions.sh"
 fi
 
 echo ""
