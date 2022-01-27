@@ -163,7 +163,7 @@ CONFIG_OPTS+=("--without-debug")
 CONFIG_OPTS+=("--enable-pc-files")
 CONFIG_OPTS+=("--disable-root-environ")
 CONFIG_OPTS+=("--with-pkg-config-libdir=${INSTX_PKGCONFIG}")
-CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/share")
+CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/share/terminfo")
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     ncurses_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NCURSES_DIR}"
