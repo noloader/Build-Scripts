@@ -32,6 +32,13 @@ if [[ "${SUDO_PASSWORD_DONE}" != "yes" ]]; then
     fi
 fi
 
+###############################################################################
+
+echo ""
+echo "**********************"
+echo "Creating directories"
+echo "**********************"
+
 # Try to locate fix-permissions.sh script
 if [[ -f ../../fix-permissions.sh ]]; then
     FIX_PERMISSIONS="$PWD/../../fix-permissions.sh"
@@ -40,11 +47,6 @@ elif [[ -f ../fix-permissions.sh ]]; then
 elif [[ -f ./fix-permissions.sh ]]; then
     FIX_PERMISSIONS="$PWD/./fix-permissions.sh"
 fi
-
-echo ""
-echo "**********************"
-echo "Creating directories"
-echo "**********************"
 
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "${INSTX_PREFIX}/"{bin,sbin,etc,include,var,libexec,share,src}

@@ -71,12 +71,13 @@ echo "  available: ${bootstrap_cacert}"
 
 BOOTSTRAP_CACERT_FILE="bootstrap/cacert.pem"
 
-if [[ -e ./fix-permissions.sh ]]; then
-    FIX_PERMISSIONS=./fix-permissions.sh
-elif [[ -e ../fix-permissions.sh ]]; then
-    FIX_PERMISSIONS=../fix-permissions.sh
-elif [[ -e ../../fix-permissions.sh ]]; then
-    FIX_PERMISSIONS=../../fix-permissions.sh
+# Try to locate fix-permissions.sh script
+if [[ -f ../../fix-permissions.sh ]]; then
+    FIX_PERMISSIONS="$PWD/../../fix-permissions.sh"
+elif [[ -f ../fix-permissions.sh ]]; then
+    FIX_PERMISSIONS="$PWD/../fix-permissions.sh"
+elif [[ -f ./fix-permissions.sh ]]; then
+    FIX_PERMISSIONS="$PWD/./fix-permissions.sh"
 fi
 
 if [[ -n "$SUDO_PASSWORD" ]]
