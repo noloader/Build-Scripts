@@ -57,7 +57,13 @@ fi
 # Patchelf only builds on Linux and HURD. Solaris is trouble.
 if [[ "$IS_LINUX" -ne 0 || "$IS_HURD" -ne 0 ]]
 then
-    if ! ./build-patchelf.sh
+    if [[ -e ./build-patchelf.sh ]]; then
+        BUILD_PATCHELF=./build-patchelf.sh
+    elif [[ -e ../build-patchelf.sh ]]; then
+        BUILD_PATCHELF=../build-patchelf.sh
+    fi
+
+    if ! ${BUILD_PATCHELF}
     then
         echo "Failed to build patchelf"
         exit 1
@@ -82,12 +88,12 @@ fi
 # when using options like -executable.
 IFS= find "./" -type f -name '*' -print | while read -r file
 do
-    # Check for ELF signature
-    magic=$(cut -b 2-4 "$file" | head -n 1)
-    if [[ "$magic" != "ELF" ]]; then continue; fi
-
     # Smoke test. Object files have ELF signature.
     if [[ $(echo "$file" | $GREP -E '\.o$') ]]; then continue; fi
+
+    # Check for ELF signature
+    magic=$(cut -b 2-4 "$file" 2>/dev/null | head -n 1)
+    if [[ "$magic" != "ELF" ]]; then continue; fi
 
     # Display filename, strip leading "./"
     this_file=$(echo "$file" | tr -s '/' | cut -c 3-)

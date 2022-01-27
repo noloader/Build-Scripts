@@ -65,7 +65,13 @@ fi
 
 ###############################################################################
 
-if ! ./build-cacert.sh
+if [[ -e ./build-cacerts.sh ]]; then
+    BUILD_CACERTS=./build-cacerts.sh
+elif [[ -e ../build-cacerts.sh ]]; then
+    BUILD_CACERTS=../build-cacerts.sh
+fi
+
+if ! ${BUILD_CACERTS}
 then
     echo "Failed to install CA Certs"
     exit 1
@@ -73,7 +79,13 @@ fi
 
 ###############################################################################
 
-if ! ./setup-directories.sh
+if [[ -e ./setup-directories.sh ]]; then
+    SETUP_DIRS=./setup-directories.sh
+elif [[ -e ../setup-directories.sh ]]; then
+    SETUP_DIRS=../setup-directories.sh
+fi
+
+if ! ${SETUP_DIRS}
 then
     echo "Failed to setup directories"
     exit 1
