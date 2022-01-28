@@ -93,6 +93,9 @@ do
     # Smoke test. Object files have ELF signature.
     if [[ $(echo "$file" | $GREP -E '\.o$') ]]; then continue; fi
 
+    # Smoke test. No symbolic links.
+    if [[ -L "$file" ]]; then continue; fi
+
     # Check for ELF signature
     magic=$(cut -b 2-4 "$file" 2>/dev/null | head -n 1)
     if [[ "$magic" != "ELF" ]]; then continue; fi
