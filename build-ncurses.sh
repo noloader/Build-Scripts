@@ -163,7 +163,23 @@ CONFIG_OPTS+=("--without-debug")
 CONFIG_OPTS+=("--enable-pc-files")
 CONFIG_OPTS+=("--disable-root-environ")
 CONFIG_OPTS+=("--with-pkg-config-libdir=${INSTX_PKGCONFIG}")
-CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/share/terminfo")
+
+# Distros move this directory around
+if [[ -d "/etc/terminfo" ]]; then
+    CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/etc/terminfo")
+elif [[ -d "/usr/lib64/terminfo" ]]; then
+    CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/lib64/terminfo")
+elif [[ -d "/usr/lib/terminfo" ]]; then
+    CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/lib/terminfo")
+elif [[ -d "/lib64/terminfo" ]]; then
+    CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/lib64/terminfo")
+elif [[ -d "/lib/terminfo" ]]; then
+    CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/lib/terminfo")
+else
+    # This is $DATADIR/terminfo
+    CONFIG_OPTS+=("--with-default-terminfo-dir=${INSTX_PREFIX}/share/terminfo")
+fi
+
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     ncurses_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${NCURSES_DIR}"
