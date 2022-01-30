@@ -16,7 +16,7 @@
 # And for Ncurses 6.2:
 #   http://www.linuxfromscratch.org/lfs/view/development/chapter06/ncurses.html
 
-NCURSES_VER=6.1
+NCURSES_VER=6.3
 NCURSES_TAR="ncurses-${NCURSES_VER}.tar.gz"
 NCURSES_DIR="ncurses-${NCURSES_VER}"
 PKG_NAME=ncurses
