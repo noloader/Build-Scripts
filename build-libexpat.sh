@@ -78,10 +78,17 @@ echo "**********************"
 echo "Configuring package"
 echo "**********************"
 
+if [[ "${IS_SOLARIS}" -ne 0 ]]; then
+    # Needed for INFINITY and NAN in test suite; see isinf(3m) man page.
+    expat_cflags="${CFLAGS} -c99"
+else
+    expat_cflags="${CFLAGS}"
+fi
+
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
+    CFLAGS="${expat_cflags}" \
     CXXFLAGS="${INSTX_CXXFLAGS}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
