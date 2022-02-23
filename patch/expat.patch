@@ -1,23 +1,14 @@
---- tests/runtests.c.orig	Fri Feb 18 17:41:08 2022
-+++ tests/runtests.c	Wed Feb 23 11:03:49 2022
-@@ -60,6 +60,16 @@
- #  include <stdbool.h>
- #endif
+--- tests/runtests.c
++++ tests/runtests.c
+@@ -54,7 +54,6 @@
+ #include <ctype.h>
+ #include <limits.h>
+ #include <stdint.h> /* intptr_t uint64_t */
+-#include <math.h>   /* NAN, INFINITY, isnan */
  
-+#if defined(__sun__)
-+#  include <sunmath.h>
-+#  if ! defined(INFINITY)
-+#    define INFINITY (__builtin_huge_val())
-+#  endif
-+#  if ! defined(NAN)
-+#    define NAN (__builtin_nan(""))
-+#  endif
-+#endif
-+
- #include "expat.h"
- #include "chardata.h"
- #include "structdata.h"
-@@ -6636,7 +6646,8 @@
+ #if ! defined(__cplusplus)
+ #  include <stdbool.h>
+@@ -6636,7 +6635,8 @@
    XML_Char **elemstr = (XML_Char **)userData;
    if (xcstrcmp(elemstr[0], name) != 0) {
      char buffer[1024];
@@ -27,3 +18,41 @@
      fail(buffer);
    }
    triplet_end_flag = XML_TRUE;
+@@ -11686,6 +11686,19 @@
+ }
+ END_TEST
+ 
++static float portableNAN(void);
++static float portableINFINITY(void);
++
++static float
++portableNAN() {
++  return strtof("nan", NULL);
++}
++
++static float
++portableINFINITY() {
++  return strtof("infinity", NULL);
++}
++
+ START_TEST(test_billion_laughs_attack_protection_api) {
+   XML_Parser parserWithoutParent = XML_ParserCreate(NULL);
+   XML_Parser parserWithParent
+@@ -11704,7 +11717,7 @@
+       == XML_TRUE)
+     fail("Call with non-root parser is NOT supposed to succeed");
+   if (XML_SetBillionLaughsAttackProtectionMaximumAmplification(
+-          parserWithoutParent, NAN)
++          parserWithoutParent, portableNAN())
+       == XML_TRUE)
+     fail("Call with NaN limit is NOT supposed to succeed");
+   if (XML_SetBillionLaughsAttackProtectionMaximumAmplification(
+@@ -11726,7 +11739,7 @@
+       == XML_FALSE)
+     fail("Call with positive limit >=1.0 is supposed to succeed");
+   if (XML_SetBillionLaughsAttackProtectionMaximumAmplification(
+-          parserWithoutParent, INFINITY)
++          parserWithoutParent, portableINFINITY())
+       == XML_FALSE)
+     fail("Call with positive limit >=1.0 is supposed to succeed");
+ 
