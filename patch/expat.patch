@@ -1,8 +1,23 @@
-# Written and placed in public domain by Jeffrey Walton.
-# This patch fixes some issues with Expat.
---- tests/runtests.c
-+++ tests/runtests.c
-@@ -6505,7 +6505,8 @@
+--- tests/runtests.c.orig	Fri Feb 18 17:41:08 2022
++++ tests/runtests.c	Wed Feb 23 11:03:49 2022
+@@ -60,6 +60,16 @@
+ #  include <stdbool.h>
+ #endif
+ 
++#if defined(__sun__)
++#  include <sunmath.h>
++#  if ! defined(INFINITY)
++#    define INFINITY (__builtin_huge_val())
++#  endif
++#  if ! defined(NAN)
++#    define NAN (__builtin_nan(""))
++#  endif
++#endif
++
+ #include "expat.h"
+ #include "chardata.h"
+ #include "structdata.h"
+@@ -6636,7 +6646,8 @@
    XML_Char **elemstr = (XML_Char **)userData;
    if (xcstrcmp(elemstr[0], name) != 0) {
      char buffer[1024];
@@ -12,16 +27,3 @@
      fail(buffer);
    }
    triplet_end_flag = XML_TRUE;
---- tests/runtests.c
-+++ tests/runtests.c
-@@ -60,6 +60,10 @@
- #  include <stdbool.h>
- #endif
- 
-+#if defined(__sun__)
-+# include <sunmath.h>
-+#endif
-+
- #include "expat.h"
- #include "chardata.h"
- #include "structdata.h"
