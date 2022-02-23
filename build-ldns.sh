@@ -101,13 +101,24 @@ else
     ldns_ed448=--enable-ed448
 fi
 
+# https://github.com/NLnetLabs/ldns/issues/153
+# https://github.com/NLnetLabs/ldns/issues/154
+# https://github.com/NLnetLabs/ldns/issues/155
+if [[ "$IS_SOLARIS" -ne 0 ]]; then
+    ldns_inet_ntop="ac_cv_func_inet_ntop=yes"
+    ldns_inet_pton="ac_cv_func_inet_pton=yes"
+    ldns_b64_ntop="ac_cv_func_b64_ntop=no"
+    ldns_b64_pton="ac_cv_func_b64_pton=no"
+    ldns_ldlibs="-lresolv -lsocket -lnsl"
+fi
+
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
     CFLAGS="${INSTX_CFLAGS}" \
     CXXFLAGS="${INSTX_CXXFLAGS}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
-    LIBS="${INSTX_LDLIBS}" \
+    LIBS="${ldns_ldlibs} ${INSTX_LDLIBS}" \
 ./configure \
     --build="${AUTOCONF_BUILD}" \
     --prefix="${INSTX_PREFIX}" \
@@ -116,6 +127,10 @@ fi
     ${ldns_ed448} \
     ${ldns_dane_verify} \
     ${ldns_dane_ta_usage} \
+    ${ldns_inet_ntop} \
+    ${ldns_inet_pton} \
+    ${ldns_b64_ntop} \
+    ${ldns_b64_pton} \
     --enable-rrtype-avc \
     --with-drill \
     --with-ssl="${INSTX_PREFIX}" \
