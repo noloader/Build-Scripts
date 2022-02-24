@@ -26,7 +26,7 @@ echo "**********************"
 
 # Verify the system uses ELF format. /usr/bin/env is Posix, and it is always
 # available at /usr/bin. Programs like ls may be in a different location.
-magic=$(cut -b 2-4 /usr/bin/env | head -n 1)
+magic=$(cut -b 2-4 /usr/bin/env | tr -d '\0' | head -n 1)
 if [[ "$magic" != "ELF" ]]; then
     echo "ELF is not used, nothing to do"
     exit 0
@@ -97,7 +97,7 @@ do
     if [[ -L "$file" ]]; then continue; fi
 
     # Check for ELF signature
-    magic=$(cut -b 2-4 "$file" 2>/dev/null | head -n 1)
+    magic=$(cut -b 2-4 "$file" 2>/dev/null | tr -d '\0' | head -n 1)
     if [[ "$magic" != "ELF" ]]; then continue; fi
 
     # Display filename, strip leading "./"
