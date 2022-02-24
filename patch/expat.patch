@@ -11,7 +11,7 @@
  
  #if ! defined(__cplusplus)
  #  include <stdbool.h>
-@@ -6636,7 +6635,8 @@
+@@ -6712,7 +6711,8 @@
    XML_Char **elemstr = (XML_Char **)userData;
    if (xcstrcmp(elemstr[0], name) != 0) {
      char buffer[1024];
@@ -21,7 +21,7 @@
      fail(buffer);
    }
    triplet_end_flag = XML_TRUE;
-@@ -11686,6 +11686,19 @@
+@@ -11762,6 +11762,19 @@
  }
  END_TEST
  
@@ -41,7 +41,7 @@
  START_TEST(test_billion_laughs_attack_protection_api) {
    XML_Parser parserWithoutParent = XML_ParserCreate(NULL);
    XML_Parser parserWithParent
-@@ -11704,7 +11717,7 @@
+@@ -11780,7 +11793,7 @@
        == XML_TRUE)
      fail("Call with non-root parser is NOT supposed to succeed");
    if (XML_SetBillionLaughsAttackProtectionMaximumAmplification(
@@ -50,7 +50,7 @@
        == XML_TRUE)
      fail("Call with NaN limit is NOT supposed to succeed");
    if (XML_SetBillionLaughsAttackProtectionMaximumAmplification(
-@@ -11726,7 +11739,7 @@
+@@ -11802,7 +11815,7 @@
        == XML_FALSE)
      fail("Call with positive limit >=1.0 is supposed to succeed");
    if (XML_SetBillionLaughsAttackProtectionMaximumAmplification(
