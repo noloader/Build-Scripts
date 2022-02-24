@@ -1,3 +1,6 @@
+# Written and placed in public domain by Jeffrey Walton
+# This patch fixes some issue with libexpat.
+# https://github.com/libexpat/libexpat/issues/569
 --- tests/runtests.c
 +++ tests/runtests.c
 @@ -54,7 +54,6 @@
