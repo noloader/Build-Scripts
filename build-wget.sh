@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Wget and its dependencies from sources.
 
-WGET_VER=1.21.2
+WGET_VER=1.21.3
 WGET_TAR=wget-${WGET_VER}.tar.gz
 WGET_DIR=wget-${WGET_VER}
 PKG_NAME=wget
