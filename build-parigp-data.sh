@@ -98,12 +98,12 @@ then
     do
         package="${package%.*}"
         echo "Installing $package"
-        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mv "$INSTX_DATADIR/$package" "$INSTX_DATADIR/$package.old" 2>/dev/null
-        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mv "data/$package" "$INSTX_DATADIR"
-        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S rm -rf "$INSTX_DATADIR/$package.old"
+        printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S mv "$INSTX_DATADIR/$package" "$INSTX_DATADIR/$package.old" 2>/dev/null
+        printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S mv "data/$package" "$INSTX_DATADIR"
+        printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S rm -rf "$INSTX_DATADIR/$package.old"
     done
 
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     for package in "${PARI_PACKAGES[@]}"
     do

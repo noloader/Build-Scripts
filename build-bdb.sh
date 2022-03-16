@@ -81,7 +81,7 @@ cd "${CURR_DIR}" || exit 1
 cd "$BDB_DIR/dist" || exit 1
 
 # Fix sys_lib_dlsearch_path_spec
-bash "${INSTX_TOPDI"${INSTX_TOPDIR}/fix-configure.sh""
+bash "${INSTX_TOPDIR}/fix-configure.sh"
 
 cd "${CURR_DIR}" || exit 1
 cd "$BDB_DIR" || exit 1
@@ -179,7 +179,7 @@ echo "*******************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S "${MAKE}" "${MAKE_FLAGS[@]}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
 fi
@@ -204,8 +204,8 @@ fi
 
 # Install the pc file
 if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp "./libdb.pc" "${INSTX_PKGCONFIG}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S chmod u=rw,go=r "${INSTX_PKGCONFIG}/libdb.pc"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S cp "./libdb.pc" "${INSTX_PKGCONFIG}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S chmod u=rw,go=r "${INSTX_PKGCONFIG}/libdb.pc"
 else
     cp "./libdb.pc" "${INSTX_PKGCONFIG}"
     chmod u=rw,go=r "${INSTX_PKGCONFIG}/libdb.pc"
@@ -213,7 +213,7 @@ fi
 
 # Fix permissions once
 if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 fi

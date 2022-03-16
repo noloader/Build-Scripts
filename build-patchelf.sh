@@ -123,7 +123,7 @@ gzip -d < "$PATCHELF_TAR" | tar xf -
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo mkdir -p "${INSTX_PREFIX}/bin"
     printf "%s\n" "$SUDO_PASSWORD" | sudo cp -p bin/patchelf "${INSTX_PREFIX}/bin"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     mkdir -p "${INSTX_PREFIX}/bin"
     cp -p bin/patchelf "${INSTX_PREFIX}/bin"
