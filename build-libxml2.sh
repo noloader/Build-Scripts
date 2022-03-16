@@ -3,7 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds libxml2 from sources.
 
-XML2_VER=2.9.13
+# libxml2-2.9.13 is out, but it is missing from the ftp site
+# XML2_VER=2.9.13
+XML2_VER=2.9.12
 XML2_TAR=libxml2-${XML2_VER}.tar.gz
 XML2_DIR=libxml2-${XML2_VER}
 PKG_NAME=libxml2
