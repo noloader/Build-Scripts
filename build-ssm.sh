@@ -101,9 +101,9 @@ echo "**********************"
 echo "Installing package"
 echo "**********************"
 
-if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S python setup.py install --prefix="${INSTX_PREFIX}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
+if [[ -n "${SUDO_PASSWORD}" ]]; then
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S python setup.py install --prefix="${INSTX_PREFIX}"
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     python setup.py install --prefix="${INSTX_PREFIX}"
     bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"

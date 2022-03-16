@@ -375,9 +375,9 @@ echo "Installing package"
 echo "*************************"
 
 MAKE_FLAGS=("install")
-if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/copy-sources.sh" "${PWD}" "${INSTX_SRCDIR}/${WGET2_DIR}"
+if [[ -n "${SUDO_PASSWORD}" ]]; then
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/copy-sources.sh" "${PWD}" "${INSTX_SRCDIR}/${WGET2_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash "${INSTX_TOPDIR}/copy-sources.sh" "${PWD}" "${INSTX_SRCDIR}/${WGET2_DIR}"
@@ -401,15 +401,15 @@ cp "./doc/sample.wget2rc" "./wget2rc"
 } >> ./wget2rc
 
 # Install the rc file
-if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp "./wget2rc" "${INSTX_PREFIX}/etc/"
+if [[ -n "${SUDO_PASSWORD}" ]]; then
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S cp "./wget2rc" "${INSTX_PREFIX}/etc/"
 else
     cp "./wget2rc" "${INSTX_PREFIX}/etc/"
 fi
 
 # Fix permissions once
-if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
+if [[ -n "${SUDO_PASSWORD}" ]]; then
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 fi

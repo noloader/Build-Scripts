@@ -53,14 +53,14 @@ IFS= read -r -s -p "Please enter password for sudo: " SUDO_PASSWORD
 printf "\n"
 
 # Smoke test the password
-if [[ -n "$SUDO_PASSWORD" ]]
+if [[ -n "${SUDO_PASSWORD}" ]]
 then
     # Attempt to drop the cached authentication, if present.
     # The -k option is not ubiquitous. It may fail.
     printf "\n" | sudo -kS >/dev/null 2>&1
 
     # Now, test the password
-    if printf "%s\n" "$SUDO_PASSWORD" | sudo -S ls >/dev/null 2>&1;
+    if printf "%s\n" "${SUDO_PASSWORD}" | sudo -S ls >/dev/null 2>&1;
     then
         printf "The sudo password appears correct\n"
     else

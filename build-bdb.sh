@@ -178,8 +178,8 @@ echo "Installing anyways..."
 echo "*******************************"
 
 MAKE_FLAGS=("install")
-if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+if [[ -n "${SUDO_PASSWORD}" ]]; then
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
 fi
@@ -203,17 +203,17 @@ fi
 } > libdb.pc
 
 # Install the pc file
-if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp "./libdb.pc" "${INSTX_PKGCONFIG}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S chmod u=rw,go=r "${INSTX_PKGCONFIG}/libdb.pc"
+if [[ -n "${SUDO_PASSWORD}" ]]; then
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S cp "./libdb.pc" "${INSTX_PKGCONFIG}"
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S chmod u=rw,go=r "${INSTX_PKGCONFIG}/libdb.pc"
 else
     cp "./libdb.pc" "${INSTX_PKGCONFIG}"
     chmod u=rw,go=r "${INSTX_PKGCONFIG}/libdb.pc"
 fi
 
 # Fix permissions once
-if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
+if [[ -n "${SUDO_PASSWORD}" ]]; then
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 fi

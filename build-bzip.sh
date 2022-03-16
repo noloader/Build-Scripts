@@ -181,16 +181,16 @@ echo "****************************"
 echo "Installing package"
 echo "****************************"
 
-if [[ -n "$SUDO_PASSWORD" ]]
+if [[ -n "${SUDO_PASSWORD}" ]]
 then
     echo "Installing static archive..."
     MAKE_FLAGS=("-f" "Makefile" installdirs
                 PREFIX="${INSTX_PREFIX}" LIBDIR="${INSTX_LIBDIR}")
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
 
     MAKE_FLAGS=("-f" "Makefile" install
                 PREFIX="${INSTX_PREFIX}" LIBDIR="${INSTX_LIBDIR}")
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
 else
     echo "Installing static archive..."
     MAKE_FLAGS=("-f" "Makefile" installdirs
@@ -245,16 +245,16 @@ echo "****************************"
 echo "Installing package"
 echo "****************************"
 
-if [[ -n "$SUDO_PASSWORD" ]]
+if [[ -n "${SUDO_PASSWORD}" ]]
 then
     echo "Installing shared object..."
     MAKE_FLAGS=("-f" "$MAKEFILE" install
                 PREFIX="${INSTX_PREFIX}" LIBDIR="${INSTX_LIBDIR}")
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
 
     MAKE_FLAGS=("-f" "$MAKEFILE" installdirs
                 PREFIX="${INSTX_PREFIX}" LIBDIR="${INSTX_LIBDIR}")
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
 else
     echo "Installing shared object..."
     MAKE_FLAGS=("-f" "$MAKEFILE" installdirs
@@ -286,18 +286,18 @@ fi
     echo "Cflags: -I\${includedir}"
 } > libbz2.pc
 
-if [[ -n "$SUDO_PASSWORD" ]]
+if [[ -n "${SUDO_PASSWORD}" ]]
 then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp ./libbz2.pc "${INSTX_PKGCONFIG}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S chmod u=rw,go=r "${INSTX_PKGCONFIG}/libbz2.pc"
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S cp ./libbz2.pc "${INSTX_PKGCONFIG}"
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S chmod u=rw,go=r "${INSTX_PKGCONFIG}/libbz2.pc"
 else
     cp ./libbz2.pc "${INSTX_PKGCONFIG}"
     chmod u=rw,go=r "${INSTX_PKGCONFIG}/libbz2.pc"
 fi
 
 # Fix permissions once
-if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
+if [[ -n "${SUDO_PASSWORD}" ]]; then
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 fi

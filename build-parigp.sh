@@ -205,8 +205,8 @@ echo "Installing package"
 echo "***************************"
 
 MAKE_FLAGS=("install")
-if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+if [[ -n "${SUDO_PASSWORD}" ]]; then
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
 fi
@@ -232,15 +232,15 @@ fi
 bash "${INSTX_TOPDIR}/fix-pkgconfig.sh"
 
 # Install the pc file
-if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp "./libpari.pc" "${INSTX_PKGCONFIG}"
+if [[ -n "${SUDO_PASSWORD}" ]]; then
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S cp "./libpari.pc" "${INSTX_PKGCONFIG}"
 else
     cp "./libpari.pc" "${INSTX_PKGCONFIG}"
 fi
 
 # Fix permissions once
-if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
+if [[ -n "${SUDO_PASSWORD}" ]]; then
+    printf "%s\n" "${SUDO_PASSWORD}" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 fi
