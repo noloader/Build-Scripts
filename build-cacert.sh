@@ -74,10 +74,10 @@ FIX_PERMISSIONS="${INSTX_TOPDIR}/fix-permissions.sh"
 
 if [[ -n "$SUDO_PASSWORD" ]]
 then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S mkdir -p "$INSTX_CACERT_PATH"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S cp "$BOOTSTRAP_CACERT_FILE" "$INSTX_CACERT_FILE"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S chmod u=rw,go=r "$INSTX_CACERT_FILE"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S bash ${FIX_PERMISSIONS} "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "$INSTX_CACERT_PATH"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp "$BOOTSTRAP_CACERT_FILE" "$INSTX_CACERT_FILE"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S chmod u=rw,go=r "$INSTX_CACERT_FILE"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ${FIX_PERMISSIONS} "${INSTX_PREFIX}"
 else
     mkdir -p "$INSTX_CACERT_PATH"
     cp "$BOOTSTRAP_CACERT_FILE" "$INSTX_CACERT_FILE"

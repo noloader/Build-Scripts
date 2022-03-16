@@ -60,7 +60,7 @@ fi
 # Delete the old libraries once they are unneeded. Don't delete them
 # in the readline recipe.
 if [[ -n "$SUDO_PASSWORD" ]]; then
-   printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S rm -f "${INSTX_LIBDIR}/.*.old"
+   printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S rm -f "${INSTX_LIBDIR}/.*.old"
 else
     rm -rf "${INSTX_LIBDIR}/.*.old"
 fi

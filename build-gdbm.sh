@@ -191,8 +191,8 @@ echo "************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S "${MAKE}" "${MAKE_FLAGS[@]}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
@@ -238,8 +238,8 @@ bash "${INSTX_TOPDIR}/fix-pkgconfig.sh"
 
 # Install the pc file
 if [[ -n "$SUDO_PASSWORD" ]]; then
-    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S cp "./libgdbm.pc" "${INSTX_PKGCONFIG}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo "${SUDO_ENV_OPT}" -S cp "./libgdbm_compat.pc" "${INSTX_PKGCONFIG}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp "./libgdbm.pc" "${INSTX_PKGCONFIG}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp "./libgdbm_compat.pc" "${INSTX_PKGCONFIG}"
 else
     cp "./libgdbm.pc" "${INSTX_PKGCONFIG}"
     cp "./libgdbm_compat.pc" "${INSTX_PKGCONFIG}"
