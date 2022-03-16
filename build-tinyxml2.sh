@@ -104,10 +104,10 @@ then
 fi
 
 # Fix flags in *.pc files
-bash ../fix-pkgconfig.sh
+bash "${INSTX_TOPDIR}/fix-pkgconfig.sh"
 
 # Fix runpaths
-bash ../fix-runpath.sh
+bash "${INSTX_TOPDIR}/fix-runpath.sh"
 
 echo ""
 echo "**********************"
@@ -122,7 +122,7 @@ then
 fi
 
 # Fix runpaths again
-bash ../fix-runpath.sh
+bash "${INSTX_TOPDIR}/fix-runpath.sh"
 
 echo ""
 echo "**********************"
@@ -133,12 +133,12 @@ echo "**********************"
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp tinyxml2.h "${INSTX_PREFIX}/include"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp libtinyxml2.a "${INSTX_LIBDIR}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
     echo ""
 else
     cp tinyxml2.h "${INSTX_PREFIX}/include"
     cp libtinyxml2.a "${INSTX_LIBDIR}"
-    bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
     echo ""
 fi
 

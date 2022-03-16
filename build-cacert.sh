@@ -69,16 +69,8 @@ echo "Installing cacert.pem"
 echo "  installed: ${installed_cacert}"
 echo "  available: ${bootstrap_cacert}"
 
-BOOTSTRAP_CACERT_FILE="bootstrap/cacert.pem"
-
-# Try to locate fix-permissions.sh script
-if [[ -f ../../fix-permissions.sh ]]; then
-    FIX_PERMISSIONS="$PWD/../../fix-permissions.sh"
-elif [[ -f ../fix-permissions.sh ]]; then
-    FIX_PERMISSIONS="$PWD/../fix-permissions.sh"
-elif [[ -f ./fix-permissions.sh ]]; then
-    FIX_PERMISSIONS="$PWD/./fix-permissions.sh"
-fi
+BOOTSTRAP_CACERT_FILE="${INSTX_TOPDIR}/bootstrap/cacert.pem"
+FIX_PERMISSIONS="${INSTX_TOPDIR}/fix-permissions.sh"
 
 if [[ -n "$SUDO_PASSWORD" ]]
 then

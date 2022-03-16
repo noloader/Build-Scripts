@@ -138,10 +138,10 @@ then
 fi
 
 # Fix flags in *.pc files
-bash ../fix-pkgconfig.sh
+bash "${INSTX_TOPDIR}/fix-pkgconfig.sh"
 
 # Fix runpaths
-bash ../fix-runpath.sh
+bash "${INSTX_TOPDIR}/fix-runpath.sh"
 
 echo ""
 echo "**************************"
@@ -159,7 +159,7 @@ then
 fi
 
 # Fix runpaths again
-bash ../fix-runpath.sh
+bash "${INSTX_TOPDIR}/fix-runpath.sh"
 
 echo ""
 echo "**************************"

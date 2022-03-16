@@ -49,6 +49,20 @@ trap finish EXIT INT
 
 ###############################################################################
 
+# We need to stash the top level directory for some scripts
+if [[ -z ${INSTX_TOPDIR} ]]; then
+    INSTX_TOPDIR=$(pwd)
+fi
+
+if [[ ! -d "${INSTX_TOPDIR}/programs" ]]; then
+        printf "INSTX_TOPDIR is not valid."
+        [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 1 || return 1
+fi
+
+export INSTX_TOPDIR
+
+###############################################################################
+
 # Prerequisites needed for nearly all packages. Set to 1 to skip check.
 
 if [[ "${INSTX_DISABLE_PKGCONFIG_CHECK}" -ne 1 ]]; then

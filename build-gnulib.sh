@@ -116,7 +116,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Gnulib"
     echo "*****************************"
 
-    bash ../collect-logs.sh "${PKG_NAME}"
+    bash "${INSTX_TOPDIR}/collect-logs.sh" "${PKG_NAME}"
     exit 1
 fi
 
@@ -137,15 +137,15 @@ then
     echo "Failed to build Gnulib"
     echo "*****************************"
 
-    bash ../collect-logs.sh "${PKG_NAME}"
+    bash "${INSTX_TOPDIR}/collect-logs.sh" "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
-bash ../fix-pkgconfig.sh
+bash "${INSTX_TOPDIR}/fix-pkgconfig.sh"
 
 # Fix runpaths
-bash ../fix-runpath.sh
+bash "${INSTX_TOPDIR}/fix-runpath.sh"
 
 echo ""
 echo "*****************************"
@@ -160,7 +160,7 @@ then
     echo "Failed to test Gnulib"
     echo "*****************************"
 
-    bash ../collect-logs.sh "${PKG_NAME}"
+    bash "${INSTX_TOPDIR}/collect-logs.sh" "${PKG_NAME}"
     exit 1
 fi
 

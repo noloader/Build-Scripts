@@ -112,7 +112,7 @@ if [[ "$?" -ne 0 ]]; then
     echo "Failed to configure Autogen"
     echo "***************************"
 
-    bash ../collect-logs.sh "${PKG_NAME}"
+    bash "${INSTX_TOPDIR}/collect-logs.sh" "${PKG_NAME}"
     exit 1
 fi
 
@@ -133,15 +133,15 @@ then
     echo "Failed to build Autogen"
     echo "***************************"
 
-    bash ../collect-logs.sh "${PKG_NAME}"
+    bash "${INSTX_TOPDIR}/collect-logs.sh" "${PKG_NAME}"
     exit 1
 fi
 
 # Fix flags in *.pc files
-bash ../fix-pkgconfig.sh
+bash "${INSTX_TOPDIR}/fix-pkgconfig.sh"
 
 # Fix runpaths
-bash ../fix-runpath.sh
+bash "${INSTX_TOPDIR}/fix-runpath.sh"
 
 echo ""
 echo "**********************"
@@ -156,12 +156,12 @@ then
     echo "Failed to test Autogen"
     echo "***************************"
 
-    bash ../collect-logs.sh "${PKG_NAME}"
+    bash "${INSTX_TOPDIR}/collect-logs.sh" "${PKG_NAME}"
     exit 1
 fi
 
 # Fix runpaths again
-bash ../fix-runpath.sh
+bash "${INSTX_TOPDIR}/fix-runpath.sh"
 
 echo ""
 echo "**********************"
@@ -171,10 +171,10 @@ echo "**********************"
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
-    bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 fi
 
 ###############################################################################

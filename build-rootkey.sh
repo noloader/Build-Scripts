@@ -46,12 +46,12 @@ then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S mkdir -p "$INSTX_ICANN_PATH"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp "$BOOTSTRAP_ICANN_FILE" "$INSTX_ICANN_FILE"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S chmod u=rw,g=r,o=r "$INSTX_ICANN_FILE"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ./fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash"${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     mkdir -p "$INSTX_ICANN_PATH"
     cp "$BOOTSTRAP_ICANN_FILE" "$INSTX_ICANN_FILE"
     chmod u=rw,g=r,o=r "$INSTX_ICANN_FILE"
-    bash ./fix-permissions.sh "${INSTX_PREFIX}"
+    bash"${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 fi
 
 ###############################################################################
@@ -69,13 +69,13 @@ then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S rm -f "$INSTX_ROOTKEY_PATH/dnsroot.key"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp "$BOOTSTRAP_ROOTKEY_FILE" "$INSTX_ROOTKEY_FILE"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S chmod u=rw,g=r,o=r "$INSTX_ROOTKEY_FILE"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ./fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash"${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     mkdir -p "$INSTX_ROOTKEY_PATH"
     rm -f "$INSTX_ROOTKEY_PATH/dnsroot.key"
     cp "$BOOTSTRAP_ROOTKEY_FILE" "$INSTX_ROOTKEY_FILE"
     chmod u=rw,g=r,o=r "$INSTX_ROOTKEY_FILE"
-    bash ./fix-permissions.sh "${INSTX_PREFIX}"
+    bash"${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 fi
 
 ###############################################################################

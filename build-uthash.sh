@@ -97,10 +97,10 @@ then
 fi
 
 # Fix flags in *.pc files
-bash ../fix-pkgconfig.sh
+bash "${INSTX_TOPDIR}/fix-pkgconfig.sh"
 
 # Fix runpaths
-bash ../fix-runpath.sh
+bash "${INSTX_TOPDIR}/fix-runpath.sh"
 
 echo "**********************"
 echo "Installing package"
@@ -110,10 +110,10 @@ cd ../src/
 
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S cp *.h "${INSTX_PREFIX}/include/"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 else
     cp *.h "${INSTX_PREFIX}/include/"
-    bash ../fix-permissions.sh "${INSTX_PREFIX}"
+    bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
 fi
 
 ###############################################################################

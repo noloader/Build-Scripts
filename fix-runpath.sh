@@ -59,10 +59,8 @@ if [[ "$IS_LINUX" -ne 0 || "$IS_HURD" -ne 0 ]]
 then
     if [[ -e ./build-patchelf.sh ]]; then
         BUILD_PATCHELF=./build-patchelf.sh
-    elif [[ -e ../build-patchelf.sh ]]; then
-        BUILD_PATCHELF=../build-patchelf.sh
-    elif [[ -e ../../build-patchelf.sh ]]; then
-        BUILD_PATCHELF=../../build-patchelf.sh
+    else
+        BUILD_PATCHELF=${INSTX_TOPDIR}/build-patchelf.sh
     fi
 
     if ! ${BUILD_PATCHELF}

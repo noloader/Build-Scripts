@@ -16,14 +16,8 @@ echo "**********************"
 
 if [[ -n "$1" ]]; then
     PROG_PATH="$1"
-elif [[ -d "./programs" ]]; then
-    PROG_PATH="./programs"
-elif [[ -d "../programs" ]]; then
-    PROG_PATH="../programs"
-elif [[ -d "../../programs" ]]; then
-    PROG_PATH="../../programs"
-elif [[ -d "../../../programs" ]]; then
-    PROG_PATH="../../../programs"
+else
+    PROG_PATH="${INSTX_TOPDIR}/programs"
 fi
 
 CXX="${CXX:-CC}"
