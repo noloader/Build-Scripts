@@ -73,7 +73,7 @@ if [[ -e ../patch/bash.patch ]]; then
 fi
 
 # Fix sys_lib_dlsearch_path_spec
-bash ../fix-configure.sh
+bash "${INSTX_TOPDIR}/fix-configure.sh"
 
 echo ""
 echo "**********************"
@@ -120,7 +120,7 @@ fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
-bash ../fix-makefiles.sh
+bash "${INSTX_TOPDIR}/fix-makefiles.sh"
 
 echo ""
 echo "**********************"
@@ -173,11 +173,11 @@ MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
-    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${BASH_DIR}"
+    printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/copy-sources.sh" "${PWD}" "${INSTX_SRCDIR}/${BASH_DIR}"
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
-    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${BASH_DIR}"
+    bash "${INSTX_TOPDIR}/copy-sources.sh" "${PWD}" "${INSTX_SRCDIR}/${BASH_DIR}"
 fi
 
 ###############################################################################

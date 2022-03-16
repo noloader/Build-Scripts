@@ -315,7 +315,7 @@ done
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
 # Not needed due to @tonycoz's workarounds.
-# bash ../fix-makefiles.sh
+# bash "${INSTX_TOPDIR}/fix-makefiles.sh"
 
 # porting/exec-bit.t failure after fix-makefiles.sh
 # chmod a+x ./Makefile.SH;

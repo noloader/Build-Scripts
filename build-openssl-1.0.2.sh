@@ -180,7 +180,7 @@ fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
-bash ../fix-makefiles.sh
+bash "${INSTX_TOPDIR}/fix-makefiles.sh"
 
 echo ""
 echo "***************************"
@@ -287,12 +287,12 @@ if [[ -n "$SUDO_PASSWORD" ]]; then
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S "${MAKE}" "${MAKE_FLAGS[@]}"
     printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
     if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
-        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${OPENSSL_DIR}"
+        printf "%s\n" "$SUDO_PASSWORD" | sudo ${SUDO_ENV_OPT} -S bash "${INSTX_TOPDIR}/copy-sources.sh" "${PWD}" "${INSTX_SRCDIR}/${OPENSSL_DIR}"
     fi
 else
     "${MAKE}" "${MAKE_FLAGS[@]}"
     bash "${INSTX_TOPDIR}/fix-permissions.sh" "${INSTX_PREFIX}"
-    bash ../copy-sources.sh "${PWD}" "${INSTX_SRCDIR}/${OPENSSL_DIR}"
+    bash "${INSTX_TOPDIR}/copy-sources.sh" "${PWD}" "${INSTX_SRCDIR}/${OPENSSL_DIR}"
 fi
 
 ###############################################################################

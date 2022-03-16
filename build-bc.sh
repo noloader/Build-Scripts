@@ -73,7 +73,7 @@ if [[ -e ../patch/bc.patch ]]; then
 fi
 
 # Fix sys_lib_dlsearch_path_spec
-bash ../fix-configure.sh
+bash "${INSTX_TOPDIR}/fix-configure.sh"
 
 echo ""
 echo "**********************"
@@ -105,7 +105,7 @@ fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
-bash ../fix-makefiles.sh
+bash "${INSTX_TOPDIR}/fix-makefiles.sh"
 
 echo ""
 echo "**********************"

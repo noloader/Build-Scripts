@@ -99,7 +99,7 @@ if [[ -e ../patch/p11kit.patch ]]; then
 fi
 
 # Fix sys_lib_dlsearch_path_spec
-bash ../fix-configure.sh
+bash "${INSTX_TOPDIR}/fix-configure.sh"
 
 echo "**********************"
 echo "Configuring package"
@@ -144,7 +144,7 @@ fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
-bash ../fix-makefiles.sh
+bash "${INSTX_TOPDIR}/fix-makefiles.sh"
 
 # On Solaris the script puts /usr/gnu/bin on-path, so we get a useful grep
 if [[ "$IS_SOLARIS" -ne 0 ]]; then

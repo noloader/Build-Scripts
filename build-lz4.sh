@@ -81,7 +81,7 @@ cp -p lib/lz4frame.h programs/lz4frame.h
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
-bash ../fix-makefiles.sh
+bash "${INSTX_TOPDIR}/fix-makefiles.sh"
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     lz4_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${CRYPTOPP_DIR}"

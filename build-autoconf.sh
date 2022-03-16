@@ -64,7 +64,7 @@ gzip -d < "$AUTOCONF_TAR" | tar xf -
 cd "$AUTOCONF_DIR" || exit 1
 
 # Fix sys_lib_dlsearch_path_spec
-bash ../fix-configure.sh
+bash "${INSTX_TOPDIR}/fix-configure.sh"
 
 CONFIG_M4=$(command -v m4 2>/dev/null)
 if [[ -e "${INSTX_PREFIX}/bin/m4" ]]; then
@@ -102,7 +102,7 @@ fi
 
 # Escape dollar sign for $ORIGIN in makefiles. Required so
 # $ORIGIN works in both configure tests and makefiles.
-bash ../fix-makefiles.sh
+bash "${INSTX_TOPDIR}/fix-makefiles.sh"
 
 echo ""
 echo "**********************"
