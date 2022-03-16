@@ -70,9 +70,12 @@ echo "================ libxml2 ==============="
 echo "========================================"
 
 echo ""
-echo "**********************"
+echo "***************************"
 echo "Downloading package"
-echo "**********************"
+echo "***************************"
+
+echo ""
+echo "libxml2 ${XML2_VER}..."
 
 # To view the FTP listing, curl ftp://xmlsoft.org/libxml2/
 # Also see https://mail.gnome.org/archives/xml/2022-January/msg00011.html.
@@ -90,16 +93,20 @@ cd "$XML2_DIR" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/libxml2.patch ]]; then
-    patch -u -p0 < ../patch/libxml2.patch
     echo ""
+    echo "***************************"
+    echo "Patching package"
+    echo "***************************"
+    patch -u -p0 < ../patch/libxml2.patch
 fi
 
 # Fix sys_lib_dlsearch_path_spec
 bash "${INSTX_TOPDIR}/fix-configure.sh"
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Configuring package"
-echo "**********************"
+echo "***************************"
 
 if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
     libxml2_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${XML2_DIR}"
@@ -128,7 +135,12 @@ fi
     --without-python
 
 if [[ "$?" -ne 0 ]]; then
+    echo ""
+    echo "***************************"
     echo "Failed to configure libxml2"
+    echo "***************************"
+
+    bash "${INSTX_TOPDIR}/collect-logs.sh" "${PKG_NAME}"
     exit 1
 fi
 
@@ -136,14 +148,20 @@ fi
 # $ORIGIN works in both configure tests and makefiles.
 bash "${INSTX_TOPDIR}/fix-makefiles.sh"
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Building package"
-echo "**********************"
+echo "***************************"
 
 MAKE_FLAGS=("-j" "${INSTX_JOBS}" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
+    echo ""
+    echo "************************"
     echo "Failed to build libxml2"
+    echo "************************"
+
+    bash "${INSTX_TOPDIR}/collect-logs.sh" "${PKG_NAME}"
     exit 1
 fi
 
@@ -153,36 +171,33 @@ bash "${INSTX_TOPDIR}/fix-pkgconfig.sh"
 # Fix runpaths
 bash "${INSTX_TOPDIR}/fix-runpath.sh"
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Testing package"
-echo "**********************"
+echo "***************************"
 
 # libxml2 appears to hang on old PowerMacs. Be patient.
 # https://mail.gnome.org/archives/xml/2021-March/msg00013.html
 
-echo "**********************"
-echo "Start time: $(date)"
-echo "**********************"
-
 MAKE_FLAGS=("check" "-k" "V=1")
 if ! "${MAKE}" "${MAKE_FLAGS[@]}"
 then
-    echo "**********************"
+    echo ""
+    echo "************************"
     echo "Failed to test libxml2"
-    echo "**********************"
+    echo "************************"
+
+    bash "${INSTX_TOPDIR}/collect-logs.sh" "${PKG_NAME}"
     exit 1
 fi
-
-echo "**********************"
-echo "Finish time: $(date)"
-echo "**********************"
 
 # Fix runpaths again
 bash "${INSTX_TOPDIR}/fix-runpath.sh"
 
-echo "**********************"
+echo ""
+echo "***************************"
 echo "Installing package"
-echo "**********************"
+echo "***************************"
 
 MAKE_FLAGS=("install")
 if [[ -n "$SUDO_PASSWORD" ]]; then
