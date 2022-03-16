@@ -40,12 +40,10 @@ echo "Creating directories"
 echo "**********************"
 
 # Try to locate fix-permissions.sh script
-if [[ -f ../"${INSTX_TOPDIR}/fix-permissions.sh" ]]; then
-    FIX_PERMISSIONS="$PWD/../"${INSTX_TOPDIR}/fix-permissions.sh""
-elif [[ -f "${INSTX_TOPDIR}/fix-permissions.sh" ]]; then
-    FIX_PERMISSIONS="$PWD/"${INSTX_TOPDIR}/fix-permissions.sh""
-elif [[ -f"${INSTX_TOPDIR}/fix-permissions.sh" ]]; then
-    FIX_PERMISSIONS="$PWD"${INSTX_TOPDIR}/fix-permissions.sh""
+if [[ -f ./fix-permissions.sh ]]; then
+    FIX_PERMISSIONS="./fix-permissions.sh"
+else
+    FIX_PERMISSIONS="${INSTX_TOPDIR}/fix-permissions.sh"
 fi
 
 if [[ -n "$SUDO_PASSWORD" ]]; then
