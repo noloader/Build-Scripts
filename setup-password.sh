@@ -10,6 +10,13 @@ then
     [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
 fi
 
+# Don't prompt root user for a password
+if [[ "${EUID:-$(id -u)}" -eq 0 ]]
+then
+    export SUDO_PASSWORD_DONE=yes
+    [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
+fi
+
 # Only prompt if SUDO_PASSWORD_DONE is not set in the environment.
 if [[ "${SUDO_PASSWORD_DONE}" == "yes" ]]
 then
