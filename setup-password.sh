@@ -3,9 +3,16 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script prompts for credentials for other scripts to use
 
+# Only prompt if SUDO_PASSWORD_DONE is not set in the environment.
+if [[ "${SUDO_PASSWORD_DONE}" == "yes" ]]
+then
+    [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
+fi
+
 # AIX and some BSDs lack sudo.
 if [[ -z "$(command -v sudo 2>/dev/null)" ]]
 then
+    echo "Sudo is missing. Skipping password prompt."
     export SUDO_PASSWORD_DONE=yes
     [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
 fi
@@ -13,13 +20,8 @@ fi
 # Don't prompt root user for a password
 if [[ "${EUID:-$(id -u)}" -eq 0 ]]
 then
+    echo "User is root. Skipping password prompt."
     export SUDO_PASSWORD_DONE=yes
-    [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
-fi
-
-# Only prompt if SUDO_PASSWORD_DONE is not set in the environment.
-if [[ "${SUDO_PASSWORD_DONE}" == "yes" ]]
-then
     [[ "$0" == "${BASH_SOURCE[0]}" ]] && exit 0 || return 0
 fi
 
