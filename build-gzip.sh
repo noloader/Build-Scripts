@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Gzip from sources.
 
-GZIP_VER=1.10
+GZIP_VER=1.12
 GZIP_TAR=gzip-${GZIP_VER}.tar.gz
 GZIP_DIR=gzip-${GZIP_VER}
 PKG_NAME=gzip
