@@ -66,10 +66,10 @@ rm -rf "$ZLIB_DIR" &>/dev/null
 gzip -d < "$ZLIB_TAR" | tar xf -
 cd "$ZLIB_DIR" || exit 1
 
-# cp gzguts.h gzguts.h.orig
-# cp trees.c trees.c.orig
-# cp Makefile.in Makefile.in.orig
-# cp configure configure.orig
+cp gzguts.h gzguts.h.orig
+cp trees.c trees.c.orig
+cp Makefile.in Makefile.in.orig
+cp configure configure.orig
 
 if [[ -e ../patch/zlib.patch ]]; then
     echo ""
@@ -79,6 +79,8 @@ if [[ -e ../patch/zlib.patch ]]; then
 
     patch -u -p0 < ../patch/zlib.patch
 fi
+
+exit 1
 
 # Fix sys_lib_dlsearch_path_spec
 bash "${INSTX_TOPDIR}/fix-configure.sh"

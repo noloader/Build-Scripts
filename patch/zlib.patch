@@ -1,32 +1,3 @@
-# Written and placed in public domain by Jeffrey Walton.
-# This patch fixes some issues with zLib.
---- gzguts.h
-+++ gzguts.h
-@@ -39,7 +39,7 @@
- #  include <io.h>
- #endif
- 
--#if defined(_WIN32) || defined(__CYGWIN__)
-+#if defined(_WIN32)
- #  define WIDECHAR
- #endif
- 
---- trees.c
-+++ trees.c
-@@ -870,8 +870,11 @@
-     bi_windup(s);        /* align on byte boundary */
-     put_short(s, (ush)stored_len);
-     put_short(s, (ush)~stored_len);
--    zmemcpy(s->pending_buf + s->pending, (Bytef *)buf, stored_len);
--    s->pending += stored_len;
-+    if (s->pending_buf && buf)
-+    {
-+	zmemcpy(s->pending_buf + s->pending, (Bytef *)buf, stored_len);
-+	s->pending += stored_len;
-+    }
- #ifdef ZLIB_DEBUG
-     s->compressed_len = (s->compressed_len + 3 + 7) & (ulg)~7L;
-     s->compressed_len += (stored_len + 4) << 3;
 --- Makefile.in
 +++ Makefile.in
 @@ -26,7 +26,7 @@
@@ -39,7 +10,7 @@
  CPP=$(CC) -E
  
 @@ -117,10 +117,10 @@
- 	rm -f $$TMP64
+ 	@rm -f tmp64_$$
  
  infcover.o: $(SRCDIR)test/infcover.c $(SRCDIR)zlib.h zconf.h
 -	$(CC) $(CFLAGS) $(ZINCOUT) -c -o $@ $(SRCDIR)test/infcover.c
@@ -292,7 +263,7 @@
  	chmod 644 $(DESTDIR)$(includedir)/zlib.h $(DESTDIR)$(includedir)/zconf.h
 --- configure
 +++ configure
-@@ -182,6 +182,7 @@
+@@ -190,6 +190,7 @@
  if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
    echo ... using gcc >> configure.log
    CC="$cc"
@@ -300,7 +271,7 @@
    CFLAGS="${CFLAGS--O3}"
    SFLAGS="${CFLAGS--O3} -fPIC"
    if test "$ARCHS"; then
-@@ -453,6 +454,7 @@
+@@ -470,6 +471,7 @@
  cat > $test.c <<EOF
  #include <stdio.h>
  #include <stdlib.h>
@@ -308,7 +279,7 @@
  size_t dummy = 0;
  EOF
  if try $CC -c $CFLAGS $test.c; then
-@@ -832,6 +834,7 @@
+@@ -839,6 +841,7 @@
  echo AR = $AR >> configure.log
  echo ARFLAGS = $ARFLAGS >> configure.log
  echo CC = $CC >> configure.log
@@ -316,7 +287,7 @@
  echo CFLAGS = $CFLAGS >> configure.log
  echo CPP = $CPP >> configure.log
  echo EXE = $EXE >> configure.log
-@@ -862,6 +865,7 @@
+@@ -868,6 +871,7 @@
  # udpate Makefile with the configure results
  sed < ${SRCDIR}Makefile.in "
  /^CC *=/s#=.*#=$CC#
@@ -324,7 +295,7 @@
  /^CFLAGS *=/s#=.*#=$CFLAGS#
  /^SFLAGS *=/s#=.*#=$SFLAGS#
  /^LDFLAGS *=/s#=.*#=$LDFLAGS#
-@@ -895,6 +899,7 @@
+@@ -901,6 +905,7 @@
  # create zlib.pc with the configure results
  sed < ${SRCDIR}zlib.pc.in "
  /^CC *=/s#=.*#=$CC#
