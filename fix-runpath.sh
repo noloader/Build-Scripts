@@ -89,38 +89,38 @@ fi
 IFS= find "./" -type f -name '*' -print | while read -r file
 do
     # Smoke test. Object files have ELF signature.
-    if [[ $(echo "$file" | $GREP -E '\.o$|\.lo$') ]]; then continue; fi
+    if [[ $(echo "${file}" | $GREP -E '\.o$|\.lo$') ]]; then continue; fi
 
     # Smoke test. No symbolic links.
-    if [[ -L "$file" ]]; then continue; fi
+    if [[ -L "${file}" ]]; then continue; fi
 
     # Check for ELF signature
-    magic=$(cut -b 2-4 "$file" 2>/dev/null | tr -d '\0' | head -n 1)
+    magic=$(cut -b 2-4 "${file}" 2>/dev/null | tr -d '\0' | head -n 1)
     if [[ "$magic" != "ELF" ]]; then continue; fi
 
     # Display filename, strip leading "./"
-    this_file=$(echo "$file" | tr -s '/' | cut -c 3-)
+    this_file=$(echo "${file}" | tr -s '/' | cut -c 3-)
     echo "patching ${this_file}..."
 
-    touch -a -m -r "$file" "$file.timestamp"
-    chmod a+rw "$file"
+    touch -a -m -r "${file}" "${file}.timestamp"
+    chmod a+rw "${file}"
 
     # https://blogs.oracle.com/solaris/avoiding-ldlibrarypath%3a-the-options-v2
     if [[ "$IS_SOLARIS" -ne 0 && -e /usr/bin/elfedit ]]
     then
-        /usr/bin/elfedit -e "dyn:rpath ${FIXED_RUNPATH}" "$file"
-        /usr/bin/elfedit -e "dyn:runpath ${FIXED_RUNPATH}" "$file"
+        /usr/bin/elfedit -e "dyn:rpath ${FIXED_RUNPATH}" "${file}"
+        /usr/bin/elfedit -e "dyn:runpath ${FIXED_RUNPATH}" "${file}"
 
     # https://stackoverflow.com/questions/13769141/can-i-change-rpath-in-an-already-compiled-binary
     elif [[ -n $(command -v patchelf 2>/dev/null) ]]
     then
-        #echo "  Before: $(readelf -d "$file" | grep PATH)"
-        patchelf --set-rpath "${FIXED_RUNPATH}" "$file"
-        #echo "  After: $(readelf -d "$file" | grep PATH)"
+        #echo "  Before: $(readelf -d "${file}" | grep PATH)"
+        patchelf --set-rpath "${FIXED_RUNPATH}" "${file}"
+        #echo "  After: $(readelf -d "${file}" | grep PATH)"
 
     elif [[ -n $(command -v chrpath 2>/dev/null) ]]
     then
-        chrpath -r "${FIXED_RUNPATH}" "$file" 2>/dev/null
+        chrpath -r "${FIXED_RUNPATH}" "${file}" 2>/dev/null
 
     elif [[ "$IS_LINUX" -eq 1 ]]
     then
@@ -130,9 +130,9 @@ do
         :
     fi
 
-    chmod a+rx "$file"; chmod go-w "$file"
-    touch -a -m -r "$file.timestamp" "$file"
-    rm "$file.timestamp"
+    chmod a+rx "${file}"; chmod go-w "${file}"
+    touch -a -m -r "${file}.timestamp" "${file}"
+    rm "${file}.timestamp"
 done
 
 exit 0
