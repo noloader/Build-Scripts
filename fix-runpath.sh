@@ -74,8 +74,8 @@ fi
 
 # We need to remove the single quotes.
 FIXED_RUNPATH="$INSTX_OPATH:$INSTX_RPATH"
-FIXED_RUNPATH="""$(echo "$FIXED_RUNPATH" | sed "s/'//g")"""
-# echo "Using RUNPATH \"$FIXED_RUNPATH\""
+FIXED_RUNPATH="""$(echo "${FIXED_RUNPATH}" | sed "s/'//g")"""
+# echo "Using RUNPATH \"${FIXED_RUNPATH}\""
 
 # Find a non-anemic grep
 GREP=$(command -v grep 2>/dev/null)
@@ -108,19 +108,19 @@ do
     # https://blogs.oracle.com/solaris/avoiding-ldlibrarypath%3a-the-options-v2
     if [[ "$IS_SOLARIS" -ne 0 && -e /usr/bin/elfedit ]]
     then
-        /usr/bin/elfedit -e "dyn:rpath $FIXED_RUNPATH" "$file"
-        /usr/bin/elfedit -e "dyn:runpath $FIXED_RUNPATH" "$file"
+        /usr/bin/elfedit -e "dyn:rpath ${FIXED_RUNPATH}" "$file"
+        /usr/bin/elfedit -e "dyn:runpath ${FIXED_RUNPATH}" "$file"
 
     # https://stackoverflow.com/questions/13769141/can-i-change-rpath-in-an-already-compiled-binary
     elif [[ -n $(command -v patchelf 2>/dev/null) ]]
     then
         #echo "  Before: $(readelf -d "$file" | grep PATH)"
-        patchelf --set-rpath "$FIXED_RUNPATH" "$file"
+        patchelf --set-rpath "${FIXED_RUNPATH}" "$file"
         #echo "  After: $(readelf -d "$file" | grep PATH)"
 
     elif [[ -n $(command -v chrpath 2>/dev/null) ]]
     then
-        chrpath -r "$FIXED_RUNPATH" "$file" 2>/dev/null
+        chrpath -r "${FIXED_RUNPATH}" "$file" 2>/dev/null
 
     elif [[ "$IS_LINUX" -eq 1 ]]
     then
