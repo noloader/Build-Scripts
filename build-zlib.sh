@@ -3,8 +3,9 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds zLib from sources.
 
-ZLIB_TAR=zlib-1.2.11.tar.gz
-ZLIB_DIR=zlib-1.2.11
+ZLIB_VER=1.2.12
+ZLIB_TAR=zlib-${ZLIB_VER}.tar.gz
+ZLIB_DIR=zlib-${ZLIB_VER}
 PKG_NAME=zlib
 
 ###############################################################################
