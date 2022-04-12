@@ -89,7 +89,7 @@ fi
 IFS= find "./" -type f -name '*' -print | while read -r file
 do
     # Smoke test. Object files have ELF signature.
-    if [[ $(echo "${file}" | $GREP -E '\.o$|\.lo$') ]]; then continue; fi
+    if [[ $(echo "${file}" | ${GREP} -E '\.o$|\.lo$') ]]; then continue; fi
 
     # Smoke test. No symbolic links.
     if [[ -L "${file}" ]]; then continue; fi
@@ -114,9 +114,9 @@ do
     # https://stackoverflow.com/questions/13769141/can-i-change-rpath-in-an-already-compiled-binary
     elif [[ -n $(command -v patchelf 2>/dev/null) ]]
     then
-        #echo "  Before: $(readelf -d "${file}" | grep PATH)"
+        #echo "  Before: $(readelf -d "${file}" | ${GREP} PATH)"
         patchelf --set-rpath "${FIXED_RUNPATH}" "${file}"
-        #echo "  After: $(readelf -d "${file}" | grep PATH)"
+        #echo "  After: $(readelf -d "${file}" | ${GREP} PATH)"
 
     elif [[ -n $(command -v chrpath 2>/dev/null) ]]
     then
