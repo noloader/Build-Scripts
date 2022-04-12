@@ -89,7 +89,7 @@ fi
 IFS= find "./" -type f -name '*' -print | while read -r file
 do
     # Smoke test. Object files have ELF signature.
-    if [[ $(echo "$file" | $GREP -E '\.o$') ]]; then continue; fi
+    if [[ $(echo "$file" | $GREP -E '\.o$|\.lo$') ]]; then continue; fi
 
     # Smoke test. No symbolic links.
     if [[ -L "$file" ]]; then continue; fi
