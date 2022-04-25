@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds ntbTLS from sources.
 
-NTBTLS_VER=0.2.0
+NTBTLS_VER=0.3.1
 NTBTLS_TAR="ntbtls-${NTBTLS_VER}.tar.bz2"
 NTBTLS_DIR="ntbtls-${NTBTLS_VER}"
 PKG_NAME=ntbtls
