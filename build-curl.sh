@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds cURL from sources.
 
-CURL_VER=7.83.0
+CURL_VER=7.83.1
 CURL_TAR="curl-${CURL_VER}.tar.gz"
 CURL_DIR="curl-${CURL_VER}"
 PKG_NAME=curl
