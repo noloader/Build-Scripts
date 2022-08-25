@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds libtasn1 from sources.
 
-TASN1_VER=4.18.0
+TASN1_VER=4.19.0
 TASN1_TAR=libtasn1-${TASN1_VER}.tar.gz
 TASN1_DIR=libtasn1-${TASN1_VER}
 PKG_NAME=libtasn1
