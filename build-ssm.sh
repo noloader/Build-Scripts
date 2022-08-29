@@ -47,7 +47,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$SSM_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$SSM_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://github.com/system-storage-manager/ssm/archive/$SSM_TAR"
 then
     echo "Failed to download SSM"

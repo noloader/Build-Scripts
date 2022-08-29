@@ -74,7 +74,7 @@ echo "*****************************"
 echo ""
 echo "libgcrypt ${GCRYPT_VER}..."
 
-if ! "$WGET" -q -O "$GCRYPT_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$GCRYPT_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://gnupg.org/ftp/gcrypt/libgcrypt/$GCRYPT_TAR"
 then
     echo "Failed to download libgcrypt"

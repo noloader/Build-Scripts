@@ -92,7 +92,7 @@ echo "****************************"
 echo ""
 echo "GnuCOBOL (RC) ${COBOL_VER}..."
 
-if ! "$WGET" -q -O "$COBOL_TAR" --ca-certificate="$THE_CA_ZOO" \
+if ! "${WGET}" -q -O "$COBOL_TAR" --ca-certificate="${THE_CA_ZOO}" \
      "https://alpha.gnu.org/gnu/gnucobol/$COBOL_TAR"
 then
     echo ""

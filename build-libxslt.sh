@@ -73,7 +73,7 @@ echo "************************"
 # To view the FTP listing, curl ftp://xmlsoft.org/libxml2/
 # Also see https://mail.gnome.org/archives/xml/2022-January/msg00011.html.
 
-if ! "$WGET" -q -O "$XSLT_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$XSLT_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "ftp://xmlsoft.org/libxml2/$XSLT_TAR"
 then
     echo "Failed to download libxslt"

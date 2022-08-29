@@ -57,7 +57,7 @@ echo "***********************"
 echo ""
 echo "GMP ${GMP_VER}..."
 
-if ! "$WGET" -q -O "$GMP_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$GMP_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/gmp/$GMP_TAR"
 then
     echo ""

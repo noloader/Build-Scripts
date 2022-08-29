@@ -50,7 +50,7 @@ M4_XZ=m4-1.4.18.22-dfa46.tar.xz
 M4_TAR=m4-1.4.18.22-dfa46.tar
 M4_DIR=m4-1.4.18.22-dfa46
 
-if ! "$WGET" -q -O "$M4_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$M4_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://www.cs.ucla.edu/~eggert/m4-1.4.18.22-dfa46.tar.xz"
 then
     echo "Failed to download M4"

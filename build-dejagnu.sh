@@ -65,7 +65,7 @@ echo "**********************"
 echo ""
 echo "Dejagnu ${DEJAGNU_VER}..."
 
-if ! "$WGET" -q -O "$DEJAGNU_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$DEJAGNU_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/dejagnu/$DEJAGNU_TAR"
 then
     echo "Failed to download DejaGNU"

@@ -55,7 +55,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$SSLSCAN_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$SSLSCAN_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://github.com/rbsec/sslscan/archive/$SSLSCAN_TAR"
 then
     echo "Failed to download sslscan"
@@ -72,7 +72,7 @@ if [[ -e ../patch/sslscan.patch ]]; then
     echo ""
 fi
 
-if ! "$WGET" -q -O Makefile --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O Makefile --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://raw.githubusercontent.com/noloader/sslscan/master/Makefile"
 then
     echo "Failed to update sslscan Makefile"

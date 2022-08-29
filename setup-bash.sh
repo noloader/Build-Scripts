@@ -52,7 +52,7 @@ echo "**********************"
 echo ""
 echo "Bash ${BASH_VER}..."
 
-if ! "$WGET" -q -O "$BASH_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$BASH_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/bash/$BASH_TAR"
 then
     echo "Failed to download Bash"

@@ -61,7 +61,7 @@ echo "***************************"
 echo "Downloading package"
 echo "***************************"
 
-if ! "$WGET" -q -O "$OSIP2_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$OSIP2_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/osip/$OSIP2_TAR"
 then
     echo "Failed to download libosip2"

@@ -110,7 +110,7 @@ echo "Patchelf ${PATCHELF_VER}..."
 
 rm -rf "$PATCHELF_DIR" && mkdir -p "$PATCHELF_DIR" && cd "$PATCHELF_DIR" || exit 1
 
-if ! "${WGET}" -q -O "${PATCHELF_TAR}" --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O "${PATCHELF_TAR}" --ca-certificate="${GITHUB_CA_ZOO}" \
      "https://github.com/NixOS/patchelf/releases/download/${PATCHELF_VER}/patchelf-${PATCHELF_VER}-${PATCHELF_ARCH}.tar.gz"
 then
     echo "Failed to download patchelf"

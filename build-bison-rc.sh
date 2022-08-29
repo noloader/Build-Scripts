@@ -63,7 +63,7 @@ echo "*************************"
 echo ""
 echo "Bison ${BISON_VER}..."
 
-if ! "$WGET" -q -O "$BISON_TAR" --ca-certificate="$THE_CA_ZOO" \
+if ! "${WGET}" -q -O "$BISON_TAR" --ca-certificate="${THE_CA_ZOO}" \
      "https://www.lrde.epita.fr/~akim/private/bison/bison-3.7.4.254-a0905.tar.gz"
 then
     echo "Failed to download Bison"

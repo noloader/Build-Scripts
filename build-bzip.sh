@@ -6,6 +6,7 @@
 # shellcheck disable=SC2191
 
 # Bzip lost its website. It is now located on Sourceware.
+# https://sourceware.org/bzip2/downloads.html
 
 BZIP2_VER=1.0.8
 BZIP2_TAR=bzip2-${BZIP2_VER}.tar.gz
@@ -68,7 +69,7 @@ echo "****************************"
 echo ""
 echo "Bzip2 ${BZIP2_VER}..."
 
-if ! "$WGET" -q -O "$BZIP2_TAR" \
+if ! "${WGET}" -q -O "$BZIP2_TAR" \
      "ftp://sourceware.org/pub/bzip2/$BZIP2_TAR"
 then
     echo "Failed to download Bzip"

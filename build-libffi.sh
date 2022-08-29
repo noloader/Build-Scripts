@@ -54,7 +54,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$LIBFFI_TAR" --ca-certificate="$DIGICERT_ROOT" \
+if ! "${WGET}" -q -O "$LIBFFI_TAR" --ca-certificate="${DIGICERT_ROOT}" \
      "ftp://sourceware.org/pub/libffi/$LIBFFI_TAR"
 then
     echo "Failed to download libffi"

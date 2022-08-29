@@ -62,7 +62,7 @@ echo "************************"
 echo "Downloading package"
 echo "************************"
 
-if ! "$WGET" -q -O "$MPFR_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$MPFR_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/mpfr/$MPFR_TAR"
 then
     echo "Failed to download MPFR"
@@ -74,7 +74,7 @@ gzip -d < "$MPFR_TAR" | tar xf -
 cd "$MPFR_DIR" || exit 1
 
 # Per INSTALL
-if "$WGET" -q -O allpatches --ca-certificate="$THE_CA_ZOO" \
+if "${WGET}" -q -O allpatches --ca-certificate="${THE_CA_ZOO}" \
     "https://www.mpfr.org/mpfr-${MPFR_VER}/allpatches"
 then
     patch -N -Z -p1 < allpatches

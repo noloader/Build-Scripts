@@ -94,7 +94,7 @@ echo "**********************"
 echo ""
 echo "NGHTTP2 ${NGHTTP2_VER}..."
 
-if ! "$WGET" -q -O "$NGHTTP2_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O "$NGHTTP2_TAR" --ca-certificate="${GITHUB_CA_ZOO}" \
      "https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2_VER/$NGHTTP2_TAR"
 then
     echo "Failed to download NGHTTP2"

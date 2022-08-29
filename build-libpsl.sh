@@ -78,7 +78,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$PSL_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O "$PSL_TAR" --ca-certificate="${GITHUB_CA_ZOO}" \
      "https://github.com/rockdaboot/libpsl/releases/download/$PSL_VER/$PSL_TAR"
 then
     echo "Failed to download libpsl"
@@ -147,7 +147,7 @@ mkdir -p list
 #   https://publicsuffix.org/list/public_suffix_list.dat,
 #   rather than any other VCS sites. Pulling from any other
 #   URL is not guaranteed to be supported.
-if ! "$WGET" -q -O "list/public_suffix_list.dat" --ca-certificate="$THE_CA_ZOO" \
+if ! "${WGET}" -q -O "list/public_suffix_list.dat" --ca-certificate="${THE_CA_ZOO}" \
      "https://publicsuffix.org/list/public_suffix_list.dat"
 then
     echo "Failed to update Public Suffix List (PSL)"

@@ -59,7 +59,7 @@ echo "**********************"
 echo ""
 echo "Moe ${MOE_VER}..."
 
-if ! "$WGET" -q -O "$MOE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$MOE_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/moe/$MOE_TAR"
 then
     echo "Failed to download Moe"

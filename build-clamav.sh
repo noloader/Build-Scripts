@@ -84,7 +84,7 @@ echo "**************************"
 echo ""
 echo "ClamAV ${CLAMAV_VER}..."
 
-if ! "$WGET" -q -O "$CLAMAV_TAR" --ca-certificate="$THE_CA_ZOO" \
+if ! "${WGET}" -q -O "$CLAMAV_TAR" --ca-certificate="${THE_CA_ZOO}" \
      "https://www.clamav.net/downloads/production/$CLAMAV_TAR"
 then
     echo "Failed to download ClamAV"

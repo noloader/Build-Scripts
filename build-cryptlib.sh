@@ -66,7 +66,7 @@ echo "************************"
 echo ""
 echo "Cryptlib ${CRYPTLIB_VER}..."
 
-if ! "$WGET" -q -O "$CRYPTLIB_ZIP" --ca-certificate="$THE_CA_ZOO" \
+if ! "${WGET}" -q -O "$CRYPTLIB_ZIP" --ca-certificate="${THE_CA_ZOO}" \
      "https://cryptlib-release.s3-ap-southeast-1.amazonaws.com/$CRYPTLIB_ZIP"
 then
     echo "Failed to download Cryptlib"

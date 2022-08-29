@@ -95,7 +95,7 @@ echo "***************************"
 echo "Downloading package"
 echo "***************************"
 
-if ! "$WGET" -q -O "$UNBOUND_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$UNBOUND_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://unbound.net/downloads/$UNBOUND_TAR"
 then
     echo "Failed to download Unbound"

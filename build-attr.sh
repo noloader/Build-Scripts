@@ -70,7 +70,7 @@ echo "***************************"
 echo ""
 echo "libattr ${ATTR_VER}..."
 
-if ! "$WGET" -q -O "$ATTR_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$ATTR_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://download.savannah.nongnu.org/releases/attr/$ATTR_TAR"
 then
     echo "Failed to download libattr"

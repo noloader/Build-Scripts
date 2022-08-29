@@ -67,7 +67,7 @@ echo "PCRE ${PCRE_VER}..."
 
 # https://downloads.sourceforge.net/project/pcre/pcre/8.45/pcre-8.45.tar.gz
 
-if ! "$WGET" -q -O "$PCRE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$PCRE_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://downloads.sourceforge.net/project/pcre/pcre/${PCRE_VER}/${PCRE_TAR}"
 then
     echo "Failed to download PCRE"

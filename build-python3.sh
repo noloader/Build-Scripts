@@ -64,7 +64,7 @@ echo "*************************"
 echo "Downloading package"
 echo "*************************"
 
-if ! "$WGET" -q -O "$PYTHON_TAR" --ca-certificate="$DIGICERT_ROOT"
+if ! "${WGET}" -q -O "$PYTHON_TAR" --ca-certificate="${DIGICERT_ROOT}"
  "https://www.python.org/ftp/python/$PYTHON_VER/$PYTHON_TAR"
 then
     echo "Failed to download Python 3.8"

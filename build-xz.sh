@@ -57,7 +57,7 @@ echo "**********************"
 echo ""
 echo "Xz ${XZ_VER}..."
 
-if ! "$WGET" -q -O "$XZ_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$XZ_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://tukaani.org/xz/$XZ_TAR"
 then
     echo "Failed to download xz"

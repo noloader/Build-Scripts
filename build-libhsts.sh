@@ -51,7 +51,7 @@ echo "**********************"
 echo ""
 echo "libhsts ${HSTS_VER}..."
 
-if ! "$WGET" -q -O "$HSTS_TAR" --ca-certificate="$GITLAB_ROOT" \
+if ! "${WGET}" -q -O "$HSTS_TAR" --ca-certificate="${GITLAB_ROOT}" \
      "https://gitlab.com/rockdaboot/libhsts/uploads/4753f61b5a3c6253acf4934217816e3f/$HSTS_TAR"
 then
     echo "Failed to download libhsts"
@@ -70,7 +70,7 @@ fi
 
 # This command fails, but downloads the data???
 # https://lists.gnu.org/archive/html/bug-wget/2021-01/msg00055.html
-if "$WGET" --debug -O hsts.json "$HSTS_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
+if "${WGET}" --debug -O hsts.json "$HSTS_TAR" --ca-certificate="${GITHUB_CA_ZOO}" \
    'https://raw.github.com/chromium/chromium/master/net/http/transport_security_state_static.json'
 then
     sed 's/^ *\/\/.*$//g' hsts.json > hsts.json.fixed

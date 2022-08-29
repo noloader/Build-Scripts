@@ -50,7 +50,7 @@ echo "**********************"
 echo ""
 echo "M4 ${M4_VER}..."
 
-if ! "$WGET" -q -O "$M4_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$M4_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/m4/$M4_TAR"
 then
     echo "Failed to download M4"

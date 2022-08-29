@@ -76,7 +76,7 @@ echo "*******************************"
 echo ""
 echo "GhostScript ${GS_VER}..."
 
-if ! "$WGET" -q -O "$GS_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$GS_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/${GS_VER_DL}/$GS_TAR"
 then
     echo "Failed to download GhostScript"

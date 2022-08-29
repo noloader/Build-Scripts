@@ -75,7 +75,7 @@ echo "****************************"
 echo ""
 echo "Nginx ${NGINX_VER}..."
 
-if ! "$WGET" -q -O "$NGINX_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$NGINX_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://nginx.org/download/$NGINX_TAR"
 then
     echo "Failed to download Nginx"

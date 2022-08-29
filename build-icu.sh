@@ -59,7 +59,7 @@ echo "**************************"
 echo ""
 echo "libicu ${ICU_DVER}..."
 
-if ! "$WGET" -q -O "$ICU_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O "$ICU_TAR" --ca-certificate="${GITHUB_CA_ZOO}" \
      "https://github.com/unicode-org/icu/releases/download/release-${ICU_DVER}/${ICU_TAR}"
 then
     echo "Failed to download libicu"

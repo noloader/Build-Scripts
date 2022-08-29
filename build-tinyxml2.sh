@@ -54,7 +54,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$TINYXML2_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O "$TINYXML2_TAR" --ca-certificate="${GITHUB_CA_ZOO}" \
      "https://github.com/leethomason/tinyxml2/archive/$TINYXML2_TAR"
 then
     echo "Failed to download tinyxml2"

@@ -63,7 +63,7 @@ echo "**********************"
 echo ""
 echo "b2sum ${B2SUM_VER}..."
 
-if ! "$WGET" -q -O "$B2SUM_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O "$B2SUM_TAR" --ca-certificate="${GITHUB_CA_ZOO}" \
      "https://github.com/BLAKE2/BLAKE2/archive/$B2SUM_TAR"
 then
     echo "Failed to download b2sum"

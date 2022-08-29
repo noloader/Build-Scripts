@@ -62,7 +62,7 @@ echo "************************"
 echo "Downloading package"
 echo "************************"
 
-if ! "$WGET" -q -O "$ZILE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$ZILE_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/zile/$ZILE_TAR"
 then
     echo "Failed to download Zile"
@@ -82,7 +82,7 @@ if [[ -e ../patch/zile.patch ]]; then
     patch -u -p0 < ../patch/zile.patch
 fi
 
-if ! "$WGET" -q -O m4/pkg.m4 --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O m4/pkg.m4 --ca-certificate="${GITHUB_CA_ZOO}" \
      https://raw.githubusercontent.com/pkgconf/pkgconf/master/pkg.m4
 then
     echo ""

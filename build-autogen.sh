@@ -59,7 +59,7 @@ echo "**********************"
 echo ""
 echo "Autogen ${AUTOGEN_VER}..."
 
-if ! "$WGET" -q -O "$AUTOGEN_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$AUTOGEN_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/autogen/rel${AUTOGEN_VER}/$AUTOGEN_TAR"
 then
     echo "Failed to download Autogen"

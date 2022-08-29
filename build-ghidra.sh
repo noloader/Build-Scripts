@@ -50,7 +50,7 @@ echo "**********************"
 echo ""
 echo "Ghidra ${GHIDRA_VER}..."
 
-if ! "$WGET" -q -O "$GHIDRA_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$GHIDRA_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://github.com/NationalSecurityAgency/ghidra/archive/$GHIDRA_TAR"
 then
     echo "Failed to download Ghidra"

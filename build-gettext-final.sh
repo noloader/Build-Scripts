@@ -110,7 +110,7 @@ echo "***************************"
 echo ""
 echo "GetText ${GETTEXT_VER}..."
 
-if ! "$WGET" -q -O "$GETTEXT_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$GETTEXT_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/pub/gnu/gettext/$GETTEXT_TAR"
 then
     echo "Failed to download GetText"

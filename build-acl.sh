@@ -73,7 +73,7 @@ echo "**************************"
 echo ""
 echo "libacl ${ACL_VER}..."
 
-if ! "$WGET" -q -O "$ACL_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$ACL_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://download.savannah.nongnu.org/releases/acl/$ACL_TAR"
 then
     echo "Failed to download libacl"

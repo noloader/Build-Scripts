@@ -69,7 +69,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$LDNS_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$LDNS_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://www.nlnetlabs.nl/downloads/ldns/$LDNS_TAR"
 then
     echo "Failed to download LDNS"

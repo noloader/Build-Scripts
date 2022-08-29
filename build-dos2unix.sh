@@ -59,7 +59,7 @@ echo "************************"
 echo ""
 echo "dos2unix ${DOS2UNIX_VER}..."
 
-if ! "$WGET" -q -O "$DOS2UNIX_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$DOS2UNIX_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://waterlan.home.xs4all.nl/dos2unix/$DOS2UNIX_TAR"
 then
     echo "Failed to download dos2unix"

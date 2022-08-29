@@ -56,7 +56,7 @@ echo "************************"
 echo "Downloading package"
 echo "************************"
 
-if ! "$WGET" -q -O "$FLEX_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O "$FLEX_TAR" --ca-certificate="${GITHUB_CA_ZOO}" \
      "https://github.com/westes/flex/releases/download/v${FLEX_VER}/$FLEX_TAR"
 then
     echo "Failed to download Flex"

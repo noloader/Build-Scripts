@@ -61,7 +61,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$MPFR_TAR" --ca-certificate="$THE_CA_ZOO" \
+if ! "${WGET}" -q -O "$MPFR_TAR" --ca-certificate="${THE_CA_ZOO}" \
      "https://www.mpfr.org/mpfr-4.1.0/$MPFR_TAR"
 then
     echo "Failed to download MPFR"

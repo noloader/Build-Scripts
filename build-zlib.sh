@@ -54,7 +54,7 @@ echo "************************"
 echo "Downloading package"
 echo "************************"
 
-if ! "$WGET" -q -O "$ZLIB_TAR" \
+if ! "${WGET}" -q -O "$ZLIB_TAR" \
      "http://www.zlib.net/$ZLIB_TAR"
 then
     echo "Failed to download zLib"

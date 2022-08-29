@@ -132,7 +132,7 @@ echo "**********************"
 echo ""
 echo "GnuPG ${GNUPG_VER}..."
 
-if ! "$WGET" -q -O "$GNUPG_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$GNUPG_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://gnupg.org/ftp/gcrypt/gnupg/$GNUPG_TAR"
 then
     echo ""

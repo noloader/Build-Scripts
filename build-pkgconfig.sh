@@ -58,9 +58,9 @@ echo "******************************"
 echo "Downloading package"
 echo "******************************"
 
-if [[ -n $(command -v "$WGET" 2>/dev/null) ]]
+if [[ -n $(command -v "${WGET}" 2>/dev/null) ]]
 then
-    if ! "$WGET" -q -O "$PKGCONFIG_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+    if ! "${WGET}" -q -O "$PKGCONFIG_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
          "https://pkg-config.freedesktop.org/releases/$PKGCONFIG_TAR"
     then
         echo "Failed to download pkg-config"
@@ -68,7 +68,7 @@ then
     fi
 elif [[ -n $(command -v curl 2>/dev/null) ]]
 then
-    if ! curl -s -o "$PKGCONFIG_TAR" --cacert "$LETS_ENCRYPT_ROOT" \
+    if ! curl -s -o "$PKGCONFIG_TAR" --cacert "${LETS_ENCRYPT_ROOT}" \
          "https://pkg-config.freedesktop.org/releases/$PKGCONFIG_TAR"
     then
         echo "Failed to download pkg-config"

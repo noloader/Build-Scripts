@@ -57,7 +57,7 @@ echo "**********************"
 echo ""
 echo "Expect ${EXPECT_VER}..."
 
-if ! "$WGET" -q -O "$EXPECT_TAR" --ca-certificate="$THE_CA_ZOO" \
+if ! "${WGET}" -q -O "$EXPECT_TAR" --ca-certificate="${THE_CA_ZOO}" \
      "https://downloads.sourceforge.net/project/expect/Expect/$EXPECT_VER/$EXPECT_TAR"
 then
     echo "Failed to download Expect"

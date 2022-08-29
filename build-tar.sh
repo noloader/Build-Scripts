@@ -67,7 +67,7 @@ echo "**********************"
 echo ""
 echo "Tar ${TAR_VER}..."
 
-if ! "$WGET" -q -O "$TAR_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$TAR_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/tar/$TAR_TAR"
 then
     echo "Failed to download Tar"

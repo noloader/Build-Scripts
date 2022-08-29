@@ -51,7 +51,7 @@ echo "*************************"
 echo ""
 echo "CMake ${CMAKE_VER}..."
 
-if ! "$WGET" -q -O "$CMAKE_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O "$CMAKE_TAR" --ca-certificate="${GITHUB_CA_ZOO}" \
      "https://github.com/Kitware/CMake/releases/download/v$CMAKE_VER/$CMAKE_TAR"
 then
     echo "Failed to download CMake"

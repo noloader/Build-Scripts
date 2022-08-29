@@ -68,7 +68,7 @@ echo "**********************"
 echo ""
 echo "Sqlite3 ${SQLITE_VER}..."
 
-if ! "$WGET" -q -O "$SQLITE_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$SQLITE_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://sqlite.org/2021/$SQLITE_TAR"
 then
     echo "Failed to download Sqlite3"

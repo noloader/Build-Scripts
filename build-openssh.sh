@@ -88,7 +88,7 @@ echo "**********************"
 echo "Downloading package"
 echo "**********************"
 
-if ! "$WGET" -q -O "$OPENSSH_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$OPENSSH_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "http://ftp.usa.openbsd.org/pub/OpenBSD/OpenSSH/portable/$OPENSSH_TAR"
 then
     echo "Failed to download SSH"

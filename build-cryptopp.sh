@@ -55,7 +55,7 @@ echo "************************"
 echo "Downloading package"
 echo "************************"
 
-if ! "$WGET" -q -O "$CRYPTOPP_ZIP" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$CRYPTOPP_ZIP" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://www.cryptopp.com/$CRYPTOPP_ZIP"
 then
     echo "Failed to download Crypto++"

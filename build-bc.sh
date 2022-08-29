@@ -51,7 +51,7 @@ echo "**********************"
 echo ""
 echo "BC ${BC_VER}..."
 
-if ! "$WGET" -q -O "$BC_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$BC_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/bc/$BC_TAR"
 then
     echo "Failed to download BC"

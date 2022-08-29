@@ -65,7 +65,7 @@ echo "**********************"
 echo ""
 echo "libksba ${LIBKSBA_VER}..."
 
-if ! "$WGET" -q -O "$LIBKSBA_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$LIBKSBA_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://www.gnupg.org/ftp/gcrypt/libksba/$LIBKSBA_TAR"
 then
     echo ""

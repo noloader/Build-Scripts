@@ -52,7 +52,7 @@ echo ""
 echo "LZ4 ${LZ4_VER}..."
 
 # https://github.com/lz4/lz4/archive/refs/tags/v1.9.3.tar.gz
-if ! "$WGET" -q -O "$LZ4_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O "$LZ4_TAR" --ca-certificate="${GITHUB_CA_ZOO}" \
      "https://github.com/lz4/lz4/archive/refs/tags/$LZ4_TAR"
 then
     echo "Failed to download LZ4"

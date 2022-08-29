@@ -56,7 +56,7 @@ echo "***********************"
 echo "Downloading package"
 echo "***********************"
 
-if ! "$WGET" -q -O "$NSD_TAR" --ca-certificate="$IDENTRUST_ROOT" \
+if ! "${WGET}" -q -O "$NSD_TAR" --ca-certificate="${IDENTRUST_ROOT}" \
      "https://www.nlnetlabs.nl/downloads/nsd/$NSD_TAR"
 then
     echo "Failed to download NSD"

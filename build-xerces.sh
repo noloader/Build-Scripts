@@ -70,7 +70,7 @@ echo "**************************"
 echo "Downloading package"
 echo "**************************"
 
-if ! "$WGET" -q -O "$XERCES_TAR" \
+if ! "${WGET}" -q -O "$XERCES_TAR" \
      "http://apache.mirrors.tds.net/xerces/c/3/sources/$XERCES_TAR"
 then
     echo "Failed to download xerces"

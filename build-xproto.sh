@@ -59,7 +59,7 @@ echo "xproto ${XPROTO_VER}..."
 
 # https://www.x.org/releases/individual/proto/xproto-7.0.6.tar.gz
 
-if ! "$WGET" -q -O "$XPROTO_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$XPROTO_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://www.x.org/releases/individual/proto/$XPROTO_TAR"
 then
     echo "Failed to download xproto"

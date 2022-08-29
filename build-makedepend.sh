@@ -61,7 +61,7 @@ echo "makedepend ${MAKED_VER}..."
 
 # https://www.x.org/releases/individual/util/makedepend-1.0.6.tar.gz
 
-if ! "$WGET" -q -O "$MAKED_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$MAKED_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://www.x.org/releases/individual/util/$MAKED_TAR"
 then
     echo "Failed to download makedepend"

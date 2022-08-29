@@ -57,7 +57,7 @@ echo "************************"
 echo "Downloading package"
 echo "************************"
 
-if ! "$WGET" -q -O "$ECGEN_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O "$ECGEN_TAR" --ca-certificate="${GITHUB_CA_ZOO}" \
      "https://github.com/J08nY/ecgen/archive/refs/tags/$ECGEN_TAR"
 then
     echo "Failed to download ecgen"

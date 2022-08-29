@@ -67,7 +67,7 @@ echo "**********************"
 echo ""
 echo "Mailutils ${MAILUTILS_VER}..."
 
-if ! "$WGET" -q -O "$MAILUTILS_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$MAILUTILS_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/mailutils/$MAILUTILS_TAR"
 then
     echo "Failed to download Mailutils"

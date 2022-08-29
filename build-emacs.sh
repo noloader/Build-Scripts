@@ -91,7 +91,7 @@ echo "**********************"
 echo ""
 echo "Emacs ${EMACS_VER}..."
 
-if ! "$WGET" -q -O "$EMACS_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$EMACS_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/emacs/$EMACS_TAR"
 then
     echo "Failed to download Emacs"

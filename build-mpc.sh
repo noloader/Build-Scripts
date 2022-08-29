@@ -70,7 +70,7 @@ echo "***********************"
 echo "Downloading package"
 echo "***********************"
 
-if ! "$WGET" -q -O "$MPC_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$MPC_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/mpc/$MPC_TAR"
 then
     echo ""
@@ -83,7 +83,7 @@ gzip -d < "$MPC_TAR" | tar xf -
 cd "$MPC_DIR" || exit 1
 
 # Per INSTALL
-if "$WGET" -q -O allpatches --ca-certificate="$THE_CA_ZOO" \
+if "${WGET}" -q -O allpatches --ca-certificate="${THE_CA_ZOO}" \
      "https://www.mpc.org/mpc-${MPC_VER}/allpatches"
 then
     patch -N -Z -p1 < allpatches

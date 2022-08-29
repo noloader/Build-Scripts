@@ -54,7 +54,7 @@ echo "****************************"
 echo "Downloading package"
 echo "****************************"
 
-if ! "$WGET" -q -O "$TASN1_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$TASN1_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/libtasn1/$TASN1_TAR"
 then
     echo "Failed to download libtasn1"

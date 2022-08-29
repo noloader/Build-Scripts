@@ -52,7 +52,7 @@ echo "**********************"
 echo ""
 echo "Autoconf ${AUTOCONF_VER}..."
 
-if ! "$WGET" -q -O "$AUTOCONF_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$AUTOCONF_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/autoconf/$AUTOCONF_TAR"
 then
     echo "Failed to download Autoconf"

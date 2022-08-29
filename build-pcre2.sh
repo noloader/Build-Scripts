@@ -65,7 +65,7 @@ echo "*************************"
 echo ""
 echo "PCRE2 ${PCRE2_VER}..."
 
-if ! "$WGET" -q -O "$PCRE2_TAR" --ca-certificate="$GITHUB_CA_ZOO" \
+if ! "${WGET}" -q -O "$PCRE2_TAR" --ca-certificate="${GITHUB_CA_ZOO}" \
      "https://github.com/PhilipHazel/pcre2/releases/download/pcre2-$PCRE2_VER/$PCRE2_TAR"
 then
     echo "Failed to download PCRE2"

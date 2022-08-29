@@ -88,7 +88,7 @@ echo "*************************"
 echo ""
 echo "Botan ${BOTAN_VER}..."
 
-if ! "$WGET" -q -O "$BOTAN_XZ" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$BOTAN_XZ" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://botan.randombit.net/releases/$BOTAN_XZ"
 then
     echo "Failed to download Botan"

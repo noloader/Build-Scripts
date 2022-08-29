@@ -76,7 +76,7 @@ echo "************************"
 echo ""
 echo "GDBM ${GDBM_VER}..."
 
-if ! "$WGET" -q -O "$GDBM_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$GDBM_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/gdbm/$GDBM_TAR"
 then
     echo "Failed to download GDBM"

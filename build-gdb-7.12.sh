@@ -67,7 +67,7 @@ echo "**********************"
 echo ""
 echo "GDB ${GDB_VER}..."
 
-if ! "$WGET" -q -O "$GDB_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
+if ! "${WGET}" -q -O "$GDB_TAR" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
      "https://ftp.gnu.org/gnu/gdb/$GDB_TAR"
 then
     echo "Failed to download GDB"

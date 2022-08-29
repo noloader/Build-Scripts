@@ -75,7 +75,7 @@ echo "**********************"
 for package in "${PARI_PACKAGES[@]}"
 do
     echo "Downloading $package"
-    if "$WGET" -q -O "$package" --ca-certificate="$THE_CA_ZOO" \
+    if "${WGET}" -q -O "$package" --ca-certificate="${THE_CA_ZOO}" \
        "https://pari.math.u-bordeaux.fr/pub/pari/packages/$package"
     then
         if ! gzip -d < "$package" | tar xf -
