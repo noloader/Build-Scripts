@@ -3,10 +3,12 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds libxml2 from sources.
 
-# libxml2-2.10.1 is out, but it is missing from the ftp site
-# XML2_VER=2.10.1
-XML2_VER=2.9.12
-XML2_TAR=libxml2-${XML2_VER}.tar.gz
+# https://download.gnome.org/sources/libxml2/2.10/libxml2-2.10.2.tar.xz
+
+XML2_URL=2.10
+XML2_VER=2.10.2
+XML2_XZ=libxml2-${XML2_VER}.tar.xz
+XML2_TAR=libxml2-${XML2_VER}.tar
 XML2_DIR=libxml2-${XML2_VER}
 PKG_NAME=libxml2
 
@@ -64,6 +66,17 @@ fi
 
 ###############################################################################
 
+if [[ ! -f "${INSTX_PREFIX}/bin/xz" ]]
+then
+    if ! ./build-xz.sh
+    then
+        echo "Failed to build XZ"
+        exit 1
+    fi
+fi
+
+###############################################################################
+
 echo ""
 echo "========================================"
 echo "================ libxml2 ==============="
@@ -80,16 +93,16 @@ echo "libxml2 ${XML2_VER}..."
 # To view the FTP listing, curl ftp://xmlsoft.org/libxml2/
 # Also see https://mail.gnome.org/archives/xml/2022-January/msg00011.html.
 
-if ! "$WGET" -q -O "$XML2_TAR" --ca-certificate="$LETS_ENCRYPT_ROOT" \
-     "ftp://xmlsoft.org/libxml2/$XML2_TAR"
+if ! "${WGET}" -q -O "${XML2_XZ}" --ca-certificate="${LETS_ENCRYPT_ROOT}" \
+     "https://download.gnome.org/sources/libxml2/${XML2_URL}/${XML2_XZ}"
 then
-    echo "Failed to download libxml2"
+    echo "Failed to download Grep"
     exit 1
 fi
 
-rm -rf "$XML2_DIR" &>/dev/null
-gzip -d < "$XML2_TAR" | tar xf -
-cd "$XML2_DIR" || exit 1
+rm -rf "${XML2_TAR}" "${XML2_DIR}" &>/dev/null
+unxz "${XML2_XZ}" && tar -xf "${XML2_TAR}"
+cd "${XML2_DIR}" || exit 1
 
 # Patches are created with 'diff -u' from the pkg root directory.
 if [[ -e ../patch/libxml2.patch ]]; then
@@ -221,7 +234,7 @@ cd "${CURR_DIR}" || exit 1
 # Set to false to retain artifacts
 if true;
 then
-    ARTIFACTS=("$XML2_TAR" "$XML2_DIR")
+    ARTIFACTS=("${XML2_TAR}" "${XML2_DIR}")
     for artifact in "${ARTIFACTS[@]}"; do
         rm -rf "$artifact"
     done
