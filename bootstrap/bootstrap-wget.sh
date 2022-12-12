@@ -5,16 +5,16 @@
 # This Wget is crippled, but allows bootstrapping a full Wget build.
 
 # Binaries
-WGET_TAR=wget-1.21.2.tar.gz
-UNISTR_TAR=libunistring-1.0.tar.gz
+WGET_TAR=wget-1.21.3.tar.gz
+UNISTR_TAR=libunistring-1.1.tar.gz
 SSL_TAR=openssl-1.0.2u.tar.gz
 
 # Directories
 BOOTSTRAP_DIR=$(pwd)
 PATCH_DIR="$(pwd)/../patch"
 
-WGET_DIR=wget-1.21.2
-UNISTR_DIR=libunistring-1.0
+WGET_DIR=wget-1.21.3
+UNISTR_DIR=libunistring-1.1
 SSL_DIR=openssl-1.0.2u
 
 # Install location
