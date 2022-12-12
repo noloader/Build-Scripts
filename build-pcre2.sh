@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds PCRE from sources.
 
-PCRE2_VER=10.40
+PCRE2_VER=10.41
 PCRE2_TAR="pcre2-${PCRE2_VER}.tar.gz"
 PCRE2_DIR="pcre2-${PCRE2_VER}"
 PKG_NAME=pcre2
