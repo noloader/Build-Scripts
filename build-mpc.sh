@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds MPC from sources.
 
-MPC_VER=1.2.1
+MPC_VER=1.3.1
 MPC_TAR=mpc-${MPC_VER}.tar.gz
 MPC_DIR=mpc-${MPC_VER}
 PKG_NAME=mpc
