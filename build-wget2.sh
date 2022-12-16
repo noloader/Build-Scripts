@@ -5,7 +5,7 @@
 
 # Per TR, the tarballs are pre-release. We should clone Master.
 
-WGET2_VER=2.0.0
+WGET2_VER=2.0.1
 WGET2_TAR=wget-${WGET_VER}.tar.gz
 WGET2_DIR=wget-${WGET_VER}
 PKG_NAME=wget
