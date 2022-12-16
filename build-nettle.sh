@@ -3,7 +3,8 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Nettle from sources.
 
-NETTLE_VER=3.7.3
+# NETTLE_VER=3.7.3
+NETTLE_VERSION=3.8.1
 NETTLE_TAR=nettle-${NETTLE_VER}.tar.gz
 NETTLE_DIR=nettle-${NETTLE_VER}
 PKG_NAME=nettle
