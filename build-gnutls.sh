@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds GnuTLS and its dependencies from sources.
 
-GNUTLS_VER=3.4.0
+GNUTLS_VER=3.7.10
 GNUTLS_XZ=gnutls-${GNUTLS_VER}.tar.xz
 GNUTLS_TAR=gnutls-${GNUTLS_VER}.tar
 GNUTLS_DIR=gnutls-${GNUTLS_VER}
