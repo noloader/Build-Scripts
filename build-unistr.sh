@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Unistring from sources.
 
-UNISTR_VER=1.0
+UNISTR_VER=1.1
 UNISTR_TAR=libunistring-${UNISTR_VER}.tar.gz
 UNISTR_DIR=libunistring-${UNISTR_VER}
 PKG_NAME=libunistring
