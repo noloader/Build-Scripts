@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds CMake and its dependencies from sources.
 
-CMAKE_VER=3.22.1
+CMAKE_VER=3.27.7
 CMAKE_TAR=cmake-${CMAKE_VER}.tar.gz
 CMAKE_DIR=cmake-${CMAKE_VER}
 PKG_NAME=cmake
