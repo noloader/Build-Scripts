@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds Bash from sources.
 
-BASH_VER=5.1
+BASH_VER=5.2.15
 BASH_TAR="bash-${BASH_VER}.tar.gz"
 BASH_DIR="bash-${BASH_VER}"
 PKG_NAME=bash
