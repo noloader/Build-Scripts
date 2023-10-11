@@ -5,8 +5,8 @@
 
 # https://download.gnome.org/sources/libxml2/2.10/libxml2-2.10.2.tar.xz
 
-XML2_URL=2.10
-XML2_VER=2.10.2
+XML2_URL=2.11
+XML2_VER=2.11.5
 XML2_XZ=libxml2-${XML2_VER}.tar.xz
 XML2_TAR=libxml2-${XML2_VER}.tar
 XML2_DIR=libxml2-${XML2_VER}
