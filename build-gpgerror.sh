@@ -3,7 +3,7 @@
 # Written and placed in public domain by Jeffrey Walton
 # This script builds libgpg-error from sources.
 
-GPGERR_VER=1.46
+GPGERR_VER=1.47
 GPGERR_TAR="libgpg-error-${GPGERR_VER}.tar.bz2"
 GPGERR_DIR="libgpg-error-${GPGERR_VER}"
 PKG_NAME=gpgerror
