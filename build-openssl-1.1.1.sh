@@ -8,7 +8,7 @@
 # require Perl 5.10 or higher. If we have Perl 5.10 then
 # we use OpenSSL 1.1.1.
 
-OPENSSL_VER=1.1.1t
+OPENSSL_VER=1.1.1w
 OPENSSL_TAR=openssl-${OPENSSL_VER}.tar.gz
 OPENSSL_DIR=openssl-${OPENSSL_VER}
 PKG_NAME=openssl
