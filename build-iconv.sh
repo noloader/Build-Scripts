@@ -34,7 +34,7 @@
 # the first method, clone libiconv, build a release tarball,
 # and then use it in place of the GNU package.
 
-ICONV_VER=1.16
+ICONV_VER=1.17
 ICONV_TAR=libiconv-${ICONV_VER}.tar.gz
 ICONV_DIR=libiconv-${ICONV_VER}
 PKG_NAME=iconv
