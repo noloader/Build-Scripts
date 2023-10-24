@@ -158,6 +158,14 @@ if [[ "$IS_DARWIN" -eq 1 ]]; then
     CONFIG_OPTS[${#CONFIG_OPTS[@]}]="-Wl,-headerpad_max_install_names"
 fi
 
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
+    openssl_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${OPENSSL_DIR}"
+    openssl_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${OPENSSL_DIR}"
+else
+    openssl_cflags="${INSTX_CFLAGS}"
+    openssl_cxxflags="${INSTX_CXXFLAGS}"
+fi
+
 # The "${CC##*/ }" strips everything proceeding
 # the name of the compiler. '/bin/gcc' becomes 'gcc'.
 # Otherwise, OpenSSL cannot configure itself.
@@ -167,7 +175,8 @@ fi
     KERNEL_BITS="$INSTX_BITNESS" \
     CPPFLAGS="${INSTX_CPPFLAGS} -DPEDANTIC" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
+    CFLAGS="${openssl_cflags}" \
+    CXXFLAGS="${openssl_cxxflags}" \
     LDFLAGS="${INSTX_LDFLAGS}" \
 ./config \
     --prefix="${INSTX_PREFIX}" \
