@@ -124,11 +124,19 @@ then
     CONFIG_OPTS[${#CONFIG_OPTS[@]}]="--with-ldns=${INSTX_PREFIX}"
 fi
 
+if [[ "${INSTX_DEBUG_MAP}" -eq 1 ]]; then
+    openssh_cflags="${INSTX_CFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${OPENSSH_DIR}"
+    openssh_cxxflags="${INSTX_CXXFLAGS} -fdebug-prefix-map=${PWD}=${INSTX_SRCDIR}/${OPENSSH_DIR}"
+else
+    openssh_cflags="${INSTX_CFLAGS}"
+    openssh_cxxflags="${INSTX_CXXFLAGS}"
+fi
+
     PKG_CONFIG_PATH="${INSTX_PKGCONFIG}" \
     CPPFLAGS="${INSTX_CPPFLAGS}" \
     ASFLAGS="${INSTX_ASFLAGS}" \
-    CFLAGS="${INSTX_CFLAGS}" \
-    CXXFLAGS="${INSTX_CXXFLAGS}" \
+    CFLAGS="${openssh_cflags}" \
+    CXXFLAGS="${openssh_cxxflags}" \
     LDFLAGS="${INSTX_CFLAGS} ${INSTX_LDFLAGS}" \
     LIBS="${INSTX_LDLIBS}" \
 ./configure \
