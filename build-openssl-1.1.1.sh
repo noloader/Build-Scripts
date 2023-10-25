@@ -6,8 +6,9 @@
 # This script is used to build OpenSSL 1.1.1 on new platforms
 # due to OpenSSL dependencies. Newer versions of OpenSSL
 # require Perl 5.10 or higher. If we have Perl 5.10 then
-# we use OpenSSL 1.1.1.
+# we can use OpenSSL 1.1.1.
 
+OPENSSL_MAJ=1.1
 OPENSSL_VER=1.1.1w
 OPENSSL_TAR=openssl-${OPENSSL_VER}.tar.gz
 OPENSSL_DIR=openssl-${OPENSSL_VER}
@@ -274,25 +275,25 @@ then
     echo "Fixing install_name"
     echo "***************************"
 
-    install_name_tool -id "${INSTX_LIBDIR}/libcrypto.1.1.dylib" \
-        ./libcrypto.1.1.dylib
-    install_name_tool -id "${INSTX_LIBDIR}/libssl.1.1.dylib" \
-        ./libssl.1.1.dylib
+    install_name_tool -id "${INSTX_LIBDIR}/libcrypto.${OPENSSL_MAJ}.dylib" \
+        ./libcrypto.${OPENSSL_MAJ}.dylib
+    install_name_tool -id "${INSTX_LIBDIR}/libssl.${OPENSSL_MAJ}.dylib" \
+        ./libssl.${OPENSSL_MAJ}.dylib
 
-    install_name_tool -change "${INSTX_PREFIX}//libcrypto.1.1.dylib" \
-        "${INSTX_LIBDIR}/libcrypto.1.1.dylib" ./libcrypto.1.1.dylib
-    install_name_tool -change "${INSTX_PREFIX}//libssl.1.1.dylib" \
-        "${INSTX_LIBDIR}/libssl.1.1.dylib" ./libcrypto.1.1.dylib
+    install_name_tool -change "${INSTX_PREFIX}//libcrypto.${OPENSSL_MAJ}.dylib" \
+        "${INSTX_LIBDIR}/libcrypto.${OPENSSL_MAJ}.dylib" ./libcrypto.${OPENSSL_MAJ}.dylib
+    install_name_tool -change "${INSTX_PREFIX}//libssl.${OPENSSL_MAJ}.dylib" \
+        "${INSTX_LIBDIR}/libssl.${OPENSSL_MAJ}.dylib" ./libcrypto.${OPENSSL_MAJ}.dylib
 
-    install_name_tool -change "${INSTX_PREFIX}//libcrypto.1.1.dylib" \
-        "${INSTX_LIBDIR}/libcrypto.1.1.dylib" ./libssl.1.1.dylib
-    install_name_tool -change "${INSTX_PREFIX}//libssl.1.1.dylib" \
-        "${INSTX_LIBDIR}/libssl.1.1.dylib" ./libssl.1.1.dylib
+    install_name_tool -change "${INSTX_PREFIX}//libcrypto.${OPENSSL_MAJ}.dylib" \
+        "${INSTX_LIBDIR}/libcrypto.${OPENSSL_MAJ}.dylib" ./libssl.${OPENSSL_MAJ}.dylib
+    install_name_tool -change "${INSTX_PREFIX}//libssl.${OPENSSL_MAJ}.dylib" \
+        "${INSTX_LIBDIR}/libssl.${OPENSSL_MAJ}.dylib" ./libssl.${OPENSSL_MAJ}.dylib
 
-    install_name_tool -change "${INSTX_PREFIX}//libcrypto.1.1.dylib" \
-        "${INSTX_LIBDIR}/libcrypto.1.1.dylib" ./apps/openssl
-    install_name_tool -change "${INSTX_PREFIX}//libssl.1.1.dylib" \
-        "${INSTX_LIBDIR}/libssl.1.1.dylib" ./apps/openssl
+    install_name_tool -change "${INSTX_PREFIX}//libcrypto.${OPENSSL_MAJ}.dylib" \
+        "${INSTX_LIBDIR}/libcrypto.${OPENSSL_MAJ}.dylib" ./apps/openssl
+    install_name_tool -change "${INSTX_PREFIX}//libssl.${OPENSSL_MAJ}.dylib" \
+        "${INSTX_LIBDIR}/libssl.${OPENSSL_MAJ}.dylib" ./apps/openssl
 fi
 
 # Fix runpaths again
